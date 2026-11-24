@@ -233,10 +233,30 @@ input[type=password] { max-width: none; }
 
 /* Ablakok: kérdező (16px), rendszerablak barna kerettel (4.7), megerősítő (4.9) */
 .ablak-hatter { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 16px; background: rgba(74,40,16,.35); overflow-y: auto; }
-.ablak { width: min(760px, 100%); display: grid; gap: 16px; background: #fff; border: 2px solid var(--morzsa); border-radius: 16px;
+.ablak { width: min(760px, 100%); display: grid; gap: 16px; background: #fff; border: 4px solid var(--barna); border-radius: 16px;
   padding: 22px 24px; box-shadow: 0 18px 50px rgba(74,40,16,.25); margin: auto; }
 .ablak.rendszer { border: 4px solid var(--barna); width: min(560px, 100%); }
 .ablak h2 { margin: 0; font-size: 24px; color: var(--barna); }
+/* Szerkesztői belépés ablak */
+.ablak.belepo { width: min(480px, 100%); gap: 20px; padding: 26px 28px 24px; }
+.belepo-fej { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; border-bottom: 1px solid var(--morzsa); }
+.belepo-fej .kor { width: 52px; height: 52px; border-radius: 50%; background: var(--barna); color: #fff; display: grid; place-items: center; flex: none; }
+.belepo-fej .kor svg { width: 26px; height: 26px; }
+.belepo-fej h2 { font: 800 22px/1.2 var(--cim); }
+.belepo-fej p { margin: 3px 0 0; font-size: 15px; color: #8a6a4e; }
+.belepo-urlap { display: grid; gap: 16px; }
+.belepo-urlap > div:empty { display: none; }
+.belepo-urlap .uzenet-hiba { margin: 0; }
+.belepo-mezo { display: grid; gap: 6px; }
+.belepo-mezo label { font-size: 15px; font-weight: 700; color: #8a6a4e; text-transform: uppercase; letter-spacing: .05em; }
+.belepo-mezo input { width: 100%; }
+.jelszo-sor { position: relative; }
+.jelszo-sor input { padding-right: 112px; }
+.jelszo-mutat { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px;
+  background: none; color: var(--gomb); font: 700 15px var(--szoveg); cursor: pointer; }
+.jelszo-mutat:hover { background: var(--liszt); }
+.belepo .tipp { margin: 0; }
+.belepo .gombpar .gomb { flex: 1 1 150px; }
 .ablak .racs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .ablak .racs > * { display: grid; gap: 8px; align-content: start; }
 .ablak .mezocim { font-size: 18px; font-weight: 900; }
@@ -406,8 +426,8 @@ input[type=password] { max-width: none; }
   /* ---------- Ablakok ---------- */
   var ABLAKOK = [];
   function ablak(opts) {
-    var kartya = h('div', { class: opts.atkerdes ? 'atkerdes-kartya' : 'ablak' + (opts.rendszer ? ' rendszer' : ''), role: 'dialog', 'aria-modal': 'true' },
-      opts.atkerdes ? h('h3', {}, opts.cim) : h('h2', {}, opts.cim), opts.tartalom,
+    var kartya = h('div', { class: opts.atkerdes ? 'atkerdes-kartya' : 'ablak' + (opts.rendszer ? ' rendszer' : '') + (opts.osztaly ? ' ' + opts.osztaly : ''), role: 'dialog', 'aria-modal': 'true' },
+      opts.fej || (opts.atkerdes ? h('h3', {}, opts.cim) : h('h2', {}, opts.cim)), opts.tartalom,
       opts.gombok ? h('div', { class: opts.atkerdes ? 'atkerdes-gombok' : 'gombpar' }, opts.gombok) : null);
     var hatter = h('div', { class: 'ablak-hatter' }, kartya);
     var nyitva = true;
@@ -605,19 +625,35 @@ input[type=password] { max-width: none; }
     return g;
   }
 
+  var SZERKESZTO_EMAIL = 'jacso.jozsef@lipotipekseg.hu';
   function belepesAblak() {
-    var jelszo = h('input', { type: 'password', autocomplete: 'current-password', 'aria-label': 'Jelszó' });
+    var email = h('input', { type: 'email', id: 'szerk-email', class: 'auto', value: SZERKESZTO_EMAIL, readonly: 'readonly', autocomplete: 'username', tabindex: '-1' });
+    var jelszo = h('input', { type: 'password', id: 'szerk-jelszo', autocomplete: 'current-password', placeholder: 'Add meg a jelszavadat' });
+    var mutat = h('button', { type: 'button', class: 'jelszo-mutat', 'aria-label': 'Jelszó megjelenítése' }, 'Mutasd');
+    mutat.addEventListener('click', function () {
+      var rejtett = jelszo.type === 'password';
+      jelszo.type = rejtett ? 'text' : 'password';
+      mutat.textContent = rejtett ? 'Elrejtés' : 'Mutasd';
+      mutat.setAttribute('aria-label', rejtett ? 'Jelszó elrejtése' : 'Jelszó megjelenítése');
+      jelszo.focus();
+    });
     var hiba = h('div', { 'aria-live': 'polite' });
     var megse = gombMasod('Mégse'), belep = gombElso('Belépés', null);
-    var bezar = ablak({ rendszer: true, cim: 'Szerkesztői belépés', fokusz: jelszo,
-      tartalom: h('form', { style: 'display:grid;gap:10px', onsubmit: function (e) { e.preventDefault(); kuld(); } },
-        h('label', { class: 'mezocim', for: 'szerk-jelszo' }, 'Jelszó'), jelszo, hiba, h('button', { type: 'submit', hidden: true })),
+    var fej = h('div', { class: 'belepo-fej' }, h('span', { class: 'kor' }, svg(LAKAT)),
+      h('div', {}, h('h2', {}, 'Szerkesztői belépés'), h('p', {}, 'Igénylések, területi vezetők és boltok kezelése')));
+    var bezar = ablak({ rendszer: true, osztaly: 'belepo', fej: fej, fokusz: jelszo,
+      tartalom: h('form', { class: 'belepo-urlap', onsubmit: function (e) { e.preventDefault(); kuld(); } },
+        h('div', { class: 'belepo-mezo' }, h('label', { for: 'szerk-email' }, 'E-mail-cím'), email),
+        h('div', { class: 'belepo-mezo' }, h('label', { for: 'szerk-jelszo' }, 'Jelszó'), h('div', { class: 'jelszo-sor' }, jelszo, mutat)),
+        hiba,
+        h('p', { class: 'tipp' }, 'A belépés ezen az eszközön 7 napig érvényes. Nyilvános vagy közös gépen használat után jelentkezz ki.'),
+        h('button', { type: 'submit', hidden: true })),
       gombok: [megse, belep] });
-    jelszo.id = 'szerk-jelszo';
     megse.addEventListener('click', bezar);
     belep.addEventListener('click', kuld);
     function kuld() {
       hiba.innerHTML = '';
+      if (!jelszo.value) { hiba.appendChild(h('p', { class: 'uzenet-hiba', role: 'alert' }, 'Add meg a jelszavadat a belépéshez.')); jelszo.focus(); return; }
       call('belepes', { jelszo: jelszo.value }, 'Belépés…').then(function (r) {
         S.token = r.token; tar(TAROLT_TOKEN, r.token); S.boot = null; S.view = 'new';
         bezar(); render(); window.scrollTo(0, 0);
