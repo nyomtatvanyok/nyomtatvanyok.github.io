@@ -80,9 +80,18 @@ input.szamos { text-align: right; font-variant-numeric: tabular-nums; font-weigh
 input.rossz, input.hianyzik { border-color: var(--hiba); background: #fdf0f0; }
 .hiany-uzenet { margin: 0; font-size: 16px; font-weight: 700; color: var(--hiba); line-height: 1.3; }
 .alairas-doboz.hianyzik { border-color: var(--hiba); background: #fdf0f0; }
-.kotelezo-jel { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 2px solid var(--morzsa); border-left: 6px solid var(--barna);
-  border-radius: 12px; background: var(--feher); font-size: 19px; line-height: 1.4; }
-.kotelezo-jel b { color: var(--barna); }
+.kotelezo-jel { display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border: 4px solid var(--barna);
+  border-radius: 14px; background: var(--feher); font-size: 19px; line-height: 1.45; }
+.kotelezo-jel .jel { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--barna); color: var(--feher);
+  display: grid; place-items: center; font: 800 24px/1 var(--cim); }
+.kotelezo-jel h2 { margin: 0 0 4px; font-size: 22px; font-weight: 900; color: var(--barna); }
+.kotelezo-jel ul { margin: 0; padding-left: 22px; display: grid; gap: 4px; }
+.bevezeto { display: grid; gap: 10px; background: var(--feher); border: 2px solid var(--morzsa); border-radius: 14px; padding: 20px 22px; max-width: 860px;
+  margin: 0 auto; text-align: center; }
+.bevezeto h2 { margin: 0; font-size: 24px; color: var(--barna); text-wrap: balance; }
+.bevezeto p { margin: 0; font-size: 19px; line-height: 1.5; }
+.bevezeto ul { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.bevezeto li { padding: 6px 14px; border-radius: 999px; background: var(--liszt); border: 1px solid var(--morzsa); color: var(--gomb); font-weight: 700; font-size: 17px; }
 .lap-hely { position: relative; }
 .lap-zar { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; border-radius: 14px; background: rgba(246,234,210,.86); }
 .lap-zar div { width: min(420px, 100%); display: grid; gap: 8px; text-align: center; background: var(--feher); border: 4px solid var(--barna); border-radius: 16px; padding: 20px; }
@@ -390,6 +399,12 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <h1>Zárós papír</h1>
   </header>
 
+  <section class="bevezeto" aria-labelledby="bevezeto-cim">
+    <h2 id="bevezeto-cim">Kevesebb papír, egyszerűbb zárás</h2>
+    <p>A kézzel kitöltött zárós papírok ideje lejárt. Ezen a felületen pár perc alatt elkészíted a napi zárást: beírod a számokat, a gép összead, ellenőriz, és kész, rendezett papírt ad. Kevesebb hibával, kevesebb papírral – egy lépéssel közelebb egy egyszerűbb és környezetbarátabb működéshez.</p>
+    <ul aria-label="Előnyök"><li>Gyorsabb</li><li>Pontosabb</li><li>Környezetbarátabb</li></ul>
+  </section>
+
   <div class="szerk-sav" id="szerk-sav" hidden>
     <div class="monogram" aria-hidden="true">SZ</div>
     <div><div class="nev" id="szerk-nev">Szerkesztő mód</div><span class="szerep">Súgók szerkesztése</span></div>
@@ -442,8 +457,16 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 
   <div id="urlap" class="lepes letiltva" style="gap:28px">
     <div class="kotelezo-jel" role="note">
-      <span aria-hidden="true" style="font-size:26px">❗</span>
-      <span><b>Minden mezőt ki kell tölteni.</b> Ha valami ma nem volt, írj be <b>0</b>-t (nullát). Amíg valami hiányzik, a papírt nem lehet letölteni.</span>
+      <span class="jel" aria-hidden="true">!</span>
+      <div>
+        <h2>Fontos: minden mezőt ki kell tölteni!</h2>
+        <ul>
+          <li>Minden mezőbe írj be valamit.</li>
+          <li>Ha valami ma <b>nem volt</b>, írj be <b>0</b>-t (nullát).</li>
+          <li>Ne hagyj üres mezőt.</li>
+          <li>Amíg valami hiányzik, a papírt <b>nem tudod letölteni</b>. A hiányzó mező piros lesz.</li>
+        </ul>
+      </div>
     </div>
     <section class="lepes">
       <h2><span class="szam">3</span>Írd be a NAV-os (pénztárgépes) adatokat</h2>
@@ -1880,7 +1903,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124222638';
+const VALTOZAT = '20261124222904';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
