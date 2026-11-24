@@ -220,6 +220,11 @@ details.sugo ol { margin: 4px 0 0; padding-left: 22px; }
 .info::before { content: ''; position: absolute; inset: -11px; } /* 44 px-es érintési terület */
 .info:hover { background: #f2b90f; }
 .info.ures { background: var(--feher); border: 1.5px dashed #c99a06; color: #a07a05; }
+.info.rejtve { opacity: .45; filter: grayscale(1); }
+.kapcsolo { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 2px solid var(--morzsa); border-radius: 12px; background: var(--liszt);
+  font-size: 18px; font-weight: 700; cursor: pointer; min-height: 56px; }
+.kapcsolo input { width: 28px; height: 28px; flex: none; accent-color: var(--gomb); cursor: pointer; }
+.kapcsolo small { display: block; font-size: 15px; font-weight: 400; color: var(--tipp); }
 .lepes > label .info, .lepes > h2 .info, .elonezet-fej h2 .info { vertical-align: 3px; margin-left: 8px; }
 
 /* súgó ablak */
@@ -366,7 +371,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   <div class="szerk-sav" id="szerk-sav" hidden>
     <div class="monogram" aria-hidden="true">SZ</div>
     <div><div class="nev" id="szerk-nev">Szerkesztő mód</div><span class="szerep">Súgók szerkesztése</span></div>
-    <p>Kattints bármelyik sárga „i” gombra, és írd be, hol találja a dolgozó az adatot. Képet is csatolhatsz. A szaggatott szélű „i” még üres.</p>
+    <p>Kattints bármelyik sárga „i” gombra, és írd be, hol találja a dolgozó az adatot. Képet is csatolhatsz. A szaggatott szélű „i” még üres, a szürke „i”-t a dolgozók nem látják.</p>
     <button type="button" class="gomb-2" id="szerk-ki">Kijelentkezés</button>
   </div>
 
@@ -532,6 +537,10 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <img class="sugo-kep" id="sugo-kep" alt="" hidden>
     </div>
     <div id="sugo-szerk" hidden style="display:grid;gap:14px">
+      <label class="kapcsolo" for="sugo-lathato">
+        <input type="checkbox" id="sugo-lathato">
+        <span>Mutasd az „i” gombot a dolgozóknak ennél a sornál<small id="sugo-lathato-megj">Ha ki van kapcsolva, a dolgozók nem látják az „i” gombot, csak a szerkesztők.</small></span>
+      </label>
       <label class="mezo-cim" for="sugo-textarea">Magyarázat (hol találja a dolgozó)</label>
       <textarea id="sugo-textarea" placeholder="pl. A napi zárás (Z) nyugta alján, a „Forgalom 18%” sorban."></textarea>
       <p class="mezo-cim">Kép</p>
@@ -1316,13 +1325,13 @@ async function kepBetolt(img, id, alt) {
   catch (e) { /* a kép nélkül is használható a súgó */ }
   if (!kesz) await betoltoKesz();
 }
-async function sugoMent(k, szoveg, ujBlob, kepId) {
+async function sugoMent(k, szoveg, ujBlob, kepId, lathato) {
   if (gasMod) {
     const kep = ujBlob ? { mime: 'image/jpeg', base64: await blobBase64(ujBlob) } : null;
     merfold(85);
-    const d = await gasHivas('mentes', { kulcs: k, cim: sugoCimek[k] || k, szoveg, kep, kepMarad: !!kepId && !ujBlob });
+    const d = await gasHivas('mentes', { kulcs: k, cim: sugoCimek[k] || k, szoveg, kep, kepMarad: !!kepId && !ujBlob, lathato });
     if (d.kepId && ujBlob) kepGyorsitotar[d.kepId] = URL.createObjectURL(ujBlob);
-    return { szoveg: d.szoveg || '', kepId: d.kepId || null };
+    return { szoveg: d.szoveg || '', kepId: d.kepId || null, lathato: typeof d.lathato === 'boolean' ? d.lathato : lathato };
   }
   const regiKep = (sugok[k] || {}).kepId || null;
   let ujId = kepId;
@@ -1331,13 +1340,16 @@ async function sugoMent(k, szoveg, ujBlob, kepId) {
     const r = await assetsRef.upload(ujBlob, { type: 'image/jpeg' });
     ujId = r.id; merfold(90);
   }
-  const adat = { szoveg, kepId: ujId || null, frissitve: new Date().toISOString() };
+  const adat = { szoveg, kepId: ujId || null, lathato, frissitve: new Date().toISOString() };
   await dbRef.collection('sugok').doc(k).set(adat);
   if (regiKep && regiKep !== ujId && assetsRef) assetsRef.delete(regiKep).catch(() => {});
   return adat;
 }
 const sugoCimek = {};
 const vanTartalom = k => !!(sugok[k] && ((sugok[k].szoveg || '').trim() || sugok[k].kepId));
+/* Alapból az automatikusan számolt mezőknél nincs „i”; a szerkesztő soronként átállíthatja. */
+const alapLathato = k => !(mezoInfo[k] && mezoInfo[k].auto);
+const lathatoE = k => (sugok[k] && typeof sugok[k].lathato === 'boolean') ? sugok[k].lathato : alapLathato(k);
 
 document.querySelectorAll('[data-info]').forEach(hely => {
   const k = hely.dataset.info, cim = hely.dataset.cim;
@@ -1350,9 +1362,10 @@ document.querySelectorAll('[data-info]').forEach(hely => {
 });
 function infoFrissit() {
   document.querySelectorAll('button.info').forEach(b => {
-    const van = vanTartalom(b.dataset.kulcs);
-    b.hidden = !(van || szerkMod);
+    const k = b.dataset.kulcs, van = vanTartalom(k), lat = lathatoE(k);
+    b.hidden = !(szerkMod || (van && lat));
     b.classList.toggle('ures', !van);
+    b.classList.toggle('rejtve', szerkMod && !lat);
   });
 }
 infoFrissit();
@@ -1367,6 +1380,7 @@ function sugoNyit(k) {
   if (szerkMod) {
     $('sugo-nezet').hidden = true; $('sugo-szerk').hidden = false;
     $('sugo-textarea').value = adat.szoveg || '';
+    $('sugo-lathato').checked = lathatoE(k);
     szerkKep = adat.kepId || null; szerkUjBlob = null; szerkPiszkosAllit(false);
     szerkKepMutat(); $('szerk-hiba').hidden = true;
   } else {
@@ -1417,6 +1431,7 @@ function szerkKepMutat() {
   $('feltolto-felirat').textContent = (szerkUjBlob || szerkKep) ? 'Másik kép választása: kattints ide, vagy húzd ide' : 'Kattints ide, vagy húzd ide a képet';
 }
 $('sugo-textarea').addEventListener('input', () => szerkPiszkosAllit(true));
+$('sugo-lathato').addEventListener('change', () => szerkPiszkosAllit(true));
 async function kepKicsinyit(file) {
   const url = URL.createObjectURL(file);
   try {
@@ -1451,7 +1466,7 @@ $('szerk-mentes').addEventListener('click', async () => {
   $('szerk-hiba').hidden = true;
   betoltoMutat('A súgó mentése…'); merfold(szerkUjBlob ? 60 : 30);
   try {
-    const adat = await sugoMent(k, $('sugo-textarea').value.trim(), szerkUjBlob, szerkKep);
+    const adat = await sugoMent(k, $('sugo-textarea').value.trim(), szerkUjBlob, szerkKep, $('sugo-lathato').checked);
     sugok[k] = adat;
     if (gasMod) tarol('zarospapir:sugok', sugok);
     await betoltoKesz();
@@ -1556,7 +1571,7 @@ if (claudeFelulet) {
     dbRef = db;
     db.collection('sugok').onSnapshot(snap => {
       for (const k of Object.keys(sugok)) delete sugok[k];
-      snap.docs.forEach(d => { const x = d.data() || {}; sugok[d.id] = { szoveg: x.szoveg || '', kepId: x.kepId || null }; });
+      snap.docs.forEach(d => { const x = d.data() || {}; sugok[d.id] = { szoveg: x.szoveg || '', kepId: x.kepId || null, lathato: typeof x.lathato === 'boolean' ? x.lathato : null }; });
       infoFrissit();
     }, () => {});
   }).catch(() => {});
