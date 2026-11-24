@@ -518,9 +518,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <div>
         <h2>Fontos: minden mezőt ki kell tölteni!</h2>
         <ul>
-          <li>Minden mezőbe írj be valamit.</li>
-          <li>Ha valami ma <b>nem volt</b>, írj be <b>0</b>-t (nullát).</li>
-          <li>Ne hagyj üres mezőt.</li>
+          <li class="piros-betu"><b>Ha valami ma nem volt, írj be 0-t (nullát). Ne hagyj üres mezőt.</b></li>
           <li>Amíg valami hiányzik, a zárást <b>nem tudod beküldeni a forgalmas csoportba</b>. A hiányzó mező piros lesz.</li>
         </ul>
       </div>
@@ -2144,7 +2142,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124230524';
+const VALTOZAT = '20261124230658';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
