@@ -88,7 +88,8 @@ input.rossz, input.hianyzik { border-color: var(--hiba); background: #fdf0f0; }
 .kotelezo-jel h2 { margin: 0 0 4px; font-size: 22px; font-weight: 900; color: var(--barna); }
 .kotelezo-jel ul { margin: 0; padding-left: 22px; display: grid; gap: 4px; }
 .bevezeto { display: grid; gap: 10px; background: var(--feher); border: 2px solid var(--morzsa); border-radius: 14px; padding: 20px 22px; text-align: center; }
-.bevezeto h2 { margin: 0; font-size: 24px; color: var(--barna); text-wrap: balance; }
+.bevezeto h2 { margin: 0; font-size: clamp(16px, 5.4vw, 24px); color: var(--barna); white-space: nowrap; }
+@media (max-width: 560px) { .bevezeto { padding: 16px 10px; } .bevezeto li { font-size: 16px; padding: 5px 12px; } }
 .bevezeto p { margin: 0; font-size: 19px; line-height: 1.5; }
 .bevezeto ul { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .bevezeto li { padding: 6px 14px; border-radius: 999px; background: var(--liszt); border: 1px solid var(--morzsa); color: var(--gomb); font-weight: 700; font-size: 17px; }
@@ -2064,7 +2065,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124225045';
+const VALTOZAT = '20261124225316';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
