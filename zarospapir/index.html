@@ -244,7 +244,21 @@ details.sugo ol { margin: 4px 0 0; padding-left: 22px; }
   box-shadow: 0 18px 50px rgba(74,40,16,.25); }
 .sugo-kartya .alcim { margin: 0; padding-right: 56px; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--masodlagos); }
 .sugo-kartya h3 { margin: -8px 0 0; padding-right: 56px; font-size: 26px; line-height: 1.2; color: var(--barna); }
-.sugo-szoveg { margin: 0; font-size: 21px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sugo-szoveg { margin: 0; font-size: 21px; line-height: 1.5; overflow-wrap: anywhere; }
+.sugo-szoveg ul, .sugo-szoveg ol, .formazott ul, .formazott ol { margin: 6px 0; padding-left: 28px; }
+.sugo-szoveg li, .formazott li { margin: 3px 0; }
+.sugo-szoveg p, .sugo-szoveg div { margin: 0 0 6px; }
+.piros-betu { color: var(--hiba); }
+/* formázó sáv */
+.formazo { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 2px solid var(--morzsa); border-bottom: 0; border-radius: 10px 10px 0 0; background: var(--liszt); }
+.formazo button { min-width: 48px; min-height: 46px; padding: 4px 12px; border-radius: 10px; border: 2px solid var(--morzsa); background: var(--feher); color: var(--kakao);
+  font: 700 19px/1 var(--szoveg); cursor: pointer; }
+.formazo button:hover, .formazo button[aria-pressed="true"] { border-color: var(--gomb); background: var(--morzsa); }
+.formazo .elvalaszto { width: 1px; align-self: stretch; background: var(--morzsa); margin: 2px 2px; }
+.formazott { min-height: 180px; max-height: 45vh; overflow-y: auto; padding: 12px 14px; border: 2px solid var(--morzsa); border-radius: 0 0 10px 10px; background: var(--feher);
+  font-size: 19px; line-height: 1.5; overflow-wrap: anywhere; outline: none; }
+.formazott:focus-visible { outline: 3px solid var(--gomb); outline-offset: 2px; }
+.formazott:empty::before { content: attr(data-ures); color: var(--masodlagos); }
 .sugo-kep { width: 100%; height: auto; border-radius: 12px; border: 2px solid var(--morzsa); background: var(--liszt); }
 .bezar-x { position: absolute; top: 12px; right: 12px; width: 48px; height: 48px; display: grid; place-items: center; padding: 0;
   border-radius: 12px; background: var(--feher); color: var(--kakao); border: 2px solid var(--morzsa); cursor: pointer; }
@@ -587,7 +601,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <p class="alcim">Hol találod meg?</p>
     <h3 id="sugo-cim"></h3>
     <div id="sugo-nezet">
-      <p class="sugo-szoveg" id="sugo-szoveg"></p>
+      <div class="sugo-szoveg" id="sugo-szoveg"></div>
       <img class="sugo-kep" id="sugo-kep" alt="" hidden>
     </div>
     <div id="sugo-szerk" hidden style="display:grid;gap:14px">
@@ -595,8 +609,24 @@ input.cimletes { cursor: pointer; background: var(--feher); }
         <input type="checkbox" id="sugo-lathato">
         <span>Mutasd az „i” gombot a dolgozóknak ennél a sornál<small id="sugo-lathato-megj">Ha ki van kapcsolva, a dolgozók nem látják az „i” gombot, csak a szerkesztők.</small></span>
       </label>
-      <label class="mezo-cim" for="sugo-textarea">Magyarázat (hol találja a dolgozó)</label>
-      <textarea id="sugo-textarea" placeholder="pl. A napi zárás (Z) nyugta alján, a „Forgalom 18%” sorban."></textarea>
+      <p class="mezo-cim" id="sugo-szoveg-cim">Magyarázat (hol találja a dolgozó)</p>
+      <div>
+        <div class="formazo" role="toolbar" aria-label="Szövegformázás">
+          <button type="button" data-cmd="bold" aria-label="Félkövér" title="Félkövér (Ctrl+B)"><b>F</b></button>
+          <button type="button" data-cmd="italic" aria-label="Dőlt" title="Dőlt (Ctrl+I)"><i style="font-family:Georgia,serif">D</i></button>
+          <button type="button" data-cmd="underline" aria-label="Aláhúzott" title="Aláhúzott (Ctrl+U)"><u>A</u></button>
+          <button type="button" data-cmd="piros" aria-label="Piros betű" title="Piros betű"><span class="piros-betu">A</span> piros</button>
+          <span class="elvalaszto" aria-hidden="true"></span>
+          <button type="button" data-cmd="insertUnorderedList" aria-label="Felsorolás pontokkal" title="Felsorolás">• Lista</button>
+          <button type="button" data-cmd="insertOrderedList" aria-label="Számozott lista" title="Számozott lista">1. Lista</button>
+          <button type="button" data-cmd="gondolatjel" aria-label="Gondolatjel beszúrása" title="Gondolatjel">– jel</button>
+          <span class="elvalaszto" aria-hidden="true"></span>
+          <button type="button" data-cmd="removeFormat" aria-label="Formázás törlése" title="A kijelölt szöveg formázásának törlése">✕ Formázás</button>
+        </div>
+        <div class="formazott" id="sugo-textarea" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="sugo-szoveg-cim"
+          data-ures="pl. A napi zárás (Z) nyugta alján, a „Forgalom 18%” sorban."></div>
+      </div>
+      <p class="tipp">Jelöld ki a szöveget, majd kattints a fenti gombok egyikére. A „• Lista” gombbal pontokba szedheted a lépéseket.</p>
       <p class="mezo-cim">Kép</p>
       <div class="kep-sor" id="szerk-kep-sor" hidden>
         <img id="szerk-kep" alt="A súgóhoz csatolt kép">
@@ -1382,6 +1412,33 @@ $('letoltes').addEventListener('click', async () => {
   }
 });
 
+/* ---------- formázott szöveg: csak biztonságos elemek maradnak meg ---------- */
+const ENGEDETT = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', U: 'u', UL: 'ul', OL: 'ol', LI: 'li', BR: 'br', P: 'p', DIV: 'div' };
+function pirosE(el) {
+  const c = (el.getAttribute && (el.getAttribute('color') || (el.style && el.style.color))) || '';
+  return (el.classList && el.classList.contains('piros-betu')) || /a32020|rgb\(163,\s*32,\s*32\)|red/i.test(c);
+}
+function tisztit(html) {
+  if (!html) return '';
+  if (!/<[a-z!\/]/i.test(html)) {  // régi, sima szöveg: sortörések megtartása
+    const d = document.createElement('div'); d.textContent = html; return d.innerHTML.replace(/\n/g, '<br>');
+  }
+  const doc = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html');
+  const ki = document.createElement('div');
+  (function masol(forras, cel) {
+    forras.childNodes.forEach(n => {
+      if (n.nodeType === 3) { cel.appendChild(document.createTextNode(n.textContent)); return; }
+      if (n.nodeType !== 1) return;
+      let uj = null;
+      if (ENGEDETT[n.tagName]) uj = document.createElement(ENGEDETT[n.tagName]);
+      if (pirosE(n)) { const sp = document.createElement('span'); sp.className = 'piros-betu'; if (uj) { uj.appendChild(sp); cel.appendChild(uj); masol(n, sp); } else { cel.appendChild(sp); masol(n, sp); } return; }
+      if (uj) { cel.appendChild(uj); masol(n, uj); } else masol(n, cel);
+    });
+  })(doc.body.firstChild, ki);
+  return ki.innerHTML;
+}
+function szovegUres(html) { const d = document.createElement('div'); d.innerHTML = html || ''; return !d.textContent.trim(); }
+
 /* ---------- súgók („Hol találod meg?”) ---------- */
 /* A GitHubos oldalon a súgók egy Google Apps Script webalkalmazásban vannak (lásd zarospapir/sugo-apps-script.gs).
    Ide kell beírni a telepítés után kapott „…/exec” címet. Üresen hagyva a súgók nem jelennek meg. */
@@ -1443,7 +1500,7 @@ async function sugoMent(k, szoveg, ujBlob, kepId, lathato) {
   return adat;
 }
 const sugoCimek = {};
-const vanTartalom = k => !!(sugok[k] && ((sugok[k].szoveg || '').trim() || sugok[k].kepId));
+const vanTartalom = k => !!(sugok[k] && (!szovegUres(sugok[k].szoveg) || sugok[k].kepId));
 /* Alapból az automatikusan számolt mezőknél nincs „i”; a szerkesztő soronként átállíthatja. */
 const alapLathato = k => !(mezoInfo[k] && mezoInfo[k].auto);
 const lathatoE = k => (sugok[k] && typeof sugok[k].lathato === 'boolean') ? sugok[k].lathato : alapLathato(k);
@@ -1476,14 +1533,14 @@ function sugoNyit(k) {
   const adat = sugok[k] || {};
   if (szerkMod) {
     $('sugo-nezet').hidden = true; $('sugo-szerk').hidden = false;
-    $('sugo-textarea').value = adat.szoveg || '';
+    $('sugo-textarea').innerHTML = tisztit(adat.szoveg || '');
     $('sugo-lathato').checked = lathatoE(k);
     szerkKep = adat.kepId || null; szerkUjBlob = null; szerkPiszkosAllit(false);
     szerkKepMutat(); $('szerk-hiba').hidden = true;
   } else {
     $('sugo-nezet').hidden = false; $('sugo-szerk').hidden = true;
-    const sz = $('sugo-szoveg'); sz.textContent = adat.szoveg || '';
-    sz.hidden = !(adat.szoveg || '').trim();
+    const sz = $('sugo-szoveg'); sz.innerHTML = tisztit(adat.szoveg || '');
+    sz.hidden = szovegUres(adat.szoveg);
     kepBetolt($('sugo-kep'), adat.kepId, `Kép: hol találod meg ezt: ${sugoCimek[k]}`);
   }
   sugoAblak.hidden = false;
@@ -1527,7 +1584,36 @@ function szerkKepMutat() {
   $('szerk-kep-sor').hidden = !(szerkUjBlob || szerkKep);
   $('feltolto-felirat').textContent = (szerkUjBlob || szerkKep) ? 'Másik kép választása: kattints ide, vagy húzd ide' : 'Kattints ide, vagy húzd ide a képet';
 }
-$('sugo-textarea').addEventListener('input', () => szerkPiszkosAllit(true));
+$('sugo-textarea').addEventListener('input', () => { szerkPiszkosAllit(true); if (!$('sugo-textarea').textContent.trim() && !$('sugo-textarea').querySelector('li')) $('sugo-textarea').innerHTML = ''; });
+try { document.execCommand('styleWithCSS', false, false); } catch (e) {}
+document.querySelectorAll('.formazo button').forEach(b => {
+  b.addEventListener('mousedown', e => e.preventDefault());   // a kijelölés megmarad
+  b.addEventListener('click', () => {
+    const t = $('sugo-textarea'); t.focus();
+    const c = b.dataset.cmd;
+    if (c === 'piros') {
+      const most = document.queryCommandValue('foreColor') || '';
+      const mar = /163,\s*32,\s*32|a32020/i.test(most);
+      document.execCommand('foreColor', false, mar ? '#4a2810' : '#a32020');
+    } else if (c === 'gondolatjel') document.execCommand('insertText', false, '– ');
+    else if (c === 'removeFormat') { document.execCommand('removeFormat'); document.execCommand('foreColor', false, '#4a2810'); }
+    else document.execCommand(c);
+    szerkPiszkosAllit(true); formazoAllapot();
+  });
+});
+function formazoAllapot() {
+  ['bold', 'italic', 'underline', 'insertUnorderedList', 'insertOrderedList'].forEach(c => {
+    const b = document.querySelector(`.formazo [data-cmd="${c}"]`); let v = false;
+    try { v = document.queryCommandState(c); } catch (e) {}
+    if (b) b.setAttribute('aria-pressed', String(!!v));
+  });
+}
+document.addEventListener('selectionchange', () => { if (document.activeElement === $('sugo-textarea')) formazoAllapot(); });
+$('sugo-textarea').addEventListener('paste', e => {   // beillesztéskor csak a sima szöveg jön át
+  e.preventDefault();
+  const t = (e.clipboardData || window.clipboardData).getData('text/plain');
+  document.execCommand('insertText', false, t);
+});
 $('sugo-lathato').addEventListener('change', () => szerkPiszkosAllit(true));
 async function kepKicsinyit(file) {
   const url = URL.createObjectURL(file);
@@ -1563,7 +1649,9 @@ $('szerk-mentes').addEventListener('click', async () => {
   $('szerk-hiba').hidden = true;
   betoltoMutat('A súgó mentése…'); merfold(szerkUjBlob ? 60 : 30);
   try {
-    const adat = await sugoMent(k, $('sugo-textarea').value.trim(), szerkUjBlob, szerkKep, $('sugo-lathato').checked);
+    const html = szovegUres($('sugo-textarea').innerHTML) ? '' : tisztit($('sugo-textarea').innerHTML);
+    if (html.length > 5000) throw { code: 'hosszu' };
+    const adat = await sugoMent(k, html, szerkUjBlob, szerkKep, $('sugo-lathato').checked);
     sugok[k] = adat;
     if (gasMod) tarol('zarospapir:sugok', sugok);
     await betoltoKesz();
@@ -1571,6 +1659,7 @@ $('szerk-mentes').addEventListener('click', async () => {
   } catch (e) {
     await betoltoKesz();
     if (e && e.code === 'AUTH') { szerkesztoKi(); $('szerk-hiba').textContent = 'Lejárt a belépésed. Zárd be ezt az ablakot, és lépj be újra.'; }
+    else if (e && e.code === 'hosszu') $('szerk-hiba').textContent = 'A magyarázat túl hosszú. Rövidítsd egy kicsit, vagy tegyél fel inkább egy képet.';
     else $('szerk-hiba').textContent = e && e.code === 'nincs_kep' ? 'Képet csak a felület szerkesztője tölthet fel. A szöveget kép nélkül mentheted.'
       : (e && e.message && gasMod ? e.message : 'Nem sikerült menteni. Ellenőrizd az internetet, és kattints újra a „Mentés” gombra.');
     $('szerk-hiba').hidden = false;
@@ -1903,7 +1992,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124223536';
+const VALTOZAT = '20261124224235';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
