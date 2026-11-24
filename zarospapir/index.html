@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <title>Lipóti – Zárós papír</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700&family=Montserrat:wght@800&display=swap">
 <style>
@@ -70,11 +72,21 @@ ul.tipp, ol.tipp { padding-left: 24px; display: grid; gap: 4px; }
 .bemenet .me { position: absolute; right: 14px; color: var(--masodlagos); font-weight: 700; pointer-events: none; }
 .bemenet input.vanme { padding-right: 52px; }
 
-select, input[type=text], input[type=date] {
+select, input[type=text], input[type=date], input[type=email], input[type=password] {
   font: inherit; color: var(--kakao); background: var(--feher); border: 2px solid var(--morzsa); border-radius: 10px;
   padding: 10px 14px; min-height: 52px; }
 input.szamos { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
-input.rossz { border-color: var(--hiba); background: var(--rozsa-hatter); }
+input.rossz, input.hianyzik { border-color: var(--hiba); background: #fdf0f0; }
+.hiany-uzenet { margin: 0; font-size: 16px; font-weight: 700; color: var(--hiba); line-height: 1.3; }
+.alairas-doboz.hianyzik { border-color: var(--hiba); background: #fdf0f0; }
+.kotelezo-jel { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 2px solid var(--morzsa); border-left: 6px solid var(--barna);
+  border-radius: 12px; background: var(--feher); font-size: 19px; line-height: 1.4; }
+.kotelezo-jel b { color: var(--barna); }
+.lap-hely { position: relative; }
+.lap-zar { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; border-radius: 14px; background: rgba(246,234,210,.86); }
+.lap-zar div { width: min(420px, 100%); display: grid; gap: 8px; text-align: center; background: var(--feher); border: 4px solid var(--barna); border-radius: 16px; padding: 20px; }
+.lap-zar strong { font-size: 22px; color: var(--hiba); }
+.lap-zar span { font-size: 18px; }
 input.auto { background: var(--auto-hatter); color: var(--auto-szoveg); border-color: var(--auto-keret); cursor: not-allowed; }
 select:focus-visible, input:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--gomb); outline-offset: 2px; }
 
@@ -282,6 +294,20 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .cimlet-lab .parban button { flex: 1 1 150px; }
 .cimlet-kezi { justify-self: center; background: none; border: 0; color: var(--link); text-decoration: underline; font-size: 16px; min-height: 44px; padding: 0 8px; }
 
+/* belépő ablak */
+.belepo-ablak { position: fixed; inset: 0; z-index: 88; display: grid; place-items: center; padding: 16px; background: rgba(74,40,16,.35); }
+.belepo-kartya { position: relative; width: min(460px, 100%); display: grid; gap: 14px; background: var(--feher); border: 4px solid var(--barna);
+  border-radius: 16px; padding: 22px 24px calc(22px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 18px 50px rgba(74,40,16,.25); }
+.belepo-fej { display: flex; gap: 12px; align-items: center; padding-right: 56px; }
+.belepo-fej .kor { width: 46px; height: 46px; flex: none; border-radius: 50%; background: var(--barna); color: var(--feher); display: grid; place-items: center; }
+.belepo-fej .kor svg { width: 22px; height: 22px; }
+.belepo-fej h3 { margin: 0; font-size: 24px; color: var(--barna); }
+.belepo-kartya label { font-size: 17px; font-weight: 700; }
+.belepo-kartya input { width: 100%; }
+.jelszo-sor { display: flex; gap: 8px; }
+.jelszo-sor input { flex: 1; min-width: 0; }
+.belepo-kartya .parban button { flex: 1 1 150px; }
+
 /* aláírás */
 .alairas-doboz { width: 100%; max-width: 560px; min-height: 120px; display: grid; place-items: center; padding: 10px; background: var(--feher);
   border: 3px dashed var(--morzsa); border-radius: 14px; color: var(--ures); font-size: 21px; font-weight: 700; }
@@ -339,9 +365,9 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 
   <div class="szerk-sav" id="szerk-sav" hidden>
     <div class="monogram" aria-hidden="true">SZ</div>
-    <div><div class="nev">Szerkesztő mód</div><span class="szerep">Súgók szerkesztése</span></div>
+    <div><div class="nev" id="szerk-nev">Szerkesztő mód</div><span class="szerep">Súgók szerkesztése</span></div>
     <p>Kattints bármelyik sárga „i” gombra, és írd be, hol találja a dolgozó az adatot. Képet is csatolhatsz. A szaggatott szélű „i” még üres.</p>
-    <button type="button" class="gomb-2" id="szerk-ki">Kilépés a szerkesztésből</button>
+    <button type="button" class="gomb-2" id="szerk-ki">Kijelentkezés</button>
   </div>
 
   <section class="lepes" id="l-bolt">
@@ -384,6 +410,10 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   </section>
 
   <div id="urlap" class="lepes letiltva" style="gap:28px">
+    <div class="kotelezo-jel" role="note">
+      <span aria-hidden="true" style="font-size:26px">❗</span>
+      <span><b>Minden mezőt ki kell tölteni.</b> Ha valami ma nem volt, írj be <b>0</b>-t (nullát). Amíg valami hiányzik, a papírt nem lehet letölteni.</span>
+    </div>
     <section class="lepes">
       <h2><span class="szam">3</span>Írd be a NAV-os (pénztárgépes) adatokat</h2>
       <div class="iroda"><div class="mezok" id="g-nav"></div></div>
@@ -399,8 +429,8 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <section class="lepes">
       <h2><span class="szam">6</span>Írd be a törlési indokokat</h2>
       <ul class="tipp">
-      <li>Csak azt írd be, ami <b>ma történt</b>.</li>
-      <li>Ha valami nem történt ma, <b>hagyd üresen</b>. A papíron is üres marad.</li>
+      <li><b>Minden sort ki kell tölteni.</b></li>
+      <li>Ha valami ma nem történt, írj be <b>0</b>-t (nullát). Ne hagyd üresen!</li>
     </ul>
       <div class="iroda"><div class="mezok" id="g-torles"></div></div>
     </section>
@@ -443,6 +473,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
             <img id="alairas-kep" alt="Az aláírásod" hidden>
             <span id="alairas-ures">✍ Koppints ide, és írd alá</span>
           </button>
+          <p class="hiany-uzenet" id="alairas-hiany" role="alert" hidden>⚠ Még nem írtál alá. Koppints a fenti dobozra, és írd alá.</p>
         </div>
       </div>
     </section>
@@ -469,6 +500,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
         </ol>
       </details>
       <div class="lap-hely" oncontextmenu="return false">
+        <div class="lap-zar" id="lap-zar" hidden><div><strong id="lap-zar-cim">Még hiányzik adat</strong><span>A papír csak akkor készül el, ha minden mezőt kitöltöttél. A hiányzó mezők pirosak.</span></div></div>
         <div class="lap"><canvas id="lap" width="1240" height="1754" aria-label="A kitöltött zárós papír előnézete"></canvas></div>
       </div>
       <p class="tipp">Itt látod, hogyan fog kinézni a papír. Minden beírt szám rögtön megjelenik rajta.</p>
@@ -559,6 +591,31 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     </div>
     <p class="uzenet hiba" id="alairas-hiba" hidden></p>
   </div>
+</div>
+
+<div class="belepo-ablak" id="belepo-ablak" hidden role="dialog" aria-modal="true" aria-labelledby="belepo-cim">
+  <form class="belepo-kartya" id="belepo-urlap" novalidate>
+    <button type="button" class="bezar-x" id="belepo-x" aria-label="Belépés ablak bezárása">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+    <div class="belepo-fej">
+      <span class="kor" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>
+      <h3 id="belepo-cim">Szerkesztői belépés</h3>
+    </div>
+    <label for="belepo-email">E-mail-cím</label>
+    <input type="email" id="belepo-email" autocomplete="username" inputmode="email" placeholder="pl. nev@lipotipekseg.hu">
+    <label for="belepo-jelszo">Jelszó</label>
+    <div class="jelszo-sor">
+      <input type="password" id="belepo-jelszo" autocomplete="current-password">
+      <button type="button" class="gomb-2" id="belepo-mutat" aria-label="Jelszó megjelenítése">Mutasd</button>
+    </div>
+    <p class="uzenet hiba" id="belepo-hiba" role="alert" hidden></p>
+    <p class="tipp">Ide csak a súgók szerkesztői lépnek be. Ha nem kaptál belépési adatot, zárd be ezt az ablakot. A zárós papírt belépés nélkül is ki tudod tölteni.</p>
+    <div class="parban">
+      <button type="button" class="gomb-2" id="belepo-megse">Mégse</button>
+      <button type="submit" class="gomb-fo" id="belepo-gomb">Belépés</button>
+    </div>
+  </form>
 </div>
 
 <div class="betolto" id="betolto" role="status" aria-live="polite">
@@ -771,6 +828,7 @@ for (const [csoport, lista] of Object.entries(MEZOK)) {
       inp.addEventListener('keydown', e => { if (inp.readOnly && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); cimletNyit(k); } });
       const sm2 = document.createElement('small'); sm2.textContent = 'Koppints a mezőbe: felugrik a címletszámláló.'; wrap.appendChild(sm2);
     }
+    if (!auto) inp.addEventListener('blur', () => { erintett.add(k); frissit(); });
     if (!auto) inp.addEventListener('input', () => { if (tipus !== 'szoveg') tagolva(inp); allapot.ertek[k] = inp.value; frissit(); });
   }
 }
@@ -796,6 +854,39 @@ function szamol() {
   return e;
 }
 
+const erintett = new Set();   // amit a dolgozó már elhagyott
+let mindetJelol = false;      // letöltési kísérlet után minden hiányt jelzünk
+function hianyJelol(inp, kulcs, hianyzik, szoveg) {
+  const lathato = hianyzik && (mindetJelol || erintett.has(kulcs));
+  inp.classList.toggle('hianyzik', lathato);
+  const mezo = inp.closest('.mezo');
+  let u = mezo ? mezo.querySelector('.hiany-uzenet') : null;
+  if (mezo && lathato && !u) { u = document.createElement('p'); u.className = 'hiany-uzenet'; u.setAttribute('role', 'alert'); mezo.appendChild(u); }
+  if (u) { u.hidden = !lathato; u.textContent = szoveg; }
+}
+function hianyok() {
+  const lista = [];
+  for (const [k, info] of Object.entries(mezoInfo)) {
+    if (info.auto) continue;
+    const ures = !String(allapot.ertek[k] || '').trim();
+    hianyJelol($('m-' + k), k, ures, info.tipus === 'szoveg' ? '⚠ Ez hiányzik. Írd be a neved.' : '⚠ Ez hiányzik. Ha nem volt ilyen, írj be 0-t.');
+    if (ures) lista.push({ cim: info.cim, el: $('m-' + k) });
+  }
+  allapot.kiadas.forEach((r, i) => {
+    const n = $('k-nev-' + i), o = $('k-ossz-' + i);
+    const nUres = !String(r.nev || '').trim(), oUres = !String(r.osszeg || '').trim();
+    if (n) n.classList.toggle('hianyzik', nUres && (mindetJelol || erintett.has('kn' + i)));
+    if (o) o.classList.toggle('hianyzik', oUres && (mindetJelol || erintett.has('ko' + i)));
+    if (nUres) lista.push({ cim: `Napi kiadás ${i + 1}. sor: mit vettél`, el: n });
+    if (oUres) lista.push({ cim: `Napi kiadás ${i + 1}. sor: összeg`, el: o });
+  });
+  const nincsAlairas = !allapot.alairas;
+  $('alairas-doboz').classList.toggle('hianyzik', nincsAlairas && mindetJelol);
+  $('alairas-hiany').hidden = !(nincsAlairas && mindetJelol);
+  if (nincsAlairas) lista.push({ cim: 'Aláírás', el: $('alairas-doboz') });
+  if (!datumOlvas(allapot.datum)) lista.push({ cim: 'Dátum', el: $('datum') });
+  return lista;
+}
 function ellenoriz() {
   const hibak = [];
   for (const [k, info] of Object.entries(mezoInfo)) {
@@ -955,6 +1046,9 @@ function frissit() {
   }
   $('kiadas-ossz').textContent = 'Kiadás összesen: ' + (e.kiadasOssz == null ? '0' : szamIr(e.kiadasOssz)) + ' Ft';
   ellenoriz();
+  const hi = hianyok();
+  $('lap-zar').hidden = !hi.length;
+  $('lap-zar-cim').textContent = hi.length === 1 ? 'Még 1 adat hiányzik' : `Még ${hi.length} adat hiányzik`;
   if (allapot.bolt) tarol(mentesKulcs(), { datum: allapot.datum, ertek: allapot.ertek, kiadas: allapot.kiadas, cimlet: allapot.cimlet, alairas: allapot.alairas });
   clearTimeout(rajzIdozito);
   rajzIdozito = setTimeout(() => rajzol($('lap')), 60);
@@ -1054,6 +1148,8 @@ function kiadasRajz(fokuszSor) {
     const o = document.createElement('input'); o.type = 'text'; o.id = 'k-ossz-' + i; o.value = tagolSzoveg(r.osszeg || ''); o.inputMode = 'decimal'; o.className = 'szamos'; o.placeholder = '0';
     o.setAttribute('aria-label', `${i + 1}. kiadás összege forintban`);
     n.addEventListener('input', () => { r.nev = n.value; frissit(); });
+    n.addEventListener('blur', () => { erintett.add('kn' + i); frissit(); });
+    o.addEventListener('blur', () => { erintett.add('ko' + i); frissit(); });
     o.addEventListener('input', () => { tagolva(o); r.osszeg = o.value; frissit(); });
     const kb = document.createElement('button'); kb.type = 'button'; kb.className = 'kuka'; kb.dataset.tipp = 'Törlés'; kb.innerHTML = KUKA;
     kb.setAttribute('aria-label', `${r.nev || (i + 1) + '. kiadás'} törlése`);
@@ -1105,7 +1201,7 @@ $('urites').addEventListener('click', () => kerdez(
    'Ezt nem lehet visszavonni, mindent újra be kell írnod.',
    'Ha nem akarod törölni, kattints a „Mégse, megtartom” gombra. Ekkor semmi nem változik.'],
   'Igen, törlöm',
-  () => { allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; alairasMutat();
+  () => { allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; alairasMutat(); erintett.clear(); mindetJelol = false;
     for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) $('m-' + k).value = '';
     kiadasRajz(); frissit(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
 
@@ -1134,8 +1230,19 @@ function uzenet(szoveg, ok) { const u = $('letoltes-uzenet'); u.hidden = !szoveg
 
 $('letoltes').addEventListener('click', async () => {
   uzenet('');
-  const hibak = ellenoriz();
   const hl = $('hibalista'); hl.textContent = '';
+  mindetJelol = true;
+  frissit();
+  const hiany = hianyok();
+  if (hiany.length) {
+    hiany.forEach(h => { const li = document.createElement('li'); li.textContent = h.cim; hl.appendChild(li); });
+    hl.hidden = false;
+    uzenet(`Még ${hiany.length} adat hiányzik, ezért a papír nem készült el. A hiányzó mezők pirosak. Ha valami nem volt, írj be 0-t.`, false);
+    const elso = hiany[0].el;
+    if (elso) { elso.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => elso.focus({ preventScroll: true }), 350); }
+    return;
+  }
+  const hibak = ellenoriz();
   if (hibak.length) {
     hibak.forEach(h => { const li = document.createElement('li'); li.textContent = h; hl.appendChild(li); });
     hl.hidden = false; uzenet('Javítsd a pirossal jelölt mezőket, utána töltsd le újra.', false); return;
@@ -1170,9 +1277,65 @@ $('letoltes').addEventListener('click', async () => {
 });
 
 /* ---------- súgók („Hol találod meg?”) ---------- */
+/* A GitHubos oldalon a súgók egy Google Apps Script webalkalmazásban vannak (lásd zarospapir/sugo-apps-script.gs).
+   Ide kell beírni a telepítés után kapott „…/exec” címet. Üresen hagyva a súgók nem jelennek meg. */
+const SUGO_API = '';
 const sugok = {};            // kulcs -> {szoveg, kepId}
 let szerkMod = false, szerkKulcs = null, szerkKep = null, szerkUjBlob = null, szerkPiszkos = false;
 let dbRef = null, assetsRef = null, userRef = null;
+const claudeFelulet = !!(window.claude && typeof window.claude.use === 'function');
+const gasMod = !claudeFelulet && !!SUGO_API;
+let gasToken = olvas('zarospapir:token') || '';
+const kepGyorsitotar = {};   // kepId -> megjeleníthető cím
+
+function gasHivas(action, payload) {
+  return fetch(SUGO_API, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action, key: gasToken || '', payload: payload || {} }) })
+    .then(r => { if (!r.ok) throw new Error('A súgók szervere most nem érhető el. Próbáld újra pár perc múlva.'); return r.json(); })
+    .then(r => {
+      if (r && r.ok) return r.data;
+      const e = new Error((r && r.error) || 'Ismeretlen hiba történt. Próbáld újra.'); e.code = r && r.code; throw e;
+    }, e => { if (e && e.code) throw e; const x = new Error('Nincs kapcsolat a szerverrel. Ellenőrizd az internetet, és próbáld újra.'); throw x; });
+}
+function blobBase64(blob) {
+  return new Promise((ok, hiba) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = hiba; r.readAsDataURL(blob); });
+}
+async function kepForras(id) {
+  if (!id) return '';
+  if (!gasMod) return '/_blob/' + encodeURIComponent(id);
+  if (kepGyorsitotar[id]) return kepGyorsitotar[id];
+  const d = await gasHivas('kep', { id });
+  return (kepGyorsitotar[id] = 'data:' + d.mime + ';base64,' + d.base64);
+}
+async function kepBetolt(img, id, alt) {
+  img.hidden = true; img.removeAttribute('src');
+  if (!id) return;
+  const kesz = !gasMod || kepGyorsitotar[id];
+  if (!kesz) { betoltoMutat('A kép betöltése…'); merfold(90); }
+  try { img.src = await kepForras(id); img.alt = alt; img.hidden = false; }
+  catch (e) { /* a kép nélkül is használható a súgó */ }
+  if (!kesz) await betoltoKesz();
+}
+async function sugoMent(k, szoveg, ujBlob, kepId) {
+  if (gasMod) {
+    const kep = ujBlob ? { mime: 'image/jpeg', base64: await blobBase64(ujBlob) } : null;
+    merfold(85);
+    const d = await gasHivas('mentes', { kulcs: k, cim: sugoCimek[k] || k, szoveg, kep, kepMarad: !!kepId && !ujBlob });
+    if (d.kepId && ujBlob) kepGyorsitotar[d.kepId] = URL.createObjectURL(ujBlob);
+    return { szoveg: d.szoveg || '', kepId: d.kepId || null };
+  }
+  const regiKep = (sugok[k] || {}).kepId || null;
+  let ujId = kepId;
+  if (ujBlob) {
+    if (!assetsRef) throw { code: 'nincs_kep' };
+    const r = await assetsRef.upload(ujBlob, { type: 'image/jpeg' });
+    ujId = r.id; merfold(90);
+  }
+  const adat = { szoveg, kepId: ujId || null, frissitve: new Date().toISOString() };
+  await dbRef.collection('sugok').doc(k).set(adat);
+  if (regiKep && regiKep !== ujId && assetsRef) assetsRef.delete(regiKep).catch(() => {});
+  return adat;
+}
 const sugoCimek = {};
 const vanTartalom = k => !!(sugok[k] && ((sugok[k].szoveg || '').trim() || sugok[k].kepId));
 
@@ -1196,7 +1359,6 @@ infoFrissit();
 
 const sugoAblak = $('sugo-ablak');
 let sugoElozo = null;
-function kepUrl(id) { return '/_blob/' + encodeURIComponent(id); }
 function sugoNyit(k) {
   sugoElozo = document.activeElement;
   szerkKulcs = k;
@@ -1211,9 +1373,7 @@ function sugoNyit(k) {
     $('sugo-nezet').hidden = false; $('sugo-szerk').hidden = true;
     const sz = $('sugo-szoveg'); sz.textContent = adat.szoveg || '';
     sz.hidden = !(adat.szoveg || '').trim();
-    const img = $('sugo-kep');
-    if (adat.kepId) { img.src = kepUrl(adat.kepId); img.alt = `Kép: hol találod meg ezt: ${sugoCimek[k]}`; img.hidden = false; }
-    else { img.hidden = true; img.removeAttribute('src'); }
+    kepBetolt($('sugo-kep'), adat.kepId, `Kép: hol találod meg ezt: ${sugoCimek[k]}`);
   }
   sugoAblak.hidden = false;
   $('sugo-x').focus();
@@ -1252,7 +1412,7 @@ function szerkKepMutat() {
   if (elonezetUrl) { URL.revokeObjectURL(elonezetUrl); elonezetUrl = null; }
   const img = $('szerk-kep');
   if (szerkUjBlob) { elonezetUrl = URL.createObjectURL(szerkUjBlob); img.src = elonezetUrl; }
-  else if (szerkKep) img.src = kepUrl(szerkKep);
+  else if (szerkKep) kepForras(szerkKep).then(u => { if (szerkKep) img.src = u; }).catch(() => {});
   $('szerk-kep-sor').hidden = !(szerkUjBlob || szerkKep);
   $('feltolto-felirat').textContent = (szerkUjBlob || szerkKep) ? 'Másik kép választása: kattints ide, vagy húzd ide' : 'Kattints ide, vagy húzd ide a képet';
 }
@@ -1287,45 +1447,108 @@ $('szerk-kep-torol').addEventListener('click', () => kerdez(
   'Igen, törlöm', () => { szerkUjBlob = null; szerkKep = null; szerkPiszkosAllit(true); szerkKepMutat(); }));
 $('szerk-bezar').addEventListener('click', sugoZar);
 $('szerk-mentes').addEventListener('click', async () => {
-  const k = szerkKulcs; if (!k || !dbRef) return;
-  const regiKep = (sugok[k] || {}).kepId || null;
+  const k = szerkKulcs; if (!k || (!dbRef && !gasMod)) return;
   $('szerk-hiba').hidden = true;
   betoltoMutat('A súgó mentése…'); merfold(szerkUjBlob ? 60 : 30);
   try {
-    let kepId = szerkKep;
-    if (szerkUjBlob) {
-      if (!assetsRef) throw { code: 'nincs_kep' };
-      const r = await assetsRef.upload(szerkUjBlob, { type: 'image/jpeg' });
-      kepId = r.id; merfold(90);
-    }
-    const adat = { szoveg: $('sugo-textarea').value.trim(), kepId: kepId || null, frissitve: new Date().toISOString() };
-    await dbRef.collection('sugok').doc(k).set(adat);
+    const adat = await sugoMent(k, $('sugo-textarea').value.trim(), szerkUjBlob, szerkKep);
     sugok[k] = adat;
-    if (regiKep && regiKep !== kepId && assetsRef) assetsRef.delete(regiKep).catch(() => {});
+    if (gasMod) tarol('zarospapir:sugok', sugok);
     await betoltoKesz();
     szerkPiszkosAllit(false); infoFrissit(); sugoZarValoban();
   } catch (e) {
     await betoltoKesz();
-    $('szerk-hiba').textContent = e && e.code === 'nincs_kep' ? 'Képet csak a felület szerkesztője tölthet fel. A szöveget kép nélkül mentheted.'
-      : 'Nem sikerült menteni. Ellenőrizd az internetet, és kattints újra a „Mentés” gombra.';
+    if (e && e.code === 'AUTH') { szerkesztoKi(); $('szerk-hiba').textContent = 'Lejárt a belépésed. Zárd be ezt az ablakot, és lépj be újra.'; }
+    else $('szerk-hiba').textContent = e && e.code === 'nincs_kep' ? 'Képet csak a felület szerkesztője tölthet fel. A szöveget kép nélkül mentheted.'
+      : (e && e.message && gasMod ? e.message : 'Nem sikerült menteni. Ellenőrizd az internetet, és kattints újra a „Mentés” gombra.');
     $('szerk-hiba').hidden = false;
   }
 });
 
 /* --- belépés --- */
 function belepesHiba(t) { $('belepes-hiba').textContent = t; $('belepes-hiba').hidden = !t; }
+function szerkesztoBe(nev) {
+  szerkMod = true; $('szerk-nev').textContent = nev || 'Szerkesztő mód';
+  $('szerk-sav').hidden = false; $('lablec').hidden = true; infoFrissit();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function szerkesztoKi() {
+  szerkMod = false; $('szerk-sav').hidden = true; $('lablec').hidden = false; infoFrissit();
+  if (gasMod) { gasToken = ''; tarol('zarospapir:token', ''); }
+}
 $('belepes').addEventListener('click', async () => {
   belepesHiba('');
+  if (gasMod) {
+    if (gasToken) {
+      betoltoMutat('Belépés…'); merfold(90);
+      try { const d = await gasHivas('en', {}); await betoltoKesz(); szerkesztoBe(d.nev || d.email); return; }
+      catch (e) { await betoltoKesz(); gasToken = ''; tarol('zarospapir:token', ''); }
+    }
+    belepoNyit(); return;
+  }
   let lehet = false;
   try { lehet = !!(userRef && await userRef.canEdit()); } catch (e) {}
   if (!lehet || !dbRef) { belepesHiba('Ehhez szerkesztői jog kell. Kérd meg a felület gazdáját, hogy adjon neked „Szerkesztő” hozzáférést a Megosztás menüben.'); return; }
-  szerkMod = true; $('szerk-sav').hidden = false; $('lablec').hidden = true; infoFrissit();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  szerkesztoBe('Szerkesztő mód');
 });
-$('szerk-ki').addEventListener('click', () => { szerkMod = false; $('szerk-sav').hidden = true; $('lablec').hidden = false; infoFrissit(); });
+$('szerk-ki').addEventListener('click', () => {
+  if (gasMod && gasToken) gasHivas('kilepes', {}).catch(() => {});
+  szerkesztoKi();
+});
+
+/* --- belépő ablak (GitHubos oldal) --- */
+let belepoElozo = null;
+function belepoHiba(t) { $('belepo-hiba').textContent = t; $('belepo-hiba').hidden = !t; }
+function belepoNyit() {
+  belepoElozo = document.activeElement; belepoHiba('');
+  $('belepo-email').value = olvas('zarospapir:email') || '';
+  $('belepo-jelszo').value = '';
+  $('belepo-ablak').hidden = false;
+  ($('belepo-email').value ? $('belepo-jelszo') : $('belepo-email')).focus();
+}
+function belepoZar() { $('belepo-ablak').hidden = true; if (belepoElozo && belepoElozo.isConnected) belepoElozo.focus(); }
+$('belepo-x').addEventListener('click', belepoZar);
+$('belepo-megse').addEventListener('click', belepoZar);
+$('belepo-ablak').addEventListener('mousedown', e => { if (e.target === $('belepo-ablak')) belepoZar(); });
+$('belepo-ablak').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); belepoZar(); } });
+$('belepo-mutat').addEventListener('click', () => {
+  const j = $('belepo-jelszo'), rejtett = j.type === 'password';
+  j.type = rejtett ? 'text' : 'password';
+  $('belepo-mutat').textContent = rejtett ? 'Elrejtés' : 'Mutasd';
+  $('belepo-mutat').setAttribute('aria-label', rejtett ? 'Jelszó elrejtése' : 'Jelszó megjelenítése');
+  j.focus();
+});
+$('belepo-urlap').addEventListener('submit', async e => {
+  e.preventDefault(); belepoHiba('');
+  const email = $('belepo-email').value.trim(), jelszo = $('belepo-jelszo').value;
+  if (!email) { belepoHiba('Írd be az e-mail-címedet.'); $('belepo-email').focus(); return; }
+  if (!jelszo) { belepoHiba('Írd be a jelszavadat.'); $('belepo-jelszo').focus(); return; }
+  betoltoMutat('Belépés…'); merfold(90);
+  try {
+    const d = await gasHivas('belepes', { email, jelszo });
+    await betoltoKesz();
+    gasToken = d.token; tarol('zarospapir:token', d.token); tarol('zarospapir:email', email);
+    belepoZar(); szerkesztoBe(d.nev || email);
+  } catch (err) {
+    await betoltoKesz();
+    belepoHiba(err.message); $('belepo-jelszo').select();
+  }
+});
+
+/* --- GitHubos oldal: súgók betöltése a Google Apps Scriptből (előbb a böngészőben tárolt másolat) --- */
+if (gasMod) {
+  $('lablec').hidden = false;
+  const elozo = olvas('zarospapir:sugok');
+  if (elozo && typeof elozo === 'object') { Object.assign(sugok, elozo); infoFrissit(); }
+  gasHivas('sugok', {}).then(d => {
+    for (const k of Object.keys(sugok)) delete sugok[k];
+    Object.assign(sugok, d || {});
+    tarol('zarospapir:sugok', sugok); infoFrissit();
+  }).catch(() => {});
+}
 
 /* --- közös tárhely: súgók betöltése mindenkinek --- */
-if (window.claude && typeof window.claude.use === 'function') {
+if (claudeFelulet) {
   window.claude.use('user').then(u => { userRef = u; if (u) $('lablec').hidden = false; }).catch(() => {});
   window.claude.use('assets').then(a => { assetsRef = a; }).catch(() => {});
   window.claude.use('db').then(db => {
@@ -1383,7 +1606,7 @@ function cimletNyit(k) {
   $('cimlet-lista').scrollTop = 0;
   $('cimlet-x').focus();
 }
-function cimletZar() { $('cimlet-ablak').hidden = true; if (cimletElozo && cimletElozo.isConnected) cimletElozo.focus(); cimletKulcs = null; }
+function cimletZar() { if (cimletKulcs) erintett.add(cimletKulcs); $('cimlet-ablak').hidden = true; if (cimletElozo && cimletElozo.isConnected) cimletElozo.focus(); cimletKulcs = null; }
 $('cimlet-x').addEventListener('click', cimletZar);
 $('cimlet-ablak').addEventListener('mousedown', e => { if (e.target === $('cimlet-ablak')) cimletZar(); });
 $('cimlet-ablak').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); cimletZar(); } });
@@ -1392,7 +1615,7 @@ $('cimlet-kesz').addEventListener('click', () => {
   const k = cimletKulcs; if (!k) return;
   const ossz = cimletOssz();
   allapot.cimlet[k] = Object.assign({}, cimletDb);
-  allapot.ertek[k] = ossz ? tagolSzoveg(String(ossz)) : '';
+  allapot.ertek[k] = tagolSzoveg(String(ossz));
   $('m-' + k).value = allapot.ertek[k];
   frissit(); cimletZar();
 });
