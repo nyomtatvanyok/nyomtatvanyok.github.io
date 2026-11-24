@@ -343,6 +343,9 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .alairas-vaszon .x { position: absolute; left: 3%; bottom: 23%; font-size: 22px; color: var(--masodlagos); pointer-events: none; }
 .alairas-kartya .parban button { flex: 1 1 150px; }
 
+.alairas-gombok { display: flex; flex-wrap: wrap; gap: 12px; max-width: 560px; }
+.alairas-gombok button { flex: 1 1 200px; min-height: 56px; font-size: 19px; }
+
 /* telefon */
 @media (max-width: 560px) {
   body { font-size: 18px; }
@@ -496,6 +499,11 @@ input.cimletes { cursor: pointer; background: var(--feher); }
             <img id="alairas-kep" alt="Az aláírásod" hidden>
             <span id="alairas-ures">✍ Koppints ide, és írd alá</span>
           </button>
+          <div class="alairas-gombok" id="alairas-gombok" hidden>
+            <button type="button" class="gomb-2" id="alairas-ujrair">✍ Újra aláírom</button>
+            <button type="button" class="gomb-2 veszely" id="alairas-torol">
+              <svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;vertical-align:-4px;margin-right:6px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Aláírás törlése</button>
+          </div>
           <p class="hiany-uzenet" id="alairas-hiany" role="alert" hidden>⚠ Még nem írtál alá. Koppints a fenti dobozra, és írd alá.</p>
         </div>
       </div>
@@ -1805,6 +1813,7 @@ $('cimlet-kezi').addEventListener('click', () => {
 const alairasKep = new Image();
 alairasKep.onload = () => rajzol($('lap'));
 function alairasMutat() {
+  $('alairas-gombok').hidden = !allapot.alairas;
   const img = $('alairas-kep');
   if (allapot.alairas) { img.src = allapot.alairas; alairasKep.src = allapot.alairas; img.hidden = false; $('alairas-ures').hidden = true; $('alairas-doboz').setAttribute('aria-label', 'Aláírás megváltoztatása'); }
   else { img.hidden = true; img.removeAttribute('src'); $('alairas-ures').hidden = false; $('alairas-doboz').setAttribute('aria-label', 'Aláírás: koppints ide, és írd alá'); }
@@ -1851,6 +1860,13 @@ $('alairas-kesz').addEventListener('click', () => {
   allapot.alairas = c.toDataURL('image/png');
   alairasMutat(); frissit(); alairasZar();
 });
+$('alairas-ujrair').addEventListener('click', alairasNyit);
+$('alairas-torol').addEventListener('click', () => kerdez(
+  'Biztosan törölni akarod az aláírásodat?', 'Ezt törlöd:', 'Az aláírásodat a zárós papírról',
+  ['Ha az „Igen, törlöm” gombra kattintasz, az aláírás eltűnik a papírról is.',
+   'Utána újra alá kell írnod, különben a papírt nem lehet letölteni.',
+   'Ha nem akarod törölni, kattints a „Mégse, megtartom” gombra.'],
+  'Igen, törlöm', () => { allapot.alairas = null; alairasKep.removeAttribute('src'); alairasMutat(); frissit(); $('alairas-doboz').focus(); }));
 alairasMutat();
 
 /* ---------- indulás ---------- */
