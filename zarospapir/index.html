@@ -313,6 +313,20 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .jelszo-sor input { flex: 1; min-width: 0; }
 .belepo-kartya .parban button { flex: 1 1 150px; }
 
+/* szerkesztők kezelése */
+.kezelo-kartya { width: min(640px, 100%); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; }
+.kezelo-lista { list-style: none; margin: 0; padding: 0; display: grid; border: 2px solid var(--morzsa); border-radius: 12px; overflow: hidden; }
+.kezelo-lista li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 14px; }
+.kezelo-lista li:nth-child(even) { background: var(--csik); }
+.kezelo-lista .ki { flex: 1 1 220px; min-width: 0; }
+.kezelo-lista .ki b { display: block; font-size: 20px; overflow-wrap: anywhere; }
+.kezelo-lista .ki span { font-size: 16px; color: var(--masodlagos); overflow-wrap: anywhere; }
+.pirula-kicsi { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--liszt); border: 1px solid var(--morzsa); color: var(--gomb); font-size: 13px; font-weight: 700; margin-left: 6px; vertical-align: 2px; }
+.kezelo-urlap { display: grid; gap: 8px; }
+.kezelo-urlap label { font-size: 17px; font-weight: 700; margin-top: 4px; }
+.kezelo-urlap input, .kezelo-urlap select { width: 100%; }
+.szerk-sav .gombsor { display: flex; flex-wrap: wrap; gap: 10px; }
+
 /* aláírás */
 .alairas-doboz { width: 100%; max-width: 560px; min-height: 120px; display: grid; place-items: center; padding: 10px; background: var(--feher);
   border: 3px dashed var(--morzsa); border-radius: 14px; color: var(--ures); font-size: 21px; font-weight: 700; }
@@ -372,7 +386,11 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <div class="monogram" aria-hidden="true">SZ</div>
     <div><div class="nev" id="szerk-nev">Szerkesztő mód</div><span class="szerep">Súgók szerkesztése</span></div>
     <p>Kattints bármelyik sárga „i” gombra, és írd be, hol találja a dolgozó az adatot. Képet is csatolhatsz. A szaggatott szélű „i” még üres, a szürke „i”-t a dolgozók nem látják.</p>
-    <button type="button" class="gomb-2" id="szerk-ki">Kijelentkezés</button>
+    <div class="gombsor">
+      <button type="button" class="gomb-2" id="szerk-kezeles" hidden>Szerkesztők kezelése</button>
+      <button type="button" class="gomb-2" id="szerk-jelszo" hidden>Jelszavam módosítása</button>
+      <button type="button" class="gomb-2" id="szerk-ki">Kijelentkezés</button>
+    </div>
   </div>
 
   <section class="lepes" id="l-bolt">
@@ -625,6 +643,44 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <button type="submit" class="gomb-fo" id="belepo-gomb">Belépés</button>
     </div>
   </form>
+</div>
+
+<div class="belepo-ablak" id="kezelo-ablak" hidden role="dialog" aria-modal="true" aria-labelledby="kezelo-cim">
+  <div class="belepo-kartya kezelo-kartya">
+    <button type="button" class="bezar-x" id="kezelo-x" aria-label="Ablak bezárása">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+    <div class="belepo-fej"><h3 id="kezelo-cim">Szerkesztők kezelése</h3></div>
+    <div id="kezelo-lista-nezet" style="display:grid;gap:14px">
+      <p class="tipp">Itt veheted fel, módosíthatod és törölheted azokat, akik a súgókat szerkeszthetik. Az „Admin” a többi szerkesztőt is kezelheti.</p>
+      <ul class="kezelo-lista" id="kezelo-lista"></ul>
+      <button type="button" class="gomb-fo" id="kezelo-uj">+ Új szerkesztő felvétele</button>
+    </div>
+    <form id="kezelo-urlap" class="kezelo-urlap" novalidate hidden>
+      <label for="ku-email">E-mail-cím</label>
+      <input type="email" id="ku-email" autocomplete="off" inputmode="email" placeholder="pl. nev@lipotipekseg.hu">
+      <label for="ku-nev">Név</label>
+      <input type="text" id="ku-nev" autocomplete="off" placeholder="pl. Kiss Anna">
+      <label for="ku-szerep">Jogosultság</label>
+      <select id="ku-szerep"><option value="szerkesztő">Szerkesztő – csak súgókat szerkeszt</option><option value="admin">Admin – súgók + szerkesztők kezelése</option></select>
+      <label for="ku-jelszo" id="ku-jelszo-cim">Jelszó</label>
+      <div class="jelszo-sor"><input type="password" id="ku-jelszo" autocomplete="new-password"><button type="button" class="gomb-2" id="ku-mutat" aria-label="Jelszó megjelenítése">Mutasd</button></div>
+      <p class="tipp" id="ku-jelszo-tipp">Legalább 6 karakter. Ezt a jelszót add át neki személyesen.</p>
+      <p class="uzenet hiba" id="ku-hiba" role="alert" hidden></p>
+      <div class="parban"><button type="button" class="gomb-2" id="ku-megse">Mégse</button><button type="submit" class="gomb-fo">Mentés</button></div>
+    </form>
+    <form id="jelszo-urlap" class="kezelo-urlap" novalidate hidden>
+      <label for="jsz-regi">Jelenlegi jelszó</label>
+      <input type="password" id="jsz-regi" autocomplete="current-password">
+      <label for="jsz-uj">Új jelszó</label>
+      <input type="password" id="jsz-uj" autocomplete="new-password">
+      <label for="jsz-uj2">Új jelszó még egyszer</label>
+      <input type="password" id="jsz-uj2" autocomplete="new-password">
+      <p class="tipp">Legalább 6 karakter. A jelszócsere után a többi eszközödön újra be kell lépned.</p>
+      <p class="uzenet hiba" id="jsz-hiba" role="alert" hidden></p>
+      <div class="parban"><button type="button" class="gomb-2" id="jsz-megse">Mégse</button><button type="submit" class="gomb-fo">Mentés</button></div>
+    </form>
+  </div>
 </div>
 
 <div class="betolto" id="betolto" role="status" aria-live="polite">
@@ -1288,7 +1344,7 @@ $('letoltes').addEventListener('click', async () => {
 /* ---------- súgók („Hol találod meg?”) ---------- */
 /* A GitHubos oldalon a súgók egy Google Apps Script webalkalmazásban vannak (lásd zarospapir/sugo-apps-script.gs).
    Ide kell beírni a telepítés után kapott „…/exec” címet. Üresen hagyva a súgók nem jelennek meg. */
-const SUGO_API = '';
+const SUGO_API = 'https://script.google.com/macros/s/AKfycbzUtwL9VC_YbloAOkDq9-H8uDCCA1UkHZ2jPI4be0FY-GJufp2e5lDbBOuT-Phyc6whWQ/exec';
 const sugok = {};            // kulcs -> {szoveg, kepId}
 let szerkMod = false, szerkKulcs = null, szerkKep = null, szerkUjBlob = null, szerkPiszkos = false;
 let dbRef = null, assetsRef = null, userRef = null;
@@ -1482,7 +1538,11 @@ $('szerk-mentes').addEventListener('click', async () => {
 
 /* --- belépés --- */
 function belepesHiba(t) { $('belepes-hiba').textContent = t; $('belepes-hiba').hidden = !t; }
-function szerkesztoBe(nev) {
+let szerkAdmin = false;
+function szerkesztoBe(nev, admin) {
+  szerkAdmin = !!admin;
+  $('szerk-kezeles').hidden = !(gasMod && szerkAdmin);
+  $('szerk-jelszo').hidden = !gasMod;
   szerkMod = true; $('szerk-nev').textContent = nev || 'Szerkesztő mód';
   $('szerk-sav').hidden = false; $('lablec').hidden = true; infoFrissit();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1496,7 +1556,7 @@ $('belepes').addEventListener('click', async () => {
   if (gasMod) {
     if (gasToken) {
       betoltoMutat('Belépés…'); merfold(90);
-      try { const d = await gasHivas('en', {}); await betoltoKesz(); szerkesztoBe(d.nev || d.email); return; }
+      try { const d = await gasHivas('en', {}); await betoltoKesz(); szerkesztoBe(d.nev || d.email, d.admin); return; }
       catch (e) { await betoltoKesz(); gasToken = ''; tarol('zarospapir:token', ''); }
     }
     belepoNyit(); return;
@@ -1509,6 +1569,100 @@ $('belepes').addEventListener('click', async () => {
 $('szerk-ki').addEventListener('click', () => {
   if (gasMod && gasToken) gasHivas('kilepes', {}).catch(() => {});
   szerkesztoKi();
+});
+
+/* --- szerkesztők kezelése (admin) és saját jelszó --- */
+let kezeloElozo = null, kezeloLista = [], kezeloSzerk = null;
+function kezeloNezet(melyik) {
+  $('kezelo-lista-nezet').hidden = melyik !== 'lista';
+  $('kezelo-urlap').hidden = melyik !== 'urlap';
+  $('jelszo-urlap').hidden = melyik !== 'jelszo';
+}
+function kezeloNyit(cim) { kezeloElozo = document.activeElement; $('kezelo-cim').textContent = cim; $('kezelo-ablak').hidden = false; $('kezelo-x').focus(); }
+function kezeloZar() { $('kezelo-ablak').hidden = true; if (kezeloElozo && kezeloElozo.isConnected) kezeloElozo.focus(); }
+$('kezelo-x').addEventListener('click', kezeloZar);
+$('kezelo-ablak').addEventListener('mousedown', e => { if (e.target === $('kezelo-ablak')) kezeloZar(); });
+$('kezelo-ablak').addEventListener('keydown', e => { if (e.key === 'Escape' && $('atkerdes').hidden) { e.preventDefault(); kezeloZar(); } });
+async function kezeloHivas(action, payload, szoveg) {
+  betoltoMutat(szoveg); merfold(90);
+  try { const d = await gasHivas(action, payload); await betoltoKesz(); return d; }
+  catch (e) { await betoltoKesz(); if (e.code === 'AUTH') { kezeloZar(); szerkesztoKi(); belepesHiba('Lejárt a belépésed. Lépj be újra.'); } throw e; }
+}
+function kezeloRajz() {
+  const ul = $('kezelo-lista'); ul.textContent = '';
+  kezeloLista.forEach(sz => {
+    const li = document.createElement('li');
+    const ki = document.createElement('div'); ki.className = 'ki';
+    const b = document.createElement('b'); b.textContent = sz.nev || sz.email;
+    const p = document.createElement('span'); p.className = 'pirula-kicsi'; p.textContent = sz.szerep === 'admin' ? 'Admin' : 'Szerkesztő'; b.appendChild(p);
+    if (sz.en) { const en = document.createElement('span'); en.className = 'pirula-kicsi'; en.textContent = 'Te'; b.appendChild(en); }
+    const e = document.createElement('span'); e.textContent = sz.email;
+    ki.append(b, e);
+    const m = document.createElement('button'); m.type = 'button'; m.className = 'gomb-2'; m.textContent = 'Módosítás / új jelszó';
+    m.setAttribute('aria-label', `${sz.nev || sz.email} módosítása`);
+    m.addEventListener('click', () => urlapNyit(sz));
+    li.append(ki, m);
+    if (!sz.en) {
+      const k = document.createElement('button'); k.type = 'button'; k.className = 'kuka'; k.dataset.tipp = 'Törlés'; k.innerHTML = KUKA;
+      k.setAttribute('aria-label', `${sz.nev || sz.email} törlése`);
+      k.addEventListener('click', () => kerdez('Biztosan törölni akarod ezt a szerkesztőt?', 'Ezt a szerkesztőt törlöd:', `${sz.nev} (${sz.email})`,
+        ['Ha az „Igen, törlöm” gombra kattintasz, ő többé nem tud belépni, és minden eszközén kijelentkezik.', 'Az általa írt súgók megmaradnak.',
+         'Ha nem akarod törölni, kattints a „Mégse, megtartom” gombra.'], 'Igen, törlöm', async () => {
+          try { kezeloLista = await kezeloHivas('szerkesztoTorol', { email: sz.email }, 'Törlés…'); kezeloRajz(); } catch (er) { alert0(er.message); }
+        }));
+      li.appendChild(k);
+    }
+    ul.appendChild(li);
+  });
+}
+function alert0(t) { $('ku-hiba').textContent = t; }
+function urlapNyit(sz) {
+  kezeloSzerk = sz || null;
+  $('ku-email').value = sz ? sz.email : ''; $('ku-email').readOnly = !!sz; $('ku-email').classList.toggle('auto', !!sz);
+  $('ku-nev').value = sz ? sz.nev : '';
+  $('ku-szerep').value = sz ? sz.szerep : 'szerkesztő';
+  $('ku-jelszo').value = '';
+  $('ku-jelszo-cim').textContent = sz ? 'Új jelszó (ha üresen hagyod, marad a régi)' : 'Jelszó';
+  $('ku-hiba').hidden = true;
+  $('kezelo-cim').textContent = sz ? `${sz.nev || sz.email} módosítása` : 'Új szerkesztő felvétele';
+  kezeloNezet('urlap');
+  (sz ? $('ku-nev') : $('ku-email')).focus();
+}
+$('ku-megse').addEventListener('click', () => { $('kezelo-cim').textContent = 'Szerkesztők kezelése'; kezeloNezet('lista'); });
+$('ku-mutat').addEventListener('click', () => { const j = $('ku-jelszo'), r = j.type === 'password'; j.type = r ? 'text' : 'password'; $('ku-mutat').textContent = r ? 'Elrejtés' : 'Mutasd'; });
+$('kezelo-urlap').addEventListener('submit', async e => {
+  e.preventDefault();
+  const h = t => { $('ku-hiba').textContent = t; $('ku-hiba').hidden = false; };
+  $('ku-hiba').hidden = true;
+  const email = $('ku-email').value.trim(), nev = $('ku-nev').value.trim(), jelszo = $('ku-jelszo').value;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return h('Írd be helyesen az e-mail-címet, pl. nev@lipotipekseg.hu');
+  if (!nev) return h('Írd be a nevét.');
+  if (!kezeloSzerk && jelszo.length < 6) return h('A jelszó legalább 6 karakter legyen.');
+  if (kezeloSzerk && jelszo && jelszo.length < 6) return h('Az új jelszó legalább 6 karakter legyen.');
+  try {
+    kezeloLista = await kezeloHivas('szerkesztoMent', { email, nev, szerep: $('ku-szerep').value, jelszo }, 'Mentés…');
+    kezeloRajz(); $('kezelo-cim').textContent = 'Szerkesztők kezelése'; kezeloNezet('lista');
+  } catch (er) { h(er.message); }
+});
+$('kezelo-uj').addEventListener('click', () => urlapNyit(null));
+$('szerk-kezeles').addEventListener('click', async () => {
+  try { kezeloLista = await kezeloHivas('szerkesztok', {}, 'A szerkesztők betöltése…'); } catch (er) { belepesHiba(er.message); return; }
+  kezeloRajz(); kezeloNezet('lista'); kezeloNyit('Szerkesztők kezelése');
+});
+$('szerk-jelszo').addEventListener('click', () => {
+  ['jsz-regi', 'jsz-uj', 'jsz-uj2'].forEach(i => { $(i).value = ''; }); $('jsz-hiba').hidden = true;
+  kezeloNezet('jelszo'); kezeloNyit('Jelszavam módosítása'); $('jsz-regi').focus();
+});
+$('jsz-megse').addEventListener('click', kezeloZar);
+$('jelszo-urlap').addEventListener('submit', async e => {
+  e.preventDefault();
+  const h = t => { $('jsz-hiba').textContent = t; $('jsz-hiba').hidden = false; };
+  const regi = $('jsz-regi').value, uj = $('jsz-uj').value;
+  if (!regi) return h('Írd be a jelenlegi jelszavadat.');
+  if (uj.length < 6) return h('Az új jelszó legalább 6 karakter legyen.');
+  if (uj !== $('jsz-uj2').value) return h('A két új jelszó nem egyezik.');
+  try { await kezeloHivas('sajatJelszo', { regi, uj }, 'Jelszó mentése…'); kezeloZar(); belepesHiba(''); }
+  catch (er) { h(er.message); }
 });
 
 /* --- belépő ablak (GitHubos oldal) --- */
@@ -1543,7 +1697,7 @@ $('belepo-urlap').addEventListener('submit', async e => {
     const d = await gasHivas('belepes', { email, jelszo });
     await betoltoKesz();
     gasToken = d.token; tarol('zarospapir:token', d.token); tarol('zarospapir:email', email);
-    belepoZar(); szerkesztoBe(d.nev || email);
+    belepoZar(); szerkesztoBe(d.nev || email, d.admin);
   } catch (err) {
     await betoltoKesz();
     belepoHiba(err.message); $('belepo-jelszo').select();

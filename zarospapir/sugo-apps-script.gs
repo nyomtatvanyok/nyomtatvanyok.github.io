@@ -3,7 +3,8 @@
  * ----------------------------------------------------------------------
  * Ez a Google Apps Script egy Google Sheethez tartozik. A Sheetben:
  *   • „Súgók” fül: minden mezőhöz a magyarázat, a kép (a kép a Google Drive-on van), és hogy a dolgozók lássák-e az „i” gombot.
- *   • „Szerkesztők” fül: akik beléphetnek (E-mail, Név, Jelszó).
+ *   • „Szerkesztők” fül: akik beléphetnek (E-mail, Név, Jelszó, Szerep: admin / szerkesztő).
+ *     Az admin a felületen („Szerkesztők kezelése”) tud szerkesztőt felvenni, jelszót módosítani és törölni.
  *
  * Beállítás (egyszer):
  *   1. Hozz létre egy új Google Sheetet, pl. „Zárós papír – súgók”.
@@ -42,9 +43,13 @@ function doPost(e) {
       case 'sugok':   return ok(sugokOlvas());
       case 'kep':     return ok(kepOlvas(p.id));
       case 'belepes': return ok(belepes(p.email, p.jelszo));
-      case 'en':      return ok(szerkesztoKell(kulcs));
+      case 'en':      var t = szerkesztoKell(kulcs); return ok({ email: t.email, nev: t.nev, admin: t.admin });
       case 'kilepes': tokenTorol(kulcs); return ok({});
       case 'mentes':  return ok(mentes(szerkesztoKell(kulcs), p));
+      case 'szerkesztok':      return ok(szerkesztokLista(adminKell(kulcs)));
+      case 'szerkesztoMent':   return ok(szerkesztoMent(adminKell(kulcs), p));
+      case 'szerkesztoTorol':  return ok(szerkesztoTorol(adminKell(kulcs), p));
+      case 'sajatJelszo':      return ok(sajatJelszo(szerkesztoKell(kulcs), p));
       default:        return hiba('Ismeretlen kérés.', 'BAD');
     }
   } catch (err) {
@@ -158,7 +163,7 @@ function belepes(email, jelszo) {
       var token = Utilities.getUuid() + Utilities.getUuid().replace(/-/g, '');
       PropertiesService.getScriptProperties().setProperty('t_' + token,
         JSON.stringify({ email: email, nev: String(adat[i][1] || ''), lejar: Date.now() + TOKEN_NAP * 864e5 }));
-      return { token: token, email: email, nev: String(adat[i][1] || '') };
+      return { token: token, email: email, nev: String(adat[i][1] || ''), admin: szerepOlvas(adat[i][3]) === 'admin' };
     }
     break;
   }
@@ -174,9 +179,103 @@ function szerkesztoKell(token) {
   var t = JSON.parse(adat);
   if (t.lejar < Date.now()) { p.deleteProperty('t_' + token); dob('Lejárt a belépésed. Lépj be újra.', 'AUTH'); }
   // aki már nincs a Szerkesztők fülön, az nem szerkeszthet
-  var lista = lapKell(LAP_SZERK).getDataRange().getValues().slice(1).map(function (r) { return String(r[0] || '').trim().toLowerCase(); });
-  if (lista.indexOf(t.email) < 0) { p.deleteProperty('t_' + token); dob('Már nincs szerkesztői jogod.', 'AUTH'); }
+  var sorok = lapKell(LAP_SZERK).getDataRange().getValues().slice(1);
+  var sor = null;
+  for (var i = 0; i < sorok.length; i++) if (String(sorok[i][0] || '').trim().toLowerCase() === t.email) { sor = sorok[i]; break; }
+  if (!sor) { p.deleteProperty('t_' + token); dob('Már nincs szerkesztői jogod.', 'AUTH'); }
+  t.nev = String(sor[1] || t.nev || '');
+  t.admin = szerepOlvas(sor[3]) === 'admin';
   return t;
+}
+
+function adminKell(token) {
+  var t = szerkesztoKell(token);
+  if (!t.admin) dob('Ehhez admin jog kell.', 'FORBIDDEN');
+  return t;
+}
+
+function szerepOlvas(v) { return String(v || '').trim().toLowerCase() === 'admin' ? 'admin' : 'szerkesztő'; }
+
+/* ===================== Szerkesztők kezelése (csak admin) ===================== */
+
+function szerkesztokLista(admin) {
+  var adat = lapKell(LAP_SZERK).getDataRange().getValues();
+  var ki = [];
+  for (var i = 1; i < adat.length; i++) {
+    var email = String(adat[i][0] || '').trim();
+    if (!email) continue;
+    ki.push({ email: email, nev: String(adat[i][1] || ''), szerep: szerepOlvas(adat[i][3]), vanJelszo: !!String(adat[i][2] || ''), en: email.toLowerCase() === admin.email });
+  }
+  ki.sort(function (a, b) { return a.nev.localeCompare(b.nev, 'hu') || a.email.localeCompare(b.email); });
+  return ki;
+}
+
+function jelszoEllenoriz(j) {
+  j = String(j || '');
+  if (j.length < 6) dob('A jelszó legalább 6 karakter legyen.', 'BAD');
+  return j;
+}
+function jelszoHash(j) { var so = Utilities.getUuid(); return 'sha256:' + so + ':' + hash(so, j); }
+
+function szerkesztoMent(admin, p) {
+  var email = String(p.email || '').trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) dob('Hibás e-mail-cím.', 'BAD');
+  var nev = String(p.nev || '').trim().slice(0, 100);
+  if (!nev) dob('Add meg a nevet.', 'BAD');
+  var szerep = p.szerep === 'admin' ? 'admin' : 'szerkesztő';
+  var zar = LockService.getScriptLock(); zar.waitLock(20000);
+  try {
+    var lap = lapKell(LAP_SZERK);
+    if (!lap.getRange(1, 4).getValue()) lap.getRange(1, 4).setValue('Szerep');
+    var adat = lap.getDataRange().getValues(), sor = -1;
+    for (var i = 1; i < adat.length; i++) if (String(adat[i][0] || '').trim().toLowerCase() === email) { sor = i + 1; break; }
+    if (sor < 0) {
+      var j = jelszoEllenoriz(p.jelszo);
+      lap.appendRow([email, nev, jelszoHash(j), szerep]);
+      formaz(lap);
+    } else {
+      if (email === admin.email && szerep !== 'admin') dob('Saját magadtól nem veheted el az admin jogot.', 'BAD');
+      lap.getRange(sor, 2).setValue(nev);
+      lap.getRange(sor, 4).setValue(szerep);
+      if (p.jelszo) { lap.getRange(sor, 3).setValue(jelszoHash(jelszoEllenoriz(p.jelszo))); tokenekTorlese(email); }
+    }
+    return szerkesztokLista(admin);
+  } finally { zar.releaseLock(); }
+}
+
+function szerkesztoTorol(admin, p) {
+  var email = String(p.email || '').trim().toLowerCase();
+  if (email === admin.email) dob('Saját magadat nem törölheted.', 'BAD');
+  var zar = LockService.getScriptLock(); zar.waitLock(20000);
+  try {
+    var lap = lapKell(LAP_SZERK), adat = lap.getDataRange().getValues();
+    for (var i = adat.length - 1; i >= 1; i--) if (String(adat[i][0] || '').trim().toLowerCase() === email) lap.deleteRow(i + 1);
+    tokenekTorlese(email);
+    return szerkesztokLista(admin);
+  } finally { zar.releaseLock(); }
+}
+
+function sajatJelszo(t, p) {
+  var regi = String(p.regi || ''), uj = jelszoEllenoriz(p.uj);
+  var lap = lapKell(LAP_SZERK), adat = lap.getDataRange().getValues();
+  for (var i = 1; i < adat.length; i++) {
+    if (String(adat[i][0] || '').trim().toLowerCase() !== t.email) continue;
+    var tarolt = String(adat[i][2] || ''), r = tarolt.split(':');
+    var jo = tarolt.indexOf('sha256:') === 0 ? (r.length === 3 && hash(r[1], regi) === r[2]) : tarolt === regi;
+    if (!jo) dob('A jelenlegi jelszó nem jó.', 'BAD');
+    lap.getRange(i + 1, 3).setValue(jelszoHash(uj));
+    return {};
+  }
+  dob('Már nincs szerkesztői jogod.', 'AUTH');
+}
+
+/** Jelszócsere vagy törlés után az illető minden eszközön kijelentkezik. */
+function tokenekTorlese(email) {
+  var p = PropertiesService.getScriptProperties(), osszes = p.getProperties();
+  Object.keys(osszes).forEach(function (k) {
+    if (k.indexOf('t_') !== 0) return;
+    try { if (JSON.parse(osszes[k]).email === email) p.deleteProperty(k); } catch (e) {}
+  });
 }
 
 function tokenTorol(token) { if (token) PropertiesService.getScriptProperties().deleteProperty('t_' + token); }
@@ -202,11 +301,12 @@ function beallitas() {
   if (s.getLastRow() === 0) s.appendRow(['Kulcs', 'Mező', 'Magyarázat', 'Kép (Drive fájl)', 'Frissítve', 'Frissítette', 'Látható a dolgozóknak (igen/nem)']);
   else if (!s.getRange(1, 7).getValue()) s.getRange(1, 7).setValue('Látható a dolgozóknak (igen/nem)');
   var z = ss.getSheetByName(LAP_SZERK) || ss.insertSheet(LAP_SZERK);
-  if (z.getLastRow() === 0) z.appendRow(['E-mail', 'Név', 'Jelszó']);
+  if (z.getLastRow() === 0) z.appendRow(['E-mail', 'Név', 'Jelszó', 'Szerep']);
+  else if (!z.getRange(1, 4).getValue()) z.getRange(1, 4).setValue('Szerep');
   [s, z].forEach(formaz);
   s.setColumnWidth(1, 110); s.setColumnWidth(2, 260); s.setColumnWidth(3, 480); s.setColumnWidth(4, 200); s.setColumnWidth(5, 140); s.setColumnWidth(6, 160); s.setColumnWidth(7, 170);
   s.getRange('C:C').setWrap(true);
-  z.setColumnWidth(1, 260); z.setColumnWidth(2, 200); z.setColumnWidth(3, 320);
+  z.setColumnWidth(1, 260); z.setColumnWidth(2, 200); z.setColumnWidth(3, 320); z.setColumnWidth(4, 120);
   var lap1 = ss.getSheetByName('Munkalap1') || ss.getSheetByName('Sheet1');
   if (lap1 && lap1.getLastRow() === 0 && ss.getSheets().length > 2) ss.deleteSheet(lap1);
   kepMappa();
