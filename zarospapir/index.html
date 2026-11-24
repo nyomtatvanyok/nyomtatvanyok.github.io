@@ -64,7 +64,8 @@ ul.tipp, ol.tipp { padding-left: 24px; display: grid; gap: 4px; }
 .iroda { background: var(--feher); border: 2px solid var(--morzsa); border-radius: 14px; padding: 22px; display: grid; gap: 18px; min-width: 0; }
 .iroda h3 { margin: 0; font-size: 24px; color: var(--barna); }
 
-.mezok { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap: 14px 18px; }
+.mezok { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap: 0; overflow: hidden; margin: -8px; }
+.mezok > .mezo { padding: 14px 16px 16px; box-shadow: 1px 0 0 var(--morzsa), 0 1px 0 var(--morzsa); } /* vékony elválasztó vonalak a mezők között */
 .mezo { display: grid; gap: 4px; align-content: start; min-width: 0; }
 .mezo > span { font-size: 17px; font-weight: 700; line-height: 1.25; }
 .mezo > small { font-size: 14px; color: var(--masodlagos); line-height: 1.2; }
@@ -401,7 +402,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 
   <section class="bevezeto" aria-labelledby="bevezeto-cim">
     <h2 id="bevezeto-cim">Kevesebb papír, egyszerűbb zárás</h2>
-    <p>A kézzel kitöltött zárós papírok ideje lejárt. Ezen a felületen pár perc alatt elkészíted a napi zárást: beírod a számokat, a gép összead, ellenőriz, és kész, rendezett papírt ad. Kevesebb hibával, kevesebb papírral – egy lépéssel közelebb egy egyszerűbb és környezetbarátabb működéshez.</p>
+    <p>A kézzel kitöltött zárós papírok ideje lejárt. Ezen a felületen pár perc alatt elkészíted a napi zárást: beírod a számokat, a gép összead, ellenőriz, és kész.</p>
     <ul aria-label="Előnyök"><li>Gyorsabb</li><li>Pontosabb</li><li>Környezetbarátabb</li></ul>
   </section>
 
@@ -1903,7 +1904,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124222904';
+const VALTOZAT = '20261124223108';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
