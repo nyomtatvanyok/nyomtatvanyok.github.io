@@ -696,7 +696,7 @@ const MEZOK = {
     ['=forgOssz', 'E11', 'Forgalom összesen R_keeper (fizető kártya NÉLKÜL)', 'ft', 'Magától: délelőtt + délután − fizető kártya'],
     ['fizeto', 'E12', 'Fizető kártya (saját fogyasztás)', 'ft'],
     ['megszDb', 'E13', 'Nyugta megszakítások száma', 'db', '„X jelentés” NAV-os nyugtán'],
-    ['=kosar', 'E15', 'Kosárérték (átlagos vásárlás)', 'ft', 'Magától: R_keeper forgalom ÷ vevőszám']
+    ['=kosar', 'E15', 'Kosárérték (átlagos vásárlás)', 'ft', 'Magától: a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ R_keeper vevőszám összesen']
   ],
   'g-ora': [
     ['munkaora', 'E16', 'Értékesítés munkaóra (próbanapossal együtt)', 'ora'],
@@ -855,8 +855,8 @@ function szamol() {
   const rkBrutto = ossz('forgDe', 'forgDu');
   e.forgOssz = rkBrutto == null ? null : rkBrutto - (v('fizeto') || 0);
   e.elteres = (e.navTeljes != null && e.forgOssz != null) ? e.navTeljes - e.forgOssz : null;
-  e.kosar = (e.forgOssz != null && e.vevoOssz) ? e.forgOssz / e.vevoOssz : null;
   const nagyobb = (e.forgOssz == null && e.navTeljes == null) ? null : Math.max(e.forgOssz ?? -Infinity, e.navTeljes ?? -Infinity);
+  e.kosar = (nagyobb != null && e.vevoOssz) ? nagyobb / e.vevoOssz : null;
   e.eladora = (nagyobb != null && v('munkaora')) ? nagyobb / v('munkaora') * 8 : null;
   const kx = allapot.kiadas.map(r => szamOlvas(r.osszeg)).filter(x => x != null && !isNaN(x));
   e.kiadasOssz = kx.length ? kx.reduce((a, b) => a + b, 0) : null;
