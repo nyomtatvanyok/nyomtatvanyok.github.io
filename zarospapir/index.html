@@ -1203,6 +1203,16 @@ function rajzol(canvas) {
     ctx.drawImage(alairasKep, x1 + ((x2 - x1) - w) / 2, y1 + ((y2 - y1) - h) / 2, w, h);
   }
 
+  // Napi kiadás: a fel nem használt sorokat fordított Z-vel húzzuk át (ahogy a könyvelésben szokás)
+  const kiadasDb = Math.min(allapot.kiadas.length, MAX_KIADAS);
+  if (kiadasDb < MAX_KIADAS) {
+    const zx1 = xs[3] + 4 * s, zx2 = xs[5] - 4 * s, zy1 = ys[22 + kiadasDb] + 4 * s, zy2 = ys[33] - 4 * s;
+    // fordított Z: felső vonal, átló balról fent jobbra le, alsó vonal
+    ctx.save(); ctx.lineWidth = Math.max(2, 3 * s); ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000';
+    ctx.beginPath(); ctx.moveTo(zx2, zy1); ctx.lineTo(zx1, zy1); ctx.lineTo(zx2, zy2); ctx.lineTo(zx1, zy2); ctx.stroke();
+    ctx.restore();
+  }
+
   // szövegek
   ctx.textBaseline = 'middle';
   LAYOUT.forEach((sor, r) => sor[1].forEach((cell, c) => {
@@ -2163,7 +2173,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124232538';
+const VALTOZAT = '20261124232618';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
