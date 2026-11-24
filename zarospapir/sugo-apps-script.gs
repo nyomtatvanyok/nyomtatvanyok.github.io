@@ -28,6 +28,13 @@ var MAX_HIBA = 5;              // ennyi rossz jelszó után 15 percre zár
 var MAX_KEP_BAJT = 4 * 1024 * 1024;
 var ARCHIV_MAPPA = '1WFVhxwyJulvW56b_wpZUspuMtuSIhTKa';   // „Zárási papírok archívuma” a Google Drive-on
 var MAX_ZARAS_BAJT = 12 * 1024 * 1024;
+var MAX_ARCHIV_ORANKENT = 150;   // az összes bolt együtt, óránként
+/* Csak ezekbe a boltmappákba lehet menteni (a Zárási melléklet füleinek nevei). */
+var BOLTOK = ['Oroszlány', 'Tatabánya', 'Bp, Bécsi út', 'Bp, Kőris utca', 'Dunakeszi, Auchan', 'Dunakeszi, Fő út', 'Bp, Békásmegyeri Piac',
+  'Tahitótfalu', 'Bp, Csillag Center', 'Bp, Római tér', 'Bp, Nyugati tér', 'Bp, Újpest központ', 'Bp, Thököly út', 'Budakalász', 'Szentendre',
+  'Bp, Gazdagrét', 'Bp, Rózsakert', 'Szhely, Fő tér', 'Szhely, Király', 'Szhely, Szűrcsapó', 'Szhely, Tesco', 'Győr, Arany', 'Győr, Bercsényi Liget',
+  'Győr, ETO Park', 'Győr, Pláza', 'Győr, Interspar', 'Győr, Rónay', 'Győr, Vásárcsarnok', 'Balatonfüred', 'Sopron, Ágfalvi út',
+  'Sopron, Buszpályaudvar', 'Sopron, Tesco', 'Móvár, Magyar utca', 'Móvár, Kossuth utca'];
 var HONAPOK = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
 var NAPOK = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
 
@@ -345,7 +352,7 @@ function kepMappa() {
  */
 function zarasArchiv(p) {
   var bolt = String(p.bolt || '').trim();
-  if (!/^[\wÁÉÍÓÖŐÚÜŰáéíóöőúüű ,.\-]{2,60}$/.test(bolt)) dob('Hibás üzletnév.', 'BAD');
+  if (BOLTOK.indexOf(bolt) < 0) dob('Ismeretlen üzlet.', 'BAD');
   var m = /^(\d{4})\.(\d{2})\.(\d{2})\.$/.exec(String(p.datum || ''));
   if (!m) dob('Hibás dátum.', 'BAD');
   var ev = +m[1], ho = +m[2], nap = +m[3];
@@ -355,11 +362,12 @@ function zarasArchiv(p) {
   if (bajtok.length < 1000 || bajtok.length > MAX_ZARAS_BAJT) dob('Hibás kép.', 'BAD');
   if ((bajtok[0] & 255) !== 0x89 || bajtok[1] !== 0x50 || bajtok[2] !== 0x4E || bajtok[3] !== 0x47) dob('A kép nem PNG.', 'BAD');
 
-  // visszaélés ellen: üzletenként óránként legfeljebb 20 mentés
+  // visszaélés ellen: üzletenként óránként legfeljebb 20, összesen óránként legfeljebb MAX_ARCHIV_ORANKENT mentés
   var cache = CacheService.getScriptCache(), ck = 'arch_' + Utilities.base64EncodeWebSafe(bolt);
-  var db = Number(cache.get(ck) || 0);
-  if (db >= 20) dob('Túl sok mentés rövid idő alatt. Próbáld újra később.', 'LOCKED');
+  var db = Number(cache.get(ck) || 0), ossz = Number(cache.get('arch_osszes') || 0);
+  if (db >= 20 || ossz >= MAX_ARCHIV_ORANKENT) dob('Túl sok mentés rövid idő alatt. Próbáld újra később.', 'LOCKED');
   cache.put(ck, String(db + 1), 3600);
+  cache.put('arch_osszes', String(ossz + 1), 3600);
 
   var zar = LockService.getScriptLock(); zar.waitLock(20000);
   try {
