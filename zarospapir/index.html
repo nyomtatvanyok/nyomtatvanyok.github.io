@@ -421,7 +421,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 
   <div class="szerk-sav" id="szerk-sav" hidden>
     <div class="monogram" aria-hidden="true">SZ</div>
-    <div><div class="nev" id="szerk-nev">Szerkesztő mód</div><span class="szerep">Súgók szerkesztése</span></div>
+    <div><div class="nev" id="szerk-nev">Szerkesztő mód</div><span class="szerep">Magyarázatok szerkesztése</span></div>
     <p>Kattints bármelyik sárga „i” gombra, és írd be, hol találja a dolgozó az adatot. Képet is csatolhatsz. A szaggatott szélű „i” még üres, a szürke „i”-t a dolgozók nem látják.</p>
     <div class="gombsor">
       <button type="button" class="gomb-2" id="szerk-kezeles" hidden>Szerkesztők kezelése</button>
@@ -587,7 +587,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   <footer class="lablec" id="lablec" hidden>
     <button type="button" class="belepes" id="belepes">
       <span class="kor" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>
-      <span><b>Szerkesztői belépés</b><small>Súgók és képek szerkesztése</small></span>
+      <span><b>Szerkesztői belépés</b><small>Csak vezetőknek</small></span>
     </button>
   </footer>
   <p class="uzenet hiba" id="belepes-hiba" hidden style="text-align:right"></p>
@@ -595,7 +595,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 
 <div class="sugo-ablak" id="sugo-ablak" hidden role="dialog" aria-modal="true" aria-labelledby="sugo-cim">
   <div class="sugo-kartya" id="sugo-kartya">
-    <button type="button" class="bezar-x" id="sugo-x" aria-label="Súgó bezárása">
+    <button type="button" class="bezar-x" id="sugo-x" aria-label="Magyarázat bezárása">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
     </button>
     <p class="alcim">Hol találod meg?</p>
@@ -629,7 +629,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <p class="tipp">Jelöld ki a szöveget, majd kattints a fenti gombok egyikére. A „• Lista” gombbal pontokba szedheted a lépéseket.</p>
       <p class="mezo-cim">Kép</p>
       <div class="kep-sor" id="szerk-kep-sor" hidden>
-        <img id="szerk-kep" alt="A súgóhoz csatolt kép">
+        <img id="szerk-kep" alt="A magyarázathoz csatolt kép">
         <button type="button" class="kuka" id="szerk-kep-torol" data-tipp="Törlés" aria-label="Kép törlése">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -703,7 +703,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <button type="button" class="gomb-2" id="belepo-mutat" aria-label="Jelszó megjelenítése">Mutasd</button>
     </div>
     <p class="uzenet hiba" id="belepo-hiba" role="alert" hidden></p>
-    <p class="tipp">Ide csak a súgók szerkesztői lépnek be. Ha nem kaptál belépési adatot, zárd be ezt az ablakot. A zárós papírt belépés nélkül is ki tudod tölteni.</p>
+    <p class="tipp"><b>Ez csak a vezetőknek kell.</b> Ha te a zárós papírt töltöd ki, neked nem kell belépned: zárd be ezt az ablakot az X-szel.</p>
     <div class="parban">
       <button type="button" class="gomb-2" id="belepo-megse">Mégse</button>
       <button type="submit" class="gomb-fo" id="belepo-gomb">Belépés</button>
@@ -718,7 +718,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     </button>
     <div class="belepo-fej"><h3 id="kezelo-cim">Szerkesztők kezelése</h3></div>
     <div id="kezelo-lista-nezet" style="display:grid;gap:14px">
-      <p class="tipp">Itt veheted fel, módosíthatod és törölheted azokat, akik a súgókat szerkeszthetik. Az „Admin” a többi szerkesztőt is kezelheti.</p>
+      <p class="tipp">Itt veheted fel, módosíthatod és törölheted azokat, akik a sárga „i” magyarázatokat szerkeszthetik. Az „Admin” a többi szerkesztőt is kezelheti.</p>
       <ul class="kezelo-lista" id="kezelo-lista"></ul>
       <button type="button" class="gomb-fo" id="kezelo-uj">+ Új szerkesztő felvétele</button>
     </div>
@@ -728,7 +728,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <label for="ku-nev">Név</label>
       <input type="text" id="ku-nev" autocomplete="off" placeholder="pl. Kiss Anna">
       <label for="ku-szerep">Jogosultság</label>
-      <select id="ku-szerep"><option value="szerkesztő">Szerkesztő – csak súgókat szerkeszt</option><option value="admin">Admin – súgók + szerkesztők kezelése</option></select>
+      <select id="ku-szerep"><option value="szerkesztő">Szerkesztő – csak magyarázatokat ír</option><option value="admin">Admin – magyarázatok + szerkesztők kezelése</option></select>
       <label for="ku-jelszo" id="ku-jelszo-cim">Jelszó</label>
       <div class="jelszo-sor"><input type="password" id="ku-jelszo" autocomplete="new-password"><button type="button" class="gomb-2" id="ku-mutat" aria-label="Jelszó megjelenítése">Mutasd</button></div>
       <p class="tipp" id="ku-jelszo-tipp">Legalább 6 karakter. Ezt a jelszót add át neki személyesen.</p>
@@ -1454,7 +1454,7 @@ const kepGyorsitotar = {};   // kepId -> megjeleníthető cím
 function gasHivas(action, payload) {
   return fetch(SUGO_API, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ action, key: gasToken || '', payload: payload || {} }) })
-    .then(r => { if (!r.ok) throw new Error('A súgók szervere most nem érhető el. Próbáld újra pár perc múlva.'); return r.json(); })
+    .then(r => { if (!r.ok) throw new Error('A szerver most nem érhető el. Próbáld újra pár perc múlva.'); return r.json(); })
     .then(r => {
       if (r && r.ok) return r.data;
       const e = new Error((r && r.error) || 'Ismeretlen hiba történt. Próbáld újra.'); e.code = r && r.code; throw e;
@@ -1510,7 +1510,7 @@ document.querySelectorAll('[data-info]').forEach(hely => {
   sugoCimek[k] = cim;
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'info'; b.textContent = 'i'; b.dataset.kulcs = k;
-  b.setAttribute('aria-label', `Súgó: hol találod meg ezt: ${cim}`);
+  b.setAttribute('aria-label', `Segítség: hol találod meg ezt: ${cim}`);
   b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); sugoNyit(k); });
   hely.replaceWith(b);
 });
@@ -1552,7 +1552,7 @@ function sugoZarValoban() {
 }
 function sugoZar() {
   if (szerkMod && szerkPiszkos) {
-    kerdez('Bezárod mentés nélkül?', 'Ezt a súgót szerkesztetted:', sugoCimek[szerkKulcs] || '',
+    kerdez('Bezárod mentés nélkül?', 'Ezt a magyarázatot szerkesztetted:', sugoCimek[szerkKulcs] || '',
       ['Ha az „Igen, bezárom” gombra kattintasz, amit most írtál vagy feltöltöttél, elveszik.',
        'Ha meg akarod tartani, kattints a „Mégse, megtartom” gombra, utána a „Mentés” gombra.'],
       'Igen, bezárom', () => { szerkPiszkosAllit(false); sugoZarValoban(); });
@@ -1639,15 +1639,15 @@ const fl = $('feltolto');
 ['dragleave', 'drop'].forEach(t => fl.addEventListener(t, e => { e.preventDefault(); fl.classList.remove('rahuz'); }));
 fl.addEventListener('drop', e => kepValaszt(e.dataTransfer.files[0]));
 $('szerk-kep-torol').addEventListener('click', () => kerdez(
-  'Biztosan törölni akarod ezt a képet?', 'A kép ennél a súgónál van:', sugoCimek[szerkKulcs] || '',
-  ['Ha az „Igen, törlöm” gombra kattintasz, a kép eltűnik a súgóból.', 'A törlés a „Mentés” gombbal lesz végleges.',
+  'Biztosan törölni akarod ezt a képet?', 'A kép ennél a magyarázatnál van:', sugoCimek[szerkKulcs] || '',
+  ['Ha az „Igen, törlöm” gombra kattintasz, a kép eltűnik a magyarázatból.', 'A törlés a „Mentés” gombbal lesz végleges.',
    'Ha nem akarod törölni, kattints a „Mégse, megtartom” gombra.'],
   'Igen, törlöm', () => { szerkUjBlob = null; szerkKep = null; szerkPiszkosAllit(true); szerkKepMutat(); }));
 $('szerk-bezar').addEventListener('click', sugoZar);
 $('szerk-mentes').addEventListener('click', async () => {
   const k = szerkKulcs; if (!k || (!dbRef && !gasMod)) return;
   $('szerk-hiba').hidden = true;
-  betoltoMutat('A súgó mentése…'); merfold(szerkUjBlob ? 60 : 30);
+  betoltoMutat('A magyarázat mentése…'); merfold(szerkUjBlob ? 60 : 30);
   try {
     const html = szovegUres($('sugo-textarea').innerHTML) ? '' : tisztit($('sugo-textarea').innerHTML);
     if (html.length > 5000) throw { code: 'hosszu' };
@@ -1736,7 +1736,7 @@ function kezeloRajz() {
       const k = document.createElement('button'); k.type = 'button'; k.className = 'kuka'; k.dataset.tipp = 'Törlés'; k.innerHTML = KUKA;
       k.setAttribute('aria-label', `${sz.nev || sz.email} törlése`);
       k.addEventListener('click', () => kerdez('Biztosan törölni akarod ezt a szerkesztőt?', 'Ezt a szerkesztőt törlöd:', `${sz.nev} (${sz.email})`,
-        ['Ha az „Igen, törlöm” gombra kattintasz, ő többé nem tud belépni, és minden eszközén kijelentkezik.', 'Az általa írt súgók megmaradnak.',
+        ['Ha az „Igen, törlöm” gombra kattintasz, ő többé nem tud belépni, és minden eszközén kijelentkezik.', 'Az általa írt magyarázatok megmaradnak.',
          'Ha nem akarod törölni, kattints a „Mégse, megtartom” gombra.'], 'Igen, törlöm', async () => {
           try { kezeloLista = await kezeloHivas('szerkesztoTorol', { email: sz.email }, 'Törlés…'); kezeloRajz(); } catch (er) { alert0(er.message); }
         }));
@@ -1992,7 +1992,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124224235';
+const VALTOZAT = '20261124224318';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
