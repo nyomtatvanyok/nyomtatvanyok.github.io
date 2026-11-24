@@ -130,7 +130,26 @@ select:focus-visible, input:focus-visible, button:focus-visible, [tabindex]:focu
 
 /* dátum sor */
 .datumsor { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.datumsor input { width: 210px; font-size: 22px; font-weight: 700; }
+.datumsor input { width: 230px; font-size: 22px; font-weight: 700; padding-right: 48px; cursor: pointer; }
+.datum-hely { position: relative; }
+.datum-ikon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; color: var(--gomb); pointer-events: none; }
+.naptar { position: absolute; z-index: 65; top: calc(100% + 6px); left: 0; width: min(360px, calc(100vw - 32px)); background: var(--feher);
+  border: 4px solid var(--barna); border-radius: 16px; padding: 12px; box-shadow: 0 14px 40px rgba(74,40,16,.22); display: grid; gap: 8px; }
+.naptar-fej { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.naptar-fej strong { font-size: 21px; color: var(--barna); }
+.naptar-lep { width: 48px; height: 48px; border-radius: 12px; border: 2px solid var(--morzsa); background: var(--feher); color: var(--kakao); font: 700 28px/1 var(--szoveg); padding: 0 0 4px; }
+.naptar-lep:hover { border-color: var(--gomb); }
+.naptar-napok, .naptar-racs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.naptar-napok span { font-size: 13px; font-weight: 700; color: var(--masodlagos); text-transform: uppercase; }
+.naptar-racs button { min-height: 44px; border-radius: 10px; border: 2px solid transparent; background: var(--liszt); color: var(--kakao); font: 700 18px var(--szoveg);
+  font-variant-numeric: tabular-nums; padding: 0; }
+.naptar-racs button:hover { border-color: var(--gomb); }
+.naptar-racs button.ma { border-color: var(--gomb); }
+.naptar-racs button[aria-pressed="true"] { background: var(--gomb); color: var(--feher); }
+.naptar-racs button.jovo { opacity: .4; }
+.naptar-racs span { min-height: 44px; }
+.naptar-lab { display: flex; gap: 8px; }
+.naptar-lab button { flex: 1; }
 .pirula { padding: 6px 16px; border-radius: 999px; background: var(--liszt); border: 1px solid var(--morzsa); color: var(--gomb); font-weight: 700; font-size: 18px; }
 
 /* gombok */
@@ -464,16 +483,31 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   <section class="lepes letiltva" id="l-datum">
     <label for="datum"><span class="szam">2</span>Add meg a zárás napját<span data-info="datum" data-cim="Dátum"></span></label>
     <div class="datumsor">
-      <input type="text" id="datum" inputmode="numeric" placeholder="ÉÉÉÉ.HH.NN." maxlength="11" autocomplete="off">
+      <div class="datum-hely">
+        <input type="text" id="datum" inputmode="none" placeholder="ÉÉÉÉ.HH.NN." maxlength="11" autocomplete="off"
+          aria-haspopup="dialog" aria-expanded="false" aria-controls="naptar">
+        <svg class="datum-ikon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <div class="naptar" id="naptar" role="dialog" aria-label="Naptár: válaszd ki a zárás napját" hidden>
+          <div class="naptar-fej">
+            <button type="button" class="naptar-lep" id="naptar-elozo" aria-label="Előző hónap">‹</button>
+            <strong id="naptar-cim"></strong>
+            <button type="button" class="naptar-lep" id="naptar-kovetkezo" aria-label="Következő hónap">›</button>
+          </div>
+          <div class="naptar-napok" aria-hidden="true"><span>H</span><span>K</span><span>Sze</span><span>Cs</span><span>P</span><span>Szo</span><span>V</span></div>
+          <div class="naptar-racs" id="naptar-racs"></div>
+          <div class="naptar-lab">
+            <button type="button" class="gomb-2" id="naptar-ma">Mai nap</button>
+            <button type="button" class="gomb-2" id="naptar-bezar">Bezárás</button>
+          </div>
+        </div>
+      </div>
       <span class="pirula" id="nap-jel">–</span>
       <button type="button" class="gomb-2" id="ma-gomb">Mai nap</button>
     </div>
     <ul class="tipp">
-      <li>A gép <b>magától beírta a mai napot</b>.</li>
-      <li><b>Ha a mai napot zárod:</b> nem kell semmit csinálnod. Menj tovább a 3. lépésre.</li>
-      <li><b>Ha egy másik napot zársz:</b> kattints a dátumra. Töröld ki. Írd be a jó napot.</li>
-      <li>Így írd: <b>év.hónap.nap.</b> Például: <b>2026.11.23.</b></li>
-      <li>Elrontottad? Kattints a <b>„Mai nap”</b> gombra. Akkor újra a mai nap lesz ott.</li>
+      <li>A mai nap <b>automatikusan ott van</b>. Menj tovább a 3. lépésre.</li>
+      <li><b>Ha egy másik napot zársz:</b> kattints a dátumra. Feljön egy naptár, abban kattints a jó napra.</li>
+      <li>Elrontottad? Kattints a <b>„Mai nap”</b> gombra.</li>
     </ul>
     <p class="uzenet hiba" id="datum-hiba" hidden></p>
   </section>
@@ -1281,6 +1315,51 @@ function datumFrissit() {
   $('datum').classList.toggle('rossz', !d && !!$('datum').value);
 }
 $('datum').addEventListener('input', () => { allapot.datum = $('datum').value; datumFrissit(); frissit(); });
+
+/* ---------- naptár a dátumhoz (gépen, weben és telefonon ugyanúgy) ---------- */
+const HONAPOK = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
+let naptarEv, naptarHo;
+function naptarRajz() {
+  $('naptar-cim').textContent = `${naptarEv}. ${HONAPOK[naptarHo]}`;
+  const racs = $('naptar-racs'); racs.textContent = '';
+  const elso = new Date(Date.UTC(naptarEv, naptarHo, 1)), kihagy = (elso.getUTCDay() + 6) % 7;
+  const napok = new Date(Date.UTC(naptarEv, naptarHo + 1, 0)).getUTCDate();
+  const ma = datumOlvas(maiDatum()), val = datumOlvas(allapot.datum);
+  for (let i = 0; i < kihagy; i++) racs.appendChild(document.createElement('span'));
+  for (let d = 1; d <= napok; d++) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = d;
+    const szoveg = `${naptarEv}.${String(naptarHo + 1).padStart(2, '0')}.${String(d).padStart(2, '0')}.`;
+    b.setAttribute('aria-label', `${naptarEv}. ${HONAPOK[naptarHo]} ${d}.`);
+    if (ma && ma.y === naptarEv && ma.mo === naptarHo + 1 && ma.d === d) { b.classList.add('ma'); b.setAttribute('aria-label', b.getAttribute('aria-label') + ' (ma)'); }
+    if (ma && (naptarEv * 10000 + (naptarHo + 1) * 100 + d) > (ma.y * 10000 + ma.mo * 100 + ma.d)) b.classList.add('jovo');
+    b.setAttribute('aria-pressed', String(!!(val && val.y === naptarEv && val.mo === naptarHo + 1 && val.d === d)));
+    b.addEventListener('click', () => { $('datum').value = allapot.datum = szoveg; datumFrissit(); frissit(); naptarZar(true); });
+    racs.appendChild(b);
+  }
+}
+function naptarNyit() {
+  if (!$('naptar').hidden) return;
+  const d = datumOlvas(allapot.datum) || datumOlvas(maiDatum());
+  naptarEv = d.y; naptarHo = d.mo - 1;
+  naptarRajz(); $('naptar').hidden = false; $('datum').setAttribute('aria-expanded', 'true');
+  const v = $('naptar-racs').querySelector('[aria-pressed="true"]') || $('naptar-racs').querySelector('.ma');
+  if (v) v.focus({ preventScroll: true });
+}
+function naptarZar(fokusz) { $('naptar').hidden = true; $('datum').setAttribute('aria-expanded', 'false'); if (fokusz) $('datum').focus({ preventScroll: true }); }
+$('datum').addEventListener('click', naptarNyit);
+$('datum').addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'Enter') { e.preventDefault(); naptarNyit(); } });
+$('naptar-elozo').addEventListener('click', () => { if (--naptarHo < 0) { naptarHo = 11; naptarEv--; } naptarRajz(); });
+$('naptar-kovetkezo').addEventListener('click', () => { if (++naptarHo > 11) { naptarHo = 0; naptarEv++; } naptarRajz(); });
+$('naptar-ma').addEventListener('click', () => { $('datum').value = allapot.datum = maiDatum(); datumFrissit(); frissit(); naptarZar(true); });
+$('naptar-bezar').addEventListener('click', () => naptarZar(true));
+$('naptar').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.preventDefault(); naptarZar(true); return; }
+  const gombok = [...$('naptar-racs').querySelectorAll('button')], i = gombok.indexOf(document.activeElement);
+  if (i < 0) return;
+  const lep = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+  if (lep) { e.preventDefault(); const c = gombok[Math.max(0, Math.min(gombok.length - 1, i + lep))]; c.focus(); }
+});
+document.addEventListener('click', e => { if (!$('naptar').hidden && !e.target.closest('.datum-hely')) naptarZar(false); });
 $('datum').addEventListener('blur', () => { const d = datumOlvas($('datum').value); if (d) { $('datum').value = allapot.datum = d.szoveg; frissit(); } });
 $('ma-gomb').addEventListener('click', () => { $('datum').value = allapot.datum = maiDatum(); datumFrissit(); frissit(); });
 
@@ -2065,7 +2144,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124225803';
+const VALTOZAT = '20261124230524';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
