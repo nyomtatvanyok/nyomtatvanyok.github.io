@@ -2,7 +2,7 @@
  * Lipóti – Zárós papír: súgók („Hol találod meg?”) és szerkesztői belépés
  * ----------------------------------------------------------------------
  * Ez a Google Apps Script egy Google Sheethez tartozik. A Sheetben:
- *   • „Súgók” fül: minden mezőhöz a magyarázat és a kép (a kép a Google Drive-on van).
+ *   • „Súgók” fül: minden mezőhöz a magyarázat, a kép (a kép a Google Drive-on van), és hogy a dolgozók lássák-e az „i” gombot.
  *   • „Szerkesztők” fül: akik beléphetnek (E-mail, Név, Jelszó).
  *
  * Beállítás (egyszer):
@@ -71,7 +71,8 @@ function sugokOlvas() {
   for (var i = 1; i < adat.length; i++) {
     var k = String(adat[i][0] || '').trim();
     if (!k) continue;
-    ki[k] = { szoveg: String(adat[i][2] || ''), kepId: String(adat[i][3] || '') || null };
+    var l = String(adat[i][6] || '').trim().toLowerCase();
+    ki[k] = { szoveg: String(adat[i][2] || ''), kepId: String(adat[i][3] || '') || null, lathato: l === '' ? null : l === 'igen' };
   }
   cache.put('sugok', JSON.stringify(ki), 600);
   return ki;
@@ -114,11 +115,12 @@ function mentes(szerk, p) {
     if (regiKep && regiKep !== kepId) { try { DriveApp.getFileById(regiKep).setTrashed(true); } catch (e) {} }
 
     var most = Utilities.formatDate(new Date(), 'Europe/Budapest', 'yyyy.MM.dd. HH:mm');
-    var ertek = [[kulcs, cim, szoveg, kepId, most, szerk.nev || szerk.email]];
-    if (sor > 0) lap.getRange(sor, 1, 1, 6).setValues(ertek);
+    var lathato = p.lathato === true ? 'igen' : (p.lathato === false ? 'nem' : '');
+    var ertek = [[kulcs, cim, szoveg, kepId, most, szerk.nev || szerk.email, lathato]];
+    if (sor > 0) lap.getRange(sor, 1, 1, 7).setValues(ertek);
     else { lap.appendRow(ertek[0]); formaz(lap); }
     CacheService.getScriptCache().remove('sugok');
-    return { szoveg: szoveg, kepId: kepId || null };
+    return { szoveg: szoveg, kepId: kepId || null, lathato: lathato === '' ? null : lathato === 'igen' };
   } finally {
     zar.releaseLock();
   }
@@ -197,11 +199,12 @@ function hash(so, jelszo) {
 function beallitas() {
   var ss = SpreadsheetApp.getActive();
   var s = ss.getSheetByName(LAP_SUGOK) || ss.insertSheet(LAP_SUGOK);
-  if (s.getLastRow() === 0) s.appendRow(['Kulcs', 'Mező', 'Magyarázat', 'Kép (Drive fájl)', 'Frissítve', 'Frissítette']);
+  if (s.getLastRow() === 0) s.appendRow(['Kulcs', 'Mező', 'Magyarázat', 'Kép (Drive fájl)', 'Frissítve', 'Frissítette', 'Látható a dolgozóknak (igen/nem)']);
+  else if (!s.getRange(1, 7).getValue()) s.getRange(1, 7).setValue('Látható a dolgozóknak (igen/nem)');
   var z = ss.getSheetByName(LAP_SZERK) || ss.insertSheet(LAP_SZERK);
   if (z.getLastRow() === 0) z.appendRow(['E-mail', 'Név', 'Jelszó']);
   [s, z].forEach(formaz);
-  s.setColumnWidth(1, 110); s.setColumnWidth(2, 260); s.setColumnWidth(3, 480); s.setColumnWidth(4, 200); s.setColumnWidth(5, 140); s.setColumnWidth(6, 160);
+  s.setColumnWidth(1, 110); s.setColumnWidth(2, 260); s.setColumnWidth(3, 480); s.setColumnWidth(4, 200); s.setColumnWidth(5, 140); s.setColumnWidth(6, 160); s.setColumnWidth(7, 170);
   s.getRange('C:C').setWrap(true);
   z.setColumnWidth(1, 260); z.setColumnWidth(2, 200); z.setColumnWidth(3, 320);
   var lap1 = ss.getSheetByName('Munkalap1') || ss.getSheetByName('Sheet1');
