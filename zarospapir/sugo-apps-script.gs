@@ -26,6 +26,10 @@ var LAP_SZERK = 'Szerkesztők';
 var TOKEN_NAP = 30;            // ennyi napig marad bejelentkezve a szerkesztő
 var MAX_HIBA = 5;              // ennyi rossz jelszó után 15 percre zár
 var MAX_KEP_BAJT = 4 * 1024 * 1024;
+var ARCHIV_MAPPA = '1WFVhxwyJulvW56b_wpZUspuMtuSIhTKa';   // „Zárási papírok archívuma” a Google Drive-on
+var MAX_ZARAS_BAJT = 12 * 1024 * 1024;
+var HONAPOK = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
+var NAPOK = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
 
 /* ===================== Belépési pont ===================== */
 
@@ -50,6 +54,7 @@ function doPost(e) {
       case 'szerkesztoMent':   return ok(szerkesztoMent(adminKell(kulcs), p));
       case 'szerkesztoTorol':  return ok(szerkesztoTorol(adminKell(kulcs), p));
       case 'sajatJelszo':      return ok(sajatJelszo(szerkesztoKell(kulcs), p));
+      case 'zarasArchiv':      return ok(zarasArchiv(p));
       default:        return hiba('Ismeretlen kérés.', 'BAD');
     }
   } catch (err) {
@@ -330,6 +335,52 @@ function kepMappa() {
   var m = DriveApp.createFolder('Zárós papír – súgóképek');
   p.setProperty('kepMappa', m.getId());
   return m;
+}
+
+/* ===================== Zárások archívuma ===================== */
+/**
+ * Minden letöltött zárós papír ide kerül:
+ *   Zárási papírok archívuma / <Bolt> / 2026-11 november / 2026.11.25. szerda – Oroszlány – zárós papír.png
+ * Ha ugyanarra a napra többször töltik le, a név végére „– 2. változat”, „– 3. változat” kerül.
+ */
+function zarasArchiv(p) {
+  var bolt = String(p.bolt || '').trim();
+  if (!/^[\wÁÉÍÓÖŐÚÜŰáéíóöőúüű ,.\-]{2,60}$/.test(bolt)) dob('Hibás üzletnév.', 'BAD');
+  var m = /^(\d{4})\.(\d{2})\.(\d{2})\.$/.exec(String(p.datum || ''));
+  if (!m) dob('Hibás dátum.', 'BAD');
+  var ev = +m[1], ho = +m[2], nap = +m[3];
+  var d = new Date(Date.UTC(ev, ho - 1, nap));
+  if (d.getUTCMonth() !== ho - 1 || d.getUTCDate() !== nap) dob('Hibás dátum.', 'BAD');
+  var bajtok = Utilities.base64Decode(String(p.png || ''));
+  if (bajtok.length < 1000 || bajtok.length > MAX_ZARAS_BAJT) dob('Hibás kép.', 'BAD');
+  if ((bajtok[0] & 255) !== 0x89 || bajtok[1] !== 0x50 || bajtok[2] !== 0x4E || bajtok[3] !== 0x47) dob('A kép nem PNG.', 'BAD');
+
+  // visszaélés ellen: üzletenként óránként legfeljebb 20 mentés
+  var cache = CacheService.getScriptCache(), ck = 'arch_' + Utilities.base64EncodeWebSafe(bolt);
+  var db = Number(cache.get(ck) || 0);
+  if (db >= 20) dob('Túl sok mentés rövid idő alatt. Próbáld újra később.', 'LOCKED');
+  cache.put(ck, String(db + 1), 3600);
+
+  var zar = LockService.getScriptLock(); zar.waitLock(20000);
+  try {
+    var gyoker = DriveApp.getFolderById(ARCHIV_MAPPA);
+    var boltMappa = almappa(gyoker, bolt);
+    var honapMappa = almappa(boltMappa, ev + '-' + (ho < 10 ? '0' : '') + ho + ' ' + HONAPOK[ho - 1]);
+    var datumSzoveg = ev + '.' + (ho < 10 ? '0' : '') + ho + '.' + (nap < 10 ? '0' : '') + nap + '.';
+    var alap = datumSzoveg + ' ' + NAPOK[d.getUTCDay()] + ' – ' + bolt + ' – zárós papír';
+    var nev = alap + '.png', i = 2;
+    while (honapMappa.getFilesByName(nev).hasNext()) { nev = alap + ' – ' + i + '. változat.png'; i++; }
+    var fajl = honapMappa.createFile(Utilities.newBlob(bajtok, 'image/png', nev));
+    var kitolto = String(p.nev || '').trim().slice(0, 100);
+    fajl.setDescription('Zárós papír · ' + bolt + ' · ' + datumSzoveg + (kitolto ? ' · Kitöltötte: ' + kitolto : '') +
+      ' · Feltöltve: ' + Utilities.formatDate(new Date(), 'Europe/Budapest', 'yyyy.MM.dd. HH:mm'));
+    return { nev: nev, url: fajl.getUrl() };
+  } finally { zar.releaseLock(); }
+}
+
+function almappa(szulo, nev) {
+  var it = szulo.getFoldersByName(nev);
+  return it.hasNext() ? it.next() : szulo.createFolder(nev);
 }
 
 function lapKell(nev) {

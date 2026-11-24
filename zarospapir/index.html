@@ -1521,14 +1521,13 @@ $('letoltes').addEventListener('click', async () => {
   const d = datumOlvas(allapot.datum);
   const fajl = `Zaras_${ekezetNelkul(allapot.bolt).replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}_${d.y}-${String(d.mo).padStart(2, '0')}-${String(d.d).padStart(2, '0')}.png`;
   await betoltoKesz();
+  // 1) letöltés a telefonra / gépre (rögtön, amíg a kattintás „friss”, különben a böngésző letilthatja)
   try {
-    if (letoltoCap) { await letoltoCap.save({ filename: fajl, data: blob }); urlapUrites(); uzenet('✓ Letöltve: ' + fajl + '. Az űrlap kiürült, kezdheted a következő zárást.', true); }
+    if (letoltoCap) await letoltoCap.save({ filename: fajl, data: blob });
     else {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = fajl; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      urlapUrites();
-      uzenet('✓ Letöltve: ' + fajl + '. Az űrlap kiürült, kezdheted a következő zárást.', true);
     }
   } catch (err) {
     const kod = err && err.code;
@@ -1536,7 +1535,24 @@ $('letoltes').addEventListener('click', async () => {
     else if (kod === 'rate_limited') uzenet('Már nyitva van egy letöltési ablak. Várj egy kicsit, és próbáld újra.', false);
     else if (kod === 'host_unavailable') uzenet('Ebben az alkalmazásban nem lehet fájlt menteni. Nyisd meg az oldalt böngészőben vagy számítógépen.', false);
     else uzenet('Nem sikerült a letöltés. Próbáld újra, vagy nyisd meg az oldalt böngészőben.', false);
+    return;
   }
+  // 2) mentés a „Zárási papírok archívuma” Drive-mappába (csak a GitHubos oldalon)
+  if (gasMod) {
+    betoltoMutat('Mentés az archívumba…'); merfold(92);
+    try {
+      await gasHivas('zarasArchiv', { bolt: allapot.bolt, datum: d.szoveg, nev: (allapot.ertek.nev || '').trim(), png: await blobBase64(blob) });
+      await betoltoKesz();
+    } catch (e) {
+      await betoltoKesz();
+      // ha a szerveren még a régi kód fut (nem ismeri az archívumot), ne akadjon el a dolgozó
+      if (e && e.code === 'BAD' && /Ismeretlen kérés/.test(e.message)) { urlapUrites(); uzenet('✓ Kész! A zárós papír letöltve. Az űrlap kiürült, kezdheted a következő zárást.', true); return; }
+      uzenet('A zárós papírt letöltötted, de az archívumba mentés most nem sikerült. Az adatok megmaradtak: kattints újra a „Letöltés képként” gombra.', false);
+      return;
+    }
+  }
+  urlapUrites();
+  uzenet('✓ Kész! A zárós papír letöltve' + (gasMod ? ' és elmentve az archívumba' : '') + '. Az űrlap kiürült, kezdheted a következő zárást.', true);
 });
 
 /* ---------- formázott szöveg: csak biztonságos elemek maradnak meg ---------- */
@@ -2174,7 +2190,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124233117';
+const VALTOZAT = '20261124233411';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
