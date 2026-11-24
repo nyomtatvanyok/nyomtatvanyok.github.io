@@ -506,7 +506,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     </div>
     <ul class="tipp">
       <li>A mai nap <b>automatikusan ott van</b>. Menj tovább a 3. lépésre.</li>
-      <li><b>Ha egy másik napot zársz:</b> kattints a dátumra. Feljön egy naptár, abban kattints a jó napra.</li>
+      <li><b>Ha egy másik nap forgalmát csinálod:</b> kattints a dátumra. Feljön egy naptár, abban kattints a jó napra.</li>
       <li>Elrontottad? Kattints a <b>„Mai nap”</b> gombra.</li>
     </ul>
     <p class="uzenet hiba" id="datum-hiba" hidden></p>
@@ -2163,7 +2163,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124231622';
+const VALTOZAT = '20261124231703';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
