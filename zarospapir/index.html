@@ -919,6 +919,27 @@ const CIMLETEK = [[20000, 'bankjegy'], [10000, 'bankjegy'], [5000, 'bankjegy'], 
 
 /* ---------- segédek ---------- */
 const $ = id => document.getElementById(id);
+/* Alkalmazásváltáskor (telefonon a „legutóbbi alkalmazások” gomb) a mező elveszti a fókuszt,
+   de ez nem azt jelenti, hogy a dolgozó befejezte: ilyenkor nem jelezzük pirossal. */
+function alkalmazasValtas() { return document.hidden || !document.hasFocus(); }
+let utolsoMezo = null;
+document.addEventListener('focusin', e => {
+  const t = e.target;
+  if (t && t.matches && t.matches('input[type=text]:not([readonly]), input[type=email], input[type=password], [contenteditable=true]')) utolsoMezo = t;
+});
+document.addEventListener('focusout', e => { if (!alkalmazasValtas() && e.target === utolsoMezo) setTimeout(() => { if (!alkalmazasValtas() && document.activeElement !== utolsoMezo) utolsoMezo = null; }, 0); });
+function mezoVissza() {
+  const el = utolsoMezo;
+  if (!el || !el.isConnected || el.closest('[hidden]')) return;
+  // a kurzort ugyanabba a mezőbe tesszük vissza; ahol a telefon engedi, a billentyűzet is visszajön
+  if (document.activeElement === el) el.blur();
+  setTimeout(() => {
+    try { el.focus({ preventScroll: true }); el.scrollIntoView({ block: 'center' });
+      if (el.setSelectionRange && el.value != null) { const v = el.value.length; el.setSelectionRange(v, v); } } catch (e) {}
+  }, 60);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) mezoVissza(); });
+window.addEventListener('pageshow', e => { if (e.persisted) mezoVissza(); });
 const tz = 'Europe/Budapest';
 const NAPOK = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
 
@@ -1014,7 +1035,7 @@ for (const [csoport, lista] of Object.entries(MEZOK)) {
       inp.addEventListener('keydown', e => { if (inp.readOnly && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); cimletNyit(k); } });
       const sm2 = document.createElement('small'); sm2.textContent = 'Koppints a mezőbe: felugrik a címletszámláló.'; wrap.appendChild(sm2);
     }
-    if (!auto) inp.addEventListener('blur', () => { erintett.add(k); frissit(); });
+    if (!auto) inp.addEventListener('blur', () => { if (alkalmazasValtas()) return; erintett.add(k); frissit(); });
     if (!auto) inp.addEventListener('input', () => { if (tipus !== 'szoveg') tagolva(inp); allapot.ertek[k] = inp.value; frissit(); });
   }
 }
@@ -1379,8 +1400,8 @@ function kiadasRajz(fokuszSor) {
     const o = document.createElement('input'); o.type = 'text'; o.id = 'k-ossz-' + i; o.value = tagolSzoveg(r.osszeg || ''); o.inputMode = 'decimal'; o.className = 'szamos'; o.placeholder = '0';
     o.setAttribute('aria-label', `${i + 1}. kiadás összege forintban`);
     n.addEventListener('input', () => { r.nev = n.value; frissit(); });
-    n.addEventListener('blur', () => { erintett.add('kn' + i); frissit(); });
-    o.addEventListener('blur', () => { erintett.add('ko' + i); frissit(); });
+    n.addEventListener('blur', () => { if (alkalmazasValtas()) return; erintett.add('kn' + i); frissit(); });
+    o.addEventListener('blur', () => { if (alkalmazasValtas()) return; erintett.add('ko' + i); frissit(); });
     o.addEventListener('input', () => { tagolva(o); r.osszeg = o.value; frissit(); });
     const kb = document.createElement('button'); kb.type = 'button'; kb.className = 'kuka'; kb.dataset.tipp = 'Törlés'; kb.innerHTML = KUKA;
     kb.setAttribute('aria-label', `${r.nev || (i + 1) + '. kiadás'} törlése`);
@@ -2142,7 +2163,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124230658';
+const VALTOZAT = '20261124231622';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
@@ -2156,7 +2177,7 @@ async function valtozatEllenoriz(elso) {
     const m = /const VALTOZAT = '([^']+)'/.exec(t);
     if (!m || m[1] === VALTOZAT) return;
     ujValtozat = m[1];
-    const gepel = document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+    const gepel = (document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) || !!utolsoMezo;
     if (elso || (!nyitottAblak() && !gepel)) location.replace(ujCim(ujValtozat));
     else $('uj-valtozat').hidden = false;
   } catch (e) { /* offline: marad a mostani */ }
