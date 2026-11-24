@@ -346,8 +346,8 @@ function kepMappa() {
 
 /* ===================== Zárások archívuma ===================== */
 /**
- * Minden letöltött zárós papír ide kerül:
- *   Zárási papírok archívuma / <Bolt> / 2026-11 november / 2026.11.25. szerda – Oroszlány – zárós papír.png
+ * Minden letöltött zárós papír közvetlenül ide kerül, almappák nélkül:
+ *   Zárási papírok archívuma / 2026.11.25. szerda – Oroszlány – zárós papír.png
  * Ha ugyanarra a napra többször töltik le, a név végére „– 2. változat”, „– 3. változat” kerül.
  */
 function zarasArchiv(p) {
@@ -371,9 +371,7 @@ function zarasArchiv(p) {
 
   var zar = LockService.getScriptLock(); zar.waitLock(20000);
   try {
-    var gyoker = DriveApp.getFolderById(ARCHIV_MAPPA);
-    var boltMappa = almappa(gyoker, bolt);
-    var honapMappa = almappa(boltMappa, ev + '-' + (ho < 10 ? '0' : '') + ho + ' ' + HONAPOK[ho - 1]);
+    var honapMappa = DriveApp.getFolderById(ARCHIV_MAPPA);
     var datumSzoveg = ev + '.' + (ho < 10 ? '0' : '') + ho + '.' + (nap < 10 ? '0' : '') + nap + '.';
     var alap = datumSzoveg + ' ' + NAPOK[d.getUTCDay()] + ' – ' + bolt + ' – zárós papír';
     var nev = alap + '.png', i = 2;
