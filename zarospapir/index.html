@@ -594,7 +594,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 
     <section class="lepes">
       <div class="elonezet-fej">
-        <h2><span class="szam">10</span>Nyomtatási előnézet<span data-info="letoltes" data-cim="Letöltés és nyomtatás"></span></h2>
+        <h2><span class="szam">10</span>Töltsd le a zárós papírt<span data-info="letoltes" data-cim="Letöltés és beküldés"></span></h2>
         <div class="elonezet-gombok">
           <button type="button" class="gomb-fo" id="letoltes">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -604,20 +604,17 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       </div>
       <p class="uzenet" id="letoltes-uzenet" hidden></p>
       <ul class="hibalista" id="hibalista" hidden></ul>
-      <details class="sugo">
-        <summary>Hogyan nyomtassam ki a képet?</summary>
+      <details class="sugo" open>
+        <summary>Hogyan küldjem be a zárást a forgalmas csoportba?</summary>
         <ol>
-          <li>Kattints a „Letöltés képként” gombra, és mentsd el a PNG-képet.</li>
-          <li>Nyisd meg a képet, és válaszd a Nyomtatás parancsot.</li>
-          <li>Papírméret: A4, álló. Válaszd a „Kitöltés” vagy „Laphoz igazítás” beállítást.</li>
-          <li>Ha fehér szél marad, a nyomtató beállításaiban kapcsold ki a margót, vagy állítsd 100%-os méretre.</li>
+          <li>Kattints a „Letöltés képként” gombra, és mentsd el a képet.</li>
+          <li>Nyisd meg a Messenger alkalmazást.</li>
+          <li>Keresd meg a forgalmas csoportot.</li>
+          <li>Töltsd fel az előbb letöltött zárós papírt.</li>
         </ol>
       </details>
-      <div class="lap-hely" oncontextmenu="return false">
-        <div class="lap-zar" id="lap-zar" hidden><div><strong id="lap-zar-cim">Még hiányzik adat</strong><span>A papír csak akkor készül el, ha minden mezőt kitöltöttél. A hiányzó mezők pirosak.</span></div></div>
-        <div class="lap"><canvas id="lap" width="1240" height="1754" aria-label="A kitöltött zárós papír előnézete"></canvas></div>
-      </div>
-      <p class="tipp">Itt látod, hogyan fog kinézni a papír. Minden beírt szám rögtön megjelenik rajta.</p>
+      <canvas id="lap" width="1240" height="1754" hidden aria-hidden="true"></canvas>
+      <p class="tipp">A letöltés után az űrlap magától kiürül, így tisztán kezdheted a következő zárást.</p>
     </section>
 
     <div class="alul">
@@ -1264,11 +1261,8 @@ function frissit() {
   $('kiadas-ossz').textContent = 'Kiadás összesen: ' + (e.kiadasOssz == null ? '0' : szamIr(e.kiadasOssz)) + ' Ft';
   ellenoriz();
   const hi = hianyok();
-  $('lap-zar').hidden = !hi.length;
-  $('lap-zar-cim').textContent = hi.length === 1 ? 'Még 1 adat hiányzik' : `Még ${hi.length} adat hiányzik`;
   if (allapot.bolt) tarol(mentesKulcs(), { datum: allapot.datum, ertek: allapot.ertek, kiadas: allapot.kiadas, cimlet: allapot.cimlet, alairas: allapot.alairas });
-  clearTimeout(rajzIdozito);
-  rajzIdozito = setTimeout(() => rajzol($('lap')), 60);
+
 }
 
 /* ---------- kereső lenyíló ---------- */
@@ -1463,9 +1457,15 @@ $('urites').addEventListener('click', () => kerdez(
    'Ezt nem lehet visszavonni, mindent újra be kell írnod.',
    'Ha nem akarod törölni, kattints a „Mégse, megtartom” gombra. Ekkor semmi nem változik.'],
   'Igen, törlöm',
-  () => { allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; alairasMutat(); erintett.clear(); mindetJelol = false;
-    for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) $('m-' + k).value = '';
-    kiadasRajz(); frissit(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+  () => { urlapUrites(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+function urlapUrites() {
+  allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; alairasMutat(); erintett.clear(); mindetJelol = false;
+  for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) { const i = $('m-' + k); i.value = ''; i.classList.remove('hianyzik'); }
+  document.querySelectorAll('.hiany-uzenet').forEach(u => { u.hidden = true; });
+  $('hibalista').hidden = true;
+  $('datum').value = allapot.datum = maiDatum(); datumFrissit();
+  kiadasRajz(); frissit();
+}
 
 /* ---------- betöltő ---------- */
 let kuszIdozito = null, aktSzazalek = 0;
@@ -1522,12 +1522,13 @@ $('letoltes').addEventListener('click', async () => {
   const fajl = `Zaras_${ekezetNelkul(allapot.bolt).replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}_${d.y}-${String(d.mo).padStart(2, '0')}-${String(d.d).padStart(2, '0')}.png`;
   await betoltoKesz();
   try {
-    if (letoltoCap) { await letoltoCap.save({ filename: fajl, data: blob }); uzenet('✓ Letöltve: ' + fajl, true); }
+    if (letoltoCap) { await letoltoCap.save({ filename: fajl, data: blob }); urlapUrites(); uzenet('✓ Letöltve: ' + fajl + '. Az űrlap kiürült, kezdheted a következő zárást.', true); }
     else {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = fajl; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      uzenet('✓ Letöltve: ' + fajl, true);
+      urlapUrites();
+      uzenet('✓ Letöltve: ' + fajl + '. Az űrlap kiürült, kezdheted a következő zárást.', true);
     }
   } catch (err) {
     const kod = err && err.code;
@@ -2114,7 +2115,7 @@ $('cimlet-kezi').addEventListener('click', () => {
 
 /* ---------- aláírás ---------- */
 const alairasKep = new Image();
-alairasKep.onload = () => rajzol($('lap'));
+alairasKep.onload = () => {};
 function alairasMutat() {
   $('alairas-gombok').hidden = !allapot.alairas;
   const img = $('alairas-kep');
@@ -2173,7 +2174,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124232618';
+const VALTOZAT = '20261124233117';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
@@ -2201,8 +2202,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) valt
 $('datum').value = allapot.datum;
 datumFrissit();
 kiadasRajz();
-rajzol($('lap'));
-if (document.fonts) document.fonts.ready.then(() => rajzol($('lap')));
+
 const utolso = olvas('zaras:utolsoBolt');
 boltBeallit(KESZ.has(utolso) ? utolso : 'Oroszlány');
 const eredetiBolt = boltBeallit;
