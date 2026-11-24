@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <meta name="robots" content="noindex, nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -101,6 +103,7 @@ input.auto { background: #f1ece4; color: #6b5a48; border-color: #e3d8c6; cursor:
 .kereso-lista li:nth-child(even) { background: #efedea; }
 .kereso-lista li.aktiv { background: var(--morzsa); }
 .kereso-lista li[aria-selected="true"] { color: var(--gomb); }
+.kereso-lista li.ures-sor { color: #6b4a30; font-weight: 400; }
 .kereso-lista li[aria-selected="true"]::after { content: '  ✓'; }
 .kereso-lista li.jeles { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
 .kereso-jel { margin-left: auto; padding: 3px 12px; border-radius: 999px; background: var(--gomb); color: #fff; font-size: 16px; font-weight: 700; white-space: nowrap; }
@@ -308,7 +311,7 @@ input[type=password] { max-width: none; }
     key: '', token: tar(TAROLT_TOKEN), keyChecked: false, urlapAdat: null, boot: null, view: 'new', admin: null, myId: '',
     form: urlap(''), filter: { q: '', status: '', type: '' }
   };
-  S.form.requesterId = tar(TAROLT_IGENYLO);
+  tar(TAROLT_IGENYLO, null); // a név nem marad kiválasztva: az első sor mindig a „Kattints ide…”
   function urlap(type) { return { requesterId: '', type: type, empName: '', position: '', serial: '', reason: '', areaId: '', storeId: '', hours: '', topup: '', note: '' }; }
 
   /* ---------- DOM-segéd ---------- */
@@ -474,7 +477,7 @@ input[type=password] { max-width: none; }
   }
 
   /** 4.4 Keresős lenyíló (>6 tétel). tetelek: [{value,label,jel?}] */
-  function kereso(tetelek, ertek, valtozas, mit, peldaKereses, nincsSzoveg, cimkeId) {
+  function kereso(tetelek, ertek, valtozas, mit, peldaKereses, nincsSzoveg, cimkeId, uresSor) {
     var nyitva = false, aktiv = -1, latszo = [];
     var wrap = h('div', { class: 'kereso' });
     var felirat = h('span');
@@ -492,11 +495,12 @@ input[type=password] { max-width: none; }
     function listaRajz() {
       var q = norm(input.value);
       latszo = tetelek.filter(function (t) { return !q || norm(t.label + ' ' + (t.jel || '')).indexOf(q) !== -1; });
+      if (uresSor && !q) latszo.unshift({ value: '', label: '– Kattints ide, és válaszd ki ' + mit + ' –', ures: true });
       lista.innerHTML = '';
       if (!latszo.length) { lista.appendChild(h('li', { class: 'nincs', role: 'option', 'aria-disabled': 'true' }, nincsSzoveg)); return; }
       if (aktiv >= latszo.length) aktiv = latszo.length - 1;
       latszo.forEach(function (t, i) {
-        var li = h('li', { role: 'option', 'aria-selected': String(t.value) === String(ertek) ? 'true' : 'false', class: (t.jel ? 'jeles' : '') + (i === aktiv ? ' aktiv' : '') },
+        var li = h('li', { role: 'option', 'aria-selected': !t.ures && String(t.value) === String(ertek) ? 'true' : 'false', class: (t.jel ? 'jeles' : '') + (t.ures ? ' ures-sor' : '') + (i === aktiv ? ' aktiv' : '') },
           h('span', {}, t.label), t.jel ? h('span', { class: 'kereso-jel' }, t.jel) : null);
         li.addEventListener('mousedown', function (e) { e.preventDefault(); valaszt(t); });
         li.addEventListener('mousemove', function () { if (aktiv !== i) { aktiv = i; listaRajz(); } });
@@ -506,7 +510,7 @@ input[type=password] { max-width: none; }
     }
     function nyit() {
       nyitva = true; panel.hidden = false; gomb.setAttribute('aria-expanded', 'true');
-      input.value = ''; aktiv = Math.max(0, tetelek.findIndex(function (t) { return String(t.value) === String(ertek); }));
+      input.value = ''; aktiv = Math.max(0, tetelek.findIndex(function (t) { return String(t.value) === String(ertek); }) + (uresSor ? 1 : 0));
       listaRajz(); setTimeout(function () { input.focus(); }, 10);
       document.addEventListener('mousedown', kivul);
     }
@@ -531,8 +535,8 @@ input[type=password] { max-width: none; }
   }
 
   /** Automatikus: 6 tételig natív select, fölötte keresős lenyíló */
-  function listaValaszto(tetelek, ertek, valtozas, mit, pelda, nincs, cimkeId) {
-    return tetelek.length > 6 ? kereso(tetelek, ertek, valtozas, mit, pelda, nincs, cimkeId)
+  function listaValaszto(tetelek, ertek, valtozas, mit, pelda, nincs, cimkeId, uresSor) {
+    return tetelek.length > 6 ? kereso(tetelek, ertek, valtozas, mit, pelda, nincs, cimkeId, uresSor)
       : valaszto(tetelek, ertek, valtozas, mit, { 'aria-labelledby': cimkeId });
   }
 
@@ -555,13 +559,34 @@ input[type=password] { max-width: none; }
 
   /* ---------- Fő renderelés ---------- */
   var app = document.getElementById('app');
+  var TAROLT_URLAP = 'lipoti_kartya_urlapadat';
+  /** A korábban mentett adatokkal azonnal indulunk, közben csendben lekérjük a frisset; ha változott, újrarajzolunk. */
+  function urlapFrissitesHatterben() {
+    apiHivas('urlapAdatok', {}, '').then(function (r) {
+      if (!r || !r.ok) return;
+      var uj = JSON.stringify(r.data);
+      if (uj === JSON.stringify(S.urlapAdat)) return;
+      tar(TAROLT_URLAP, uj);
+      S.urlapAdat = r.data;
+      var aktivElem = document.activeElement;
+      if (!(aktivElem && /^(INPUT|TEXTAREA)$/.test(aktivElem.tagName))) render();
+    }).catch(function () {});
+  }
   function szerkeszto() { return !!(S.token || S.key); }
 
   function render() {
     app.innerHTML = '';
     if (!S.keyChecked) return;
     if (!S.urlapAdat) {
-      call('urlapAdatok', {}, 'A kártyaigénylő betöltése…').then(function (d) { S.urlapAdat = d; render(); })
+      var mentett = null;
+      try { mentett = JSON.parse(tar(TAROLT_URLAP) || 'null'); } catch (e) {}
+      if (mentett && mentett.vezetok) {
+        S.urlapAdat = mentett;
+        urlapFrissitesHatterben();
+        render();
+        return;
+      }
+      call('urlapAdatok', {}, 'A kártyaigénylő betöltése…').then(function (d) { S.urlapAdat = d; tar(TAROLT_URLAP, JSON.stringify(d)); render(); })
         .catch(function (e) { app.appendChild(h('div', { class: 'oldal' }, h('div', { class: 'rendszer-kartya', role: 'alert' }, h('h2', {}, 'Nem sikerült betölteni'), h('p', {}, e.message)))); });
       return;
     }
@@ -700,10 +725,9 @@ input[type=password] { max-width: none; }
     if (!szemely) f.requesterId = '';
 
     var igenylo = listaValaszto(b.vezetok.map(function (v) { return { value: v.id, label: v.name }; }), f.requesterId, function (v) {
-      tar(TAROLT_IGENYLO, v);
       S.form = Object.assign(urlap(''), { requesterId: v, empName: f.empName, position: f.position, serial: f.serial, reason: f.reason, note: f.note });
       render();
-    }, 'a neved', 'pl. Veres, Bóka', 'Nincs ilyen nevű területi vezető.');
+    }, 'a neved', 'pl. Veres, Bóka', 'Nincs ilyen nevű területi vezető.', null, true);
     wrap.appendChild(lepes('Igénylő neve', igenylo, 'Keresd meg és válaszd ki a saját nevedet. A következő lépésekben csak azok a területek és boltok jelennek meg, amelyekért te felelsz.'));
 
     if (!szemely) {
@@ -922,7 +946,7 @@ input[type=password] { max-width: none; }
     call('adminData', {}, 'A szerkesztői adatok betöltése…').then(function (d) { S.admin = d; render(); }).catch(function (e) { w.appendChild(h('p', { class: 'uzenet-hiba' }, e.message)); });
     return w;
   }
-  function mentesUtan(d, szoveg) { S.admin = d; S.urlapAdat = null; jelzes(szoveg); render(); }
+  function mentesUtan(d, szoveg) { S.admin = d; S.urlapAdat = null; tar(TAROLT_URLAP, null); jelzes(szoveg); render(); }
 
   /* ---------- Szerkesztő: területi vezetők ---------- */
   function nezetVezetok() {
@@ -1035,7 +1059,7 @@ input[type=password] { max-width: none; }
       var ment = gombElso('Mentés', 'mentes');
       ment.addEventListener('click', function () {
         call('beallitasMentes', { osszeg8: mezo.value }, 'A beállítás mentése…').then(function (r) {
-          S.admin.osszeg8 = r.osszeg8; S.urlapAdat = null; jelzes('Elmentve. Az igénylőfelületen már az új összegek látszanak.'); render();
+          S.admin.osszeg8 = r.osszeg8; S.urlapAdat = null; tar(TAROLT_URLAP, null); jelzes('Elmentve. Az igénylőfelületen már az új összegek látszanak.'); render();
         }).catch(function (e) { jelzes(e.message, true); });
       });
       rajz();
