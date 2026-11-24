@@ -402,7 +402,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 
   <section class="bevezeto" aria-labelledby="bevezeto-cim">
     <h2 id="bevezeto-cim">Kevesebb papír, egyszerűbb zárás</h2>
-    <p>A kézzel kitöltött zárós papírok ideje lejárt. Ezen a felületen pár perc alatt elkészíted a napi zárást: beírod a számokat, a gép összead, ellenőriz, és kész.</p>
+    <p>Ezen a felületen pár perc alatt elkészíted a napi zárást: beírod a számokat, a gép összead és kész.</p>
     <ul aria-label="Előnyök"><li>Gyorsabb</li><li>Pontosabb</li><li>Környezetbarátabb</li></ul>
   </section>
 
@@ -1904,7 +1904,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124223108';
+const VALTOZAT = '20261124223305';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
