@@ -650,9 +650,9 @@ input[type=password] { max-width: none; }
     return g;
   }
 
-  var SZERKESZTO_EMAIL = 'jacso.jozsef@lipotipekseg.hu';
+  var TAROLT_EMAIL = 'lipoti_kartya_szerk_email';
   function belepesAblak() {
-    var email = h('input', { type: 'email', id: 'szerk-email', class: 'auto', value: SZERKESZTO_EMAIL, readonly: 'readonly', autocomplete: 'username', tabindex: '-1' });
+    var email = h('input', { type: 'email', id: 'szerk-email', value: tar(TAROLT_EMAIL), autocomplete: 'username', inputmode: 'email', autocapitalize: 'off', spellcheck: 'false', placeholder: 'nev@lipotipekseg.hu' });
     var jelszo = h('input', { type: 'password', id: 'szerk-jelszo', autocomplete: 'current-password', placeholder: 'Add meg a jelszavadat' });
     var mutat = h('button', { type: 'button', class: 'jelszo-mutat', 'aria-label': 'Jelszó megjelenítése' }, 'Mutasd');
     mutat.addEventListener('click', function () {
@@ -666,7 +666,7 @@ input[type=password] { max-width: none; }
     var megse = gombMasod('Mégse'), belep = gombElso('Belépés', null);
     var fej = h('div', { class: 'belepo-fej' }, h('span', { class: 'kor' }, svg(LAKAT)),
       h('div', {}, h('h2', {}, 'Szerkesztői belépés'), h('p', {}, 'Igénylések, területi vezetők és boltok kezelése')));
-    var bezar = ablak({ rendszer: true, osztaly: 'belepo', fej: fej, fokusz: jelszo,
+    var bezar = ablak({ rendszer: true, osztaly: 'belepo', fej: fej, fokusz: email.value ? jelszo : email,
       tartalom: h('form', { class: 'belepo-urlap', onsubmit: function (e) { e.preventDefault(); kuld(); } },
         h('div', { class: 'belepo-mezo' }, h('label', { for: 'szerk-email' }, 'E-mail-cím'), email),
         h('div', { class: 'belepo-mezo' }, h('label', { for: 'szerk-jelszo' }, 'Jelszó'), h('div', { class: 'jelszo-sor' }, jelszo, mutat)),
@@ -678,8 +678,10 @@ input[type=password] { max-width: none; }
     belep.addEventListener('click', kuld);
     function kuld() {
       hiba.innerHTML = '';
+      if (!email.value.trim()) { hiba.appendChild(h('p', { class: 'uzenet-hiba', role: 'alert' }, 'Add meg az e-mail-címedet.')); email.focus(); return; }
       if (!jelszo.value) { hiba.appendChild(h('p', { class: 'uzenet-hiba', role: 'alert' }, 'Add meg a jelszavadat a belépéshez.')); jelszo.focus(); return; }
-      call('belepes', { jelszo: jelszo.value }, 'Belépés…').then(function (r) {
+      call('belepes', { email: email.value.trim(), jelszo: jelszo.value }, 'Belépés…').then(function (r) {
+        tar(TAROLT_EMAIL, email.value.trim());
         S.token = r.token; tar(TAROLT_TOKEN, r.token); S.boot = null; S.view = 'new';
         bezar(); render(); window.scrollTo(0, 0);
       }).catch(function (e) { hiba.appendChild(h('p', { class: 'uzenet-hiba', role: 'alert' }, e.message)); jelszo.select(); });
