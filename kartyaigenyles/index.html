@@ -61,6 +61,12 @@ h1 { margin: 0; font: 800 clamp(24px, 4vw, 34px)/1.15 var(--cim); color: var(--b
   border-radius: 50%; background: var(--barna); color: #fff; font-size: 19px; vertical-align: 2px; }
 .lepes.letiltva { opacity: .45; filter: grayscale(1); pointer-events: none; user-select: none; }
 .tipp { font-size: 15px; color: #7a5a3e; margin: 0; }
+/* Kiemelt figyelmeztetés a mező alatt (a --hiba tokennel) */
+.tipp .fontos { display: block; color: var(--hiba); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: .02em; line-height: 1.35; }
+.osszeg-elonezet { display: grid; border: 2px solid var(--morzsa); border-radius: 10px; overflow: hidden; max-width: 560px; }
+.osszeg-elonezet div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font-size: 18px; background: #fff; }
+.osszeg-elonezet div:nth-child(even) { background: #efedea; }
+.osszeg-elonezet b { font-variant-numeric: tabular-nums; }
 
 /* 4.3 Mezők */
 select, input[type=text], input[type=password], input[type=email], input[type=time], input[type=search], textarea {
@@ -283,7 +289,7 @@ input[type=password] { max-width: none; }
     form: urlap(''), filter: { q: '', status: '', type: '' }
   };
   S.form.requesterId = tar(TAROLT_IGENYLO);
-  function urlap(type) { return { requesterId: '', type: type, empName: '', position: '', serial: '', reason: '', areaId: '', storeId: '', hours: '', note: '' }; }
+  function urlap(type) { return { requesterId: '', type: type, empName: '', position: '', serial: '', reason: '', areaId: '', storeId: '', hours: '', topup: '', note: '' }; }
 
   /* ---------- DOM-segéd ---------- */
   function h(tag, attrs) {
@@ -322,6 +328,8 @@ input[type=password] { max-width: none; }
   function gombMasod(text, attrs) { return h('button', Object.assign({ type: 'button', class: 'gomb masod' }, attrs || {}), text); }
   function norm(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
   function abc(a, b) { return String(a).localeCompare(String(b), 'hu'); }
+  function ft(n) { n = Math.round(Number(n) || 0); var t = String(n); if (n >= 10000) t = t.replace(/\B(?=(\d{3})+(?!\d))/g, ' '); return t + ' Ft'; }
+  function haviOsszeg(ora, osszeg8) { return Math.round((Number(osszeg8) || 0) * ora / 8); }
   function monogram(nev) { return String(nev || '?').trim().split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0); }).join('').toUpperCase(); }
 
   /* ---------- 4.8 Betöltő: minden várakozásnál, százalékkal ---------- */
@@ -550,8 +558,8 @@ input[type=password] { max-width: none; }
       oldal.appendChild(h('div', { style: 'height:6px' }));
     }
     var nezet = S.boot ? S.view : 'new';
-    var tartalom = h('div', { class: 'oszlop' + (/^(requests|users|areas)$/.test(nezet) ? ' szeles' : '') });
-    var v = { new: nezetUj, requests: nezetOsszes, users: nezetVezetok, areas: nezetTeruletek }[nezet] || nezetUj;
+    var tartalom = h('div', { class: 'oszlop' + (/^(requests|users|areas|settings)$/.test(nezet) ? ' szeles' : '') });
+    var v = { new: nezetUj, requests: nezetOsszes, users: nezetVezetok, areas: nezetTeruletek, settings: nezetBeallitasok }[nezet] || nezetUj;
     tartalom.appendChild(v());
     oldal.appendChild(tartalom);
     if (!S.boot) oldal.appendChild(h('div', { class: 'lablec' }, belepesGomb()));
@@ -581,7 +589,7 @@ input[type=password] { max-width: none; }
   }
 
   function fulek() {
-    var lista = [['new', 'Új igénylés'], ['requests', 'Összes igénylés'], ['users', 'Területi vezetők'], ['areas', 'Területek és boltok']];
+    var lista = [['new', 'Új igénylés'], ['requests', 'Összes igénylés'], ['users', 'Területi vezetők'], ['areas', 'Területek és boltok'], ['settings', 'Beállítások']];
     return h('nav', { class: 'fulek', 'aria-label': 'Nézetek' }, lista.map(function (f) {
       return h('button', { type: 'button', class: 'ful', 'aria-pressed': S.view === f[0] ? 'true' : 'false',
         onclick: function () { S.view = f[0]; render(); window.scrollTo(0, 0); } }, f[1]);
@@ -660,7 +668,7 @@ input[type=password] { max-width: none; }
       S.form = Object.assign(urlap(''), { requesterId: v, empName: f.empName, position: f.position, serial: f.serial, reason: f.reason, note: f.note });
       render();
     }, 'a neved', 'pl. Veres, Bóka', 'Nincs ilyen nevű területi vezető.');
-    wrap.appendChild(lepes('Igénylő neve', igenylo, 'Válaszd ki a saját nevedet. Ezután csak a hozzád tartozó területek és boltok jelennek meg.'));
+    wrap.appendChild(lepes('Igénylő neve', igenylo, 'Keresd meg és válaszd ki a saját nevedet. A következő lépésekben csak azok a területek és boltok jelennek meg, amelyekért te felelsz.'));
 
     if (!szemely) {
       wrap.appendChild(h('div', { class: 'ures-allapot' }, 'Válaszd ki fent az igénylő nevét. Utána itt jelennek meg a további lépések.'));
@@ -682,7 +690,9 @@ input[type=password] { max-width: none; }
     wrap.appendChild(lepes('Milyen kártyát igényelsz?', tipusSel));
 
     if (!f.type) {
-      wrap.appendChild(h('div', { class: 'ures-allapot' }, 'Válaszd ki fent a kártya típusát. Utána megjelennek a hozzád tartozó ' + (szemely.stores.length ? 'boltok' : 'területek') + '.'));
+      wrap.appendChild(h('div', { class: 'ures-allapot' }, 'Válaszd ki fent, milyen kártyát igényelsz. ' +
+        (szemely.areas.length && szemely.stores.length ? 'Beléptető kártyánál a területeid, fizető kártyánál a hozzád rendelt boltok jelennek meg.'
+          : szemely.stores.length ? 'Ezután a hozzád rendelt boltok jelennek meg.' : 'Ezután a területeid jelennek meg.')));
       return wrap;
     }
 
@@ -692,7 +702,7 @@ input[type=password] { max-width: none; }
       if (terTetelek.length === 1 && !f.areaId) f.areaId = terTetelek[0].value;
       var ter = listaValaszto(terTetelek, f.areaId, function (v) { f.areaId = v; ter.classList.remove('hibas'); }, 'a területet', 'pl. Sopron', 'Nincs ilyen terület.');
       hibasMezok.areaId = ter;
-      wrap.appendChild(lepes('Melyik területre szól a kártya?', ter, 'A beléptető kártya a terület összes boltjába szól.'));
+      wrap.appendChild(lepes('Melyik területre szól a kártya?', ter, 'A beléptető kártyával a munkavállaló a kiválasztott terület bármelyik boltjába be tud lépni, így a területed összes üzletében dolgozhat.'));
     } else {
       var boltTetelek = szemely.stores.slice().sort(function (x, y) { return abc(x.name, y.name); }).map(function (s) { return { value: s.id, label: s.name, jel: s.areaName }; });
       if (boltTetelek.length === 1 && !f.storeId) f.storeId = boltTetelek[0].value;
@@ -701,9 +711,9 @@ input[type=password] { max-width: none; }
       wrap.appendChild(lepes('Melyik boltban dolgozik?', bolt));
     }
 
-    var nev = h('input', { type: 'text', value: f.empName, autocomplete: 'off', oninput: function () { f.empName = nev.value; nev.classList.remove('hibas'); } });
+    var nev = h('input', { type: 'text', value: f.empName, autocomplete: 'off', placeholder: 'pl. Kiss Anna Mária', oninput: function () { f.empName = nev.value; nev.classList.remove('hibas'); } });
     hibasMezok.empName = nev;
-    wrap.appendChild(lepes('Írd be a dolgozó teljes nevét', nev, 'Pontosan úgy, ahogy a személyi igazolványában szerepel.'));
+    wrap.appendChild(lepes('Írd be a dolgozó teljes nevét', nev, h('span', { class: 'fontos' }, 'Figyelem! A személyi igazolványban szereplő teljes nevet írd be, betűről betűre, minden utónévvel együtt!')));
 
     var pozicio = valaszto(b.positions.slice().sort(abc).map(function (p) { return { value: p, label: p }; }), f.position, function (v) { f.position = v; pozicio.classList.remove('hibas'); }, 'a beosztását');
     hibasMezok.position = pozicio;
@@ -712,18 +722,25 @@ input[type=password] { max-width: none; }
     var sorszam = h('input', { type: 'text', inputmode: 'numeric', value: f.serial, autocomplete: 'off', placeholder: 'pl. 0266', maxlength: '8',
       oninput: function () { f.serial = sorszam.value; sorszam.classList.remove('hibas'); } });
     hibasMezok.serial = sorszam;
-    wrap.appendChild(lepes(f.type === 'belepteto' ? 'Írd be a beléptető kártya sorszámát' : 'Írd be a fizető kártya sorszámát', sorszam, 'A kártyán lévő 4 jegyű szám, a vezető nullával együtt.'));
+    wrap.appendChild(lepes(f.type === 'belepteto' ? 'Írd be a beléptető kártya sorszámát' : 'Írd be a fizető kártya sorszámát', sorszam, 'Írd be a kártyán lévő 4 számjegyet pontosan úgy, ahogy a kártyán áll, az elején lévő nullákkal együtt (pl. 0266, és nem 266).'));
 
     if (f.type === 'fizeto') {
-      var orak = [8, 7, 6, 5, 4, 3, 2, 1].map(function (n) { return { value: String(n), label: n + ' óra' }; });
+      var orak = [8, 7, 6, 5, 4, 3, 2, 1].map(function (n) { return { value: String(n), label: n + ' óra – ' + ft(haviOsszeg(n, b.osszeg8)) + ' / hónap' }; });
       var ora = listaValaszto(orak, f.hours, function (v) { f.hours = v; ora.classList.remove('hibas'); }, 'az óraszámot', 'pl. 8, 6, 4', 'Nincs ilyen óraszám.');
       hibasMezok.hours = ora;
-      wrap.appendChild(lepes('Hány órára van bejelentve naponta?', ora));
+      wrap.appendChild(lepes('Hány órára van bejelentve naponta?', ora, 'Az óraszám mellett látod, mekkora havi összeg kerül a kártyára.'));
     }
 
     var ok = valaszto(b.reasons.map(function (r) { return { value: r, label: r }; }), f.reason, function (v) { f.reason = v; ok.classList.remove('hibas'); }, 'az okát');
     hibasMezok.reason = ok;
     wrap.appendChild(lepes('Miért igényled a kártyát?', ok));
+
+    if (f.type === 'fizeto') {
+      var feltoltes = valaszto(b.feltoltes, f.topup, function (v) { f.topup = v; feltoltes.classList.remove('hibas'); }, 'a feltöltés idejét');
+      hibasMezok.topup = feltoltes;
+      wrap.appendChild(lepes('Mikor kerüljön fel a havi összeg a kártyára?', feltoltes,
+        'Az azonnali feltöltést akkor válaszd, ha a dolgozónak már most szüksége van az összegre. Különben a következő közös feltöltéskor kerül fel.'));
+    }
 
     var megj = h('textarea', { placeholder: 'Nem kötelező, pl. próbanapos kártya, sürgős', oninput: function () { f.note = megj.value; } });
     megj.value = f.note;
@@ -753,6 +770,7 @@ input[type=password] { max-width: none; }
       if (!new RegExp(b.serialPattern).test(f.serial.replace(/\s/g, ''))) hiba('serial', 'a sorszám pontosan 4 számjegy legyen, pl. 0266.');
       if (f.type === 'fizeto' && !f.hours) hiba('hours', 'válaszd ki a napi óraszámot.');
       if (!f.reason) hiba('reason', 'válaszd ki az igénylés okát.');
+      if (f.type === 'fizeto' && !f.topup) hiba('topup', 'válaszd ki, mikor kerüljön fel a havi összeg a kártyára.');
       if (hibak.length) {
         uzenet.appendChild(h('div', { class: 'uzenet-hiba', role: 'alert' }, 'Még hiányzik néhány adat:', h('ul', {}, hibak.map(function (x) { return h('li', {}, x); }))));
         var elso = wrap.querySelector('.hibas'); if (elso) elso.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -771,6 +789,8 @@ input[type=password] { max-width: none; }
           return;
         }
         var tipus = f.type === 'belepteto' ? 'Beléptető kártya' : 'Fizető kártya', ki = f.empName.trim();
+        var osszegSor = f.type === 'fizeto' ? h('p', { style: 'margin:0' }, 'Havi összeg: ', h('b', {}, ft(haviOsszeg(Number(f.hours), b.osszeg8)) + ' / hónap'),
+          ' · ', (b.feltoltes.filter(function (x) { return x.value === f.topup; })[0] || {}).label || '') : null;
         S.form = Object.assign(urlap(''), { requesterId: f.requesterId });
         wrap.innerHTML = '';
         var ujra = gombElso('Új igénylés', 'plusz');
@@ -778,6 +798,7 @@ input[type=password] { max-width: none; }
         wrap.appendChild(h('div', { class: 'iroda' }, h('h2', {}, 'Igénylés rögzítve'),
           h('p', { class: 'uzenet-ok' }, '✓ ' + tipus + ' · ' + ki + ' · azonosító: ' + r.id),
           h('p', { style: 'margin:0' }, 'Elkészítési határidő: ', h('b', {}, r.deadline + ', ' + r.deadlineDay)),
+          osszegSor,
           r.mailError ? h('p', { class: 'uzenet-hiba' }, 'Az értesítő e-mailt nem sikerült elküldeni (' + r.mailError + '), de az igénylést rögzítettük.')
             : h('p', { class: 'tipp' }, 'A visszaigazolást elküldtük ' + szemely.name + ' e-mail címére. Az elkészültéről is értesítünk.'),
           h('div', { class: 'gombpar' }, ujra)));
@@ -797,7 +818,7 @@ input[type=password] { max-width: none; }
       h('div', { class: 'sor-fej' }, h('span', { class: 'nev' }, r.empName), h('span', { class: 'pirula st-' + r.status }, r.status),
         h('span', { class: 'jobbra' }, r.type + ' · ' + r.id + ' · ' + r.ts)),
       h('div', { class: 'adatok' }, adat('Sorszám', r.serial), adat(r.store ? 'Bolt' : 'Terület', hely), adat('Beosztás', r.position),
-        adat('Napi óra', r.hours), adat('Ok', r.reason), adat('Határidő', r.deadline), admin ? adat('Igénylő', r.reqName) : null, adat('Megjegyzés', r.note)));
+        adat('Napi óra', r.hours), adat('Havi összeg', r.amount), adat('Feltöltés', r.topup), adat('Ok', r.reason), adat('Határidő', r.deadline), admin ? adat('Igénylő', r.reqName) : null, adat('Megjegyzés', r.note)));
     if (!admin) return sor;
 
     var st = valaszto(S.boot.statuses.map(function (s) { return { value: s, label: s }; }), r.status, function () {}, 'a státuszt', { 'aria-label': 'Státusz: ' + r.empName });
@@ -958,6 +979,37 @@ input[type=password] { max-width: none; }
       call('saveUser', d, 'A felhasználó mentése…').then(function (res) {
         bezar(); mentesUtan(res, 'Elmentve.');
       }).catch(function (e) { hiba.appendChild(h('p', { class: 'uzenet-hiba', role: 'alert' }, e.message)); });
+    });
+  }
+
+  /* ---------- Szerkesztő: beállítások (havi összeg) ---------- */
+  function nezetBeallitasok() {
+    return adminnal(function () {
+      var A = S.admin;
+      var mezo = h('input', { type: 'text', inputmode: 'numeric', value: String(A.osszeg8 || ''), id: 'osszeg8', autocomplete: 'off' });
+      var elonezet = h('div', { class: 'osszeg-elonezet', 'aria-live': 'polite' });
+      var jelzo = h('span', { class: 'nincs-mentve', hidden: true }, 'Nincs elmentve');
+      function rajz() {
+        var alap = parseInt(String(mezo.value).replace(/\D/g, ''), 10) || 0;
+        jelzo.hidden = alap === Number(A.osszeg8);
+        elonezet.innerHTML = '';
+        [8, 7, 6, 5, 4, 3, 2, 1].forEach(function (n) { elonezet.appendChild(h('div', {}, h('span', {}, n + ' óra'), h('b', {}, ft(haviOsszeg(n, alap)) + ' / hónap'))); });
+      }
+      mezo.addEventListener('input', rajz);
+      var ment = gombElso('Mentés', 'mentes');
+      ment.addEventListener('click', function () {
+        call('beallitasMentes', { osszeg8: mezo.value }, 'A beállítás mentése…').then(function (r) {
+          S.admin.osszeg8 = r.osszeg8; S.urlapAdat = null; jelzes('Elmentve. Az igénylőfelületen már az új összegek látszanak.'); render();
+        }).catch(function (e) { jelzes(e.message, true); });
+      });
+      rajz();
+      return h('div', { style: 'display:grid;gap:18px' },
+        h('h2', { style: 'margin:0;font-size:24px;color:var(--barna)' }, 'Beállítások'),
+        h('div', { class: 'iroda' }, h('h2', {}, 'Fizető kártya havi összege'),
+          h('section', { class: 'lepes' }, h('label', { for: 'osszeg8' }, 'Havi összeg 8 órás bejelentésnél (Ft)'), mezo,
+            h('p', { class: 'tipp' }, 'Elég a 8 órás összeget megadnod; a kisebb óraszámokhoz tartozó összeg ennek arányában számolódik.')),
+          h('div', { class: 'mezocim', style: 'font-weight:900' }, 'Így jelenik meg az igénylőfelületen:'), elonezet,
+          h('div', { class: 'gombpar', style: 'align-items:center' }, jelzo, ment)));
     });
   }
 
