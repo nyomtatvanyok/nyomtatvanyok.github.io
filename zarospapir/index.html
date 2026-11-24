@@ -259,6 +259,15 @@ details.sugo ol { margin: 4px 0 0; padding-left: 22px; }
   font-size: 19px; line-height: 1.5; overflow-wrap: anywhere; outline: none; }
 .formazott:focus-visible { outline: 3px solid var(--gomb); outline-offset: 2px; }
 .formazott:empty::before { content: attr(data-ures); color: var(--masodlagos); }
+.kep-tolt { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 160px; border: 2px dashed var(--morzsa); border-radius: 12px;
+  background: var(--liszt); font-size: 19px; font-weight: 700; color: var(--barna); }
+.kep-porgo { width: 26px; height: 26px; border-radius: 50%; border: 4px solid var(--gyuru-ures); border-top-color: var(--barna); animation: porog 0.9s linear infinite; }
+@keyframes porog { to { transform: rotate(360deg); } }
+.sugo-kep { cursor: zoom-in; }
+.kep-nagy { position: fixed; inset: 0; z-index: 120; background: rgba(38,16,4,.92); overflow: auto; display: grid; place-items: center; padding: 16px; cursor: zoom-out; }
+.kep-nagy img { max-width: none; width: auto; height: auto; max-height: none; border-radius: 6px; background: var(--feher); }
+.kep-nagy.illeszt img { max-width: 100%; max-height: calc(100dvh - 32px); }
+.kep-nagy .bezar-x { position: fixed; top: max(12px, env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); }
 .sugo-kep { width: 100%; height: auto; border-radius: 12px; border: 2px solid var(--morzsa); background: var(--liszt); }
 .bezar-x { position: absolute; top: 12px; right: 12px; width: 48px; height: 48px; display: grid; place-items: center; padding: 0;
   border-radius: 12px; background: var(--feher); color: var(--kakao); border: 2px solid var(--morzsa); cursor: pointer; }
@@ -601,7 +610,9 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <h3 id="sugo-cim"></h3>
     <div id="sugo-nezet">
       <div class="sugo-szoveg" id="sugo-szoveg"></div>
-      <img class="sugo-kep" id="sugo-kep" alt="" hidden>
+      <div class="kep-tolt" id="sugo-kep-tolt" hidden role="status"><span class="kep-porgo" aria-hidden="true"></span>A kép betöltése…</div>
+      <img class="sugo-kep" id="sugo-kep" alt="" hidden title="Koppints a képre a nagyításhoz">
+      <p class="tipp" id="sugo-kep-tipp" hidden>Koppints a képre, ha nagyobban szeretnéd látni.</p>
     </div>
     <div id="sugo-szerk" hidden style="display:grid;gap:14px">
       <label class="kapcsolo" for="sugo-lathato">
@@ -751,6 +762,13 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 <div class="uj-valtozat" id="uj-valtozat" hidden role="status">
   <span>Elkészült az oldal új változata. A beírt adataid megmaradnak.</span>
   <button type="button" id="uj-valtozat-gomb">Frissítés most</button>
+</div>
+
+<div class="kep-nagy illeszt" id="kep-nagy" hidden role="dialog" aria-modal="true" aria-label="Kép nagyítva">
+  <button type="button" class="bezar-x" id="kep-nagy-x" aria-label="Nagyítás bezárása">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+  </button>
+  <img id="kep-nagy-img" alt="">
 </div>
 
 <div class="betolto" id="betolto" role="status" aria-live="polite">
@@ -1462,25 +1480,57 @@ function gasHivas(action, payload) {
 function blobBase64(blob) {
   return new Promise((ok, hiba) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = hiba; r.readAsDataURL(blob); });
 }
+/* A képek a böngészőben is megmaradnak (IndexedDB), így másodszorra azonnal megjelennek.
+   Egy kép azonosítója sosem változik: új kép = új azonosító. */
+const kepTar = {
+  db: null,
+  nyit() {
+    if (this.db) return this.db;
+    this.db = new Promise(ok => {
+      try { const r = indexedDB.open('zarospapir-kepek', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('kep');
+        r.onsuccess = () => ok(r.result); r.onerror = () => ok(null);
+      } catch (e) { ok(null); }
+    });
+    return this.db;
+  },
+  async olvas(id) { const db = await this.nyit(); if (!db) return null;
+    return new Promise(ok => { try { const q = db.transaction('kep').objectStore('kep').get(id); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); } catch (e) { ok(null); } }); },
+  async ir(id, v) { const db = await this.nyit(); if (!db) return;
+    try { db.transaction('kep', 'readwrite').objectStore('kep').put(v, id); } catch (e) {} }
+};
+const kepFolyamatban = {};
 async function kepForras(id) {
   if (!id) return '';
   if (!gasMod) return '/_blob/' + encodeURIComponent(id);
   if (kepGyorsitotar[id]) return kepGyorsitotar[id];
-  const d = await gasHivas('kep', { id });
-  return (kepGyorsitotar[id] = 'data:' + d.mime + ';base64,' + d.base64);
+  if (kepFolyamatban[id]) return kepFolyamatban[id];
+  return (kepFolyamatban[id] = (async () => {
+    let v = await kepTar.olvas(id);
+    if (!v) { const d = await gasHivas('kep', { id }); v = 'data:' + d.mime + ';base64,' + d.base64; kepTar.ir(id, v); }
+    kepGyorsitotar[id] = v; delete kepFolyamatban[id]; return v;
+  })().catch(e => { delete kepFolyamatban[id]; throw e; }));
 }
 async function kepBetolt(img, id, alt) {
-  img.hidden = true; img.removeAttribute('src');
-  if (!id) return;
-  const kesz = !gasMod || kepGyorsitotar[id];
-  if (!kesz) { betoltoMutat('A kép betöltése…'); merfold(90); }
-  try { img.src = await kepForras(id); img.alt = alt; img.hidden = false; }
-  catch (e) { /* a kép nélkül is használható a súgó */ }
-  if (!kesz) await betoltoKesz();
+  img.hidden = true; img.removeAttribute('src'); $('sugo-kep-tipp').hidden = true;
+  const t = $('sugo-kep-tolt');
+  if (!id) { t.hidden = true; return; }
+  t.hidden = !!kepGyorsitotar[id] || !gasMod;
+  try { const u = await kepForras(id); if (szerkKulcsNezet === id) { img.src = u; img.alt = alt; img.hidden = false; } }
+  catch (e) { /* a kép nélkül is használható a magyarázat */ }
+  t.hidden = true;
+}
+let szerkKulcsNezet = null;
+const kesobb = (fn, ms) => setTimeout(() => (window.requestIdleCallback ? window.requestIdleCallback(() => fn()) : fn()), ms);
+/* Háttérbetöltés: a látható magyarázatok képeit előre letöltjük, így kattintásra azonnal ott vannak. */
+async function kepekElore() {
+  if (!gasMod) return;
+  const idk = Object.keys(sugok).filter(k => lathatoE(k) && sugok[k].kepId).map(k => sugok[k].kepId);
+  for (const id of idk) { try { await kepForras(id); } catch (e) {} }
 }
 async function sugoMent(k, szoveg, ujBlob, kepId, lathato) {
   if (gasMod) {
-    const kep = ujBlob ? { mime: 'image/jpeg', base64: await blobBase64(ujBlob) } : null;
+    const kep = ujBlob ? { mime: ujBlob.type || 'image/jpeg', base64: await blobBase64(ujBlob) } : null;
     merfold(85);
     const d = await gasHivas('mentes', { kulcs: k, cim: sugoCimek[k] || k, szoveg, kep, kepMarad: !!kepId && !ujBlob, lathato });
     if (d.kepId && ujBlob) kepGyorsitotar[d.kepId] = URL.createObjectURL(ujBlob);
@@ -1490,7 +1540,7 @@ async function sugoMent(k, szoveg, ujBlob, kepId, lathato) {
   let ujId = kepId;
   if (ujBlob) {
     if (!assetsRef) throw { code: 'nincs_kep' };
-    const r = await assetsRef.upload(ujBlob, { type: 'image/jpeg' });
+    const r = await assetsRef.upload(ujBlob, { type: ujBlob.type || 'image/jpeg' });
     ujId = r.id; merfold(90);
   }
   const adat = { szoveg, kepId: ujId || null, lathato, frissitve: new Date().toISOString() };
@@ -1540,6 +1590,7 @@ function sugoNyit(k) {
     $('sugo-nezet').hidden = false; $('sugo-szerk').hidden = true;
     const sz = $('sugo-szoveg'); sz.innerHTML = tisztit(adat.szoveg || '');
     sz.hidden = szovegUres(adat.szoveg);
+    szerkKulcsNezet = adat.kepId || null;
     kepBetolt($('sugo-kep'), adat.kepId, `Kép: hol találod meg ezt: ${sugoCimek[k]}`);
   }
   sugoAblak.hidden = false;
@@ -1571,6 +1622,17 @@ document.addEventListener('keydown', e => {
     else if (!e.shiftKey && document.activeElement === utolso) { e.preventDefault(); elso.focus(); }
   }
 });
+
+/* --- kép nagyítása --- */
+$('sugo-kep').addEventListener('load', () => { $('sugo-kep-tipp').hidden = $('sugo-kep').hidden; });
+$('sugo-kep').addEventListener('click', () => {
+  $('kep-nagy-img').src = $('sugo-kep').src; $('kep-nagy-img').alt = $('sugo-kep').alt;
+  $('kep-nagy').classList.add('illeszt'); $('kep-nagy').hidden = false; $('kep-nagy-x').focus();
+});
+$('kep-nagy-img').addEventListener('click', e => { e.stopPropagation(); $('kep-nagy').classList.toggle('illeszt'); });  // második koppintás: eredeti méret
+$('kep-nagy').addEventListener('click', () => { $('kep-nagy').hidden = true; $('sugo-kep').focus(); });
+$('kep-nagy-x').addEventListener('click', e => { e.stopPropagation(); $('kep-nagy').hidden = true; });
+$('kep-nagy').addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); $('kep-nagy').hidden = true; } });
 
 /* --- szerkesztés --- */
 function szerkPiszkosAllit(v) { szerkPiszkos = v; $('nincs-mentve').hidden = !v; }
@@ -1614,15 +1676,24 @@ $('sugo-textarea').addEventListener('paste', e => {   // beillesztéskor csak a 
   document.execCommand('insertText', false, t);
 });
 $('sugo-lathato').addEventListener('change', () => szerkPiszkosAllit(true));
+/* A képet a lehető legélesebben tároljuk: ha nem túl nagy, az eredeti fájl megy fel változtatás nélkül.
+   Csak a 3,5 MB-nál nagyobb fájlt kicsinyítjük, akkor is nagy felbontásra és jó minőségre. */
+const KEP_MAX_BAJT = 3.5 * 1024 * 1024;
 async function kepKicsinyit(file) {
+  if (/^image\/(jpeg|png|webp)$/.test(file.type) && file.size <= KEP_MAX_BAJT) return file;
   const url = URL.createObjectURL(file);
   try {
     const img = await new Promise((ok, hiba) => { const i = new Image(); i.onload = () => ok(i); i.onerror = hiba; i.src = url; });
-    const max = 1600, arany = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
-    const c = document.createElement('canvas');
-    c.width = Math.round(img.naturalWidth * arany); c.height = Math.round(img.naturalHeight * arany);
-    const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
-    return await new Promise(r => c.toBlob(r, 'image/jpeg', 0.86));
+    for (const [max, minoseg] of [[4000, 0.95], [3200, 0.93], [2600, 0.92], [2000, 0.9]]) {
+      const arany = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * arany); c.height = Math.round(img.naturalHeight * arany);
+      const x = c.getContext('2d'); x.imageSmoothingQuality = 'high';
+      x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      const b = await new Promise(r => c.toBlob(r, 'image/jpeg', minoseg));
+      if (b && b.size <= KEP_MAX_BAJT) return b;
+    }
+    throw new Error('túl nagy');
   } finally { URL.revokeObjectURL(url); }
 }
 async function kepValaszt(file) {
@@ -1842,7 +1913,9 @@ if (gasMod) {
     for (const k of Object.keys(sugok)) delete sugok[k];
     Object.assign(sugok, d || {});
     tarol('zarospapir:sugok', sugok); infoFrissit();
+    kesobb(kepekElore, 1500);
   }).catch(() => {});
+  kesobb(kepekElore, 800);
 }
 
 /* --- közös tárhely: súgók betöltése mindenkinek --- */
@@ -1991,7 +2064,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124224546';
+const VALTOZAT = '20261124225045';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
