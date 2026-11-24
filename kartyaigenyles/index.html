@@ -127,9 +127,9 @@ input.auto { background: #f1ece4; color: #6b5a48; border-color: #e3d8c6; cursor:
 
 /* Szerkesztői belépés gomb (4.5) – az oldal alján, jobbra */
 .lablec { display: flex; justify-content: flex-end; margin-top: 40px; }
-.belepes-gomb { display: inline-flex; align-items: center; gap: 12px; background: #fff; color: var(--kakao); border: 2px solid var(--morzsa);
+.belepes-gomb { display: inline-flex; align-items: center; gap: 12px; background: #fff; color: var(--kakao); border: 2px solid var(--barna);
   border-radius: 14px; min-height: 58px; padding: 8px 18px 8px 10px; cursor: pointer; text-align: left; }
-.belepes-gomb:hover { border-color: var(--gomb); }
+.belepes-gomb:hover { border-color: var(--gomb); background: var(--liszt); }
 .belepes-gomb .kor { width: 40px; height: 40px; border-radius: 50%; background: var(--barna); color: #fff; display: grid; place-items: center; flex: none; }
 .belepes-gomb .kor svg { width: 22px; height: 22px; }
 .belepes-gomb b { display: block; font-size: 18px; }
@@ -671,7 +671,7 @@ input[type=password] { max-width: none; }
         h('div', { class: 'belepo-mezo' }, h('label', { for: 'szerk-email' }, 'E-mail-cím'), email),
         h('div', { class: 'belepo-mezo' }, h('label', { for: 'szerk-jelszo' }, 'Jelszó'), h('div', { class: 'jelszo-sor' }, jelszo, mutat)),
         hiba,
-        h('p', { class: 'tipp' }, 'A belépés ezen az eszközön 7 napig érvényes. Nyilvános vagy közös gépen használat után jelentkezz ki.'),
+        h('p', { class: 'tipp' }, 'A szerkesztői felület csak a kijelölt munkatársak számára érhető el. Ha nem kaptál belépési adatokat, kérjük, zárd be ezt az ablakot; a kártyaigénylést a fenti űrlapon tudod leadni.'),
         h('button', { type: 'submit', hidden: true })),
       gombok: [megse, belep] });
     megse.addEventListener('click', bezar);
@@ -731,7 +731,7 @@ input[type=password] { max-width: none; }
     wrap.appendChild(lepes('Igénylő neve', igenylo, 'Keresd meg és válaszd ki a saját nevedet. A következő lépésekben csak azok a területek és boltok jelennek meg, amelyekért te felelsz.'));
 
     if (!szemely) {
-      wrap.appendChild(h('div', { class: 'ures-allapot' }, 'Válaszd ki fent az igénylő nevét. Utána itt jelennek meg a további lépések.'));
+      wrap.appendChild(h('div', { class: 'ures-allapot' }, 'Kezdd a fenti 1. lépéssel: válaszd ki a nevedet a listából. Ezután itt jelennek meg a további lépések, kizárólag a hozzád tartozó területekkel és boltokkal.'));
       return wrap;
     }
 
@@ -750,7 +750,7 @@ input[type=password] { max-width: none; }
     wrap.appendChild(lepes('Milyen kártyát igényelsz?', tipusSel));
 
     if (!f.type) {
-      wrap.appendChild(h('div', { class: 'ures-allapot' }, 'Válaszd ki fent, milyen kártyát igényelsz. ' +
+      wrap.appendChild(h('div', { class: 'ures-allapot' }, 'Folytasd a fenti 2. lépéssel: válaszd ki, milyen kártyát igényelsz. ' +
         (szemely.areas.length && szemely.stores.length ? 'Beléptető kártyánál a területeid, fizető kártyánál a hozzád rendelt boltok jelennek meg.'
           : szemely.stores.length ? 'Ezután a hozzád rendelt boltok jelennek meg.' : 'Ezután a területeid jelennek meg.')));
       return wrap;
