@@ -1163,8 +1163,10 @@ function rajzol(canvas) {
   // Egyforma nagyítás vízszintesen és függőlegesen (mint a „Laphoz igazítás” nyomtatásnál), keskeny margóval.
   const margo = 0.3 / 8.27 * W;
   const s = Math.min((W - 2 * margo) / lapW, (H - 2 * margo) / lapH);
-  const x0 = (W - lapW * s) / 2, y0 = (H - lapH * s) / 2;
-  const xs = [x0]; oszlopPx.forEach(w => xs.push(xs[xs.length - 1] + w * s));
+  // A cellák szélesebbek a Sheet arányánál (legfeljebb 1,3-szoros), hogy a lap szélességét jobban kitöltse a táblázat.
+  const sx = Math.min(s * 1.3, (W - 2 * margo) / lapW);
+  const x0 = (W - lapW * sx) / 2, y0 = (H - lapH * s) / 2;
+  const xs = [x0]; oszlopPx.forEach(w => xs.push(xs[xs.length - 1] + w * sx));
   const ys = [y0]; sorPx.forEach(h => ys.push(ys[ys.length - 1] + h * s));
   const alapBetu = 16 * s;              // 12 pt-os betű = 16 px a táblázatban
   const pad = 4 * s;
@@ -2190,7 +2192,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124233411';
+const VALTOZAT = '20261124234608';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
