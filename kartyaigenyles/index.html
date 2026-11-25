@@ -344,7 +344,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125090600';
+var OLDAL_VERZIO = '20261125091646';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -1245,7 +1245,7 @@ var OLDAL_VERZIO = '20261125090600';
               var nev = x.el.nev.value.trim() || 'új bolt';
               if (!x.s) { x.tr.remove(); sorok.splice(sorok.indexOf(x), 1); valtozott(); return; }
               megerosit('Biztosan törölni szeretnéd ezt a boltot: „' + nev + '”?',
-                'A bolt a terület Mentés gombjával törlődik véglegesen; addig a „Visszavonás” gombbal visszaállíthatod. A törlés után a bolt a területi vezetők boltjai közül is kikerül, a régi igénylésekben a neve megmarad.',
+                'A törlés a Mentés gombbal lesz végleges.',
                 'Igen, törlöm', 'Mégse').then(function (igen) {
                   if (!igen) return;
                   x.torles = true; x.tr.classList.add('torlesre'); jel.hidden = false; muveletRajz(); valtozott();
@@ -1292,8 +1292,7 @@ var OLDAL_VERZIO = '20261125090600';
         torolTer.addEventListener('click', function () {
           var db = A.stores.filter(function (s) { return s.areaId === a.id; }).length;
           megerosit('Biztosan törölni szeretnéd ezt a területet: „' + a.name + '”?',
-            (db ? 'A területtel együtt a hozzá tartozó ' + db + ' bolt is törlődik. Ha egy boltot meg szeretnél tartani, előbb tedd át egy másik területre, és mentsd el. ' : '') +
-            'A terület a területi vezetők hozzárendeléseiből is kikerül, a régi igénylésekben a neve megmarad. A törlés azonnali, és nem vonható vissza.',
+            (db ? 'Vele együtt ' + db + ' bolt is törlődik. ' : '') + 'Ez nem vonható vissza.',
             'Igen, törlöm', 'Mégse').then(function (igen) {
               if (!igen) return;
               call('deleteArea', { id: a.id }, 'A terület törlése…').then(function (d) {
