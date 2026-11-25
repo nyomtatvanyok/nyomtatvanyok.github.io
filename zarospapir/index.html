@@ -242,12 +242,12 @@ details.sugo ol { margin: 4px 0 0; padding-left: 22px; }
 .atkerdes-gombok .torles:hover { background: var(--rozsa-hover); border-color: var(--rozsa-hover); }
 
 /* sárga „i” súgógomb (a felhasználó kérésére sárga) */
-.mezo-fej { display: flex; align-items: flex-start; gap: 8px; }
+.mezo-fej { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
 .mezo-fej > span { font-size: 17px; font-weight: 700; line-height: 1.25; }
-.info { position: relative; flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; padding: 0; margin-top: 1px;
-  border-radius: 50%; border: 1.5px solid #c99a06; background: #f7c948; color: var(--kakao);
-  font: 700 15px/1 Georgia, 'Times New Roman', serif; font-style: italic; cursor: pointer; }
-.info::before { content: ''; position: absolute; inset: -11px; } /* 44 px-es érintési terület */
+.info { position: relative; flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; min-height: 28px; white-space: nowrap;
+  border-radius: 999px; border: 1.5px solid #c99a06; background: #f7c948; color: var(--kakao);
+  font: 700 14px/1.1 var(--szoveg); cursor: pointer; }
+.info::before { content: ''; position: absolute; inset: -8px -4px; } /* nagyobb érintési terület */
 .info:hover { background: #f2b90f; }
 .info.ures { background: var(--feher); border: 1.5px dashed #c99a06; color: #a07a05; }
 .info.rejtve { opacity: .45; filter: grayscale(1); }
@@ -255,7 +255,7 @@ details.sugo ol { margin: 4px 0 0; padding-left: 22px; }
   font-size: 18px; font-weight: 700; cursor: pointer; min-height: 56px; }
 .kapcsolo input { width: 28px; height: 28px; flex: none; accent-color: var(--gomb); cursor: pointer; }
 .kapcsolo small { display: block; font-size: 15px; font-weight: 400; color: var(--tipp); }
-.lepes > label .info, .lepes > h2 .info, .elonezet-fej h2 .info { vertical-align: 3px; margin-left: 8px; }
+.lepes > label .info, .lepes > h2 .info, .elonezet-fej h2 .info { vertical-align: 3px; margin-left: 10px; }
 
 /* súgó ablak */
 .sugo-ablak { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; background: rgba(74,40,16,.35); }
@@ -465,7 +465,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   <div class="szerk-sav" id="szerk-sav" hidden>
     <div class="monogram" aria-hidden="true">SZ</div>
     <div><div class="nev" id="szerk-nev">Szerkesztő mód</div><span class="szerep">Magyarázatok szerkesztése</span></div>
-    <p>Kattints bármelyik sárga „i” gombra, és írd be, hol találja a dolgozó az adatot. Képet is csatolhatsz. A szaggatott szélű „i” még üres, a szürke „i”-t a dolgozók nem látják.</p>
+    <p>Kattints bármelyik sárga „Hol találom meg?” gombra, és írd be, hol találja a dolgozó az adatot. Képet is csatolhatsz. A szaggatott szélű még üres, a szürkét a dolgozók nem látják.</p>
     <div class="gombsor">
       <button type="button" class="gomb-2" id="szerk-kezeles" hidden>Szerkesztők kezelése</button>
       <button type="button" class="gomb-2" id="szerk-jelszo" hidden>Jelszavam módosítása</button>
@@ -662,7 +662,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <div id="sugo-szerk" hidden style="display:grid;gap:14px">
       <label class="kapcsolo" for="sugo-lathato">
         <input type="checkbox" id="sugo-lathato">
-        <span>Mutasd az „i” gombot a dolgozóknak ennél a sornál<small id="sugo-lathato-megj">Ha ki van kapcsolva, a dolgozók nem látják az „i” gombot, csak a szerkesztők.</small></span>
+        <span>Mutasd a „Hol találom meg?” gombot a dolgozóknak ennél a sornál<small id="sugo-lathato-megj">Ha ki van kapcsolva, a dolgozók nem látják a gombot, csak a szerkesztők.</small></span>
       </label>
       <p class="mezo-cim" id="sugo-szoveg-cim">Magyarázat (hol találja a dolgozó)</p>
       <div>
@@ -772,7 +772,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     </button>
     <div class="belepo-fej"><h3 id="kezelo-cim">Szerkesztők kezelése</h3></div>
     <div id="kezelo-lista-nezet" style="display:grid;gap:14px">
-      <p class="tipp">Itt veheted fel, módosíthatod és törölheted azokat, akik a sárga „i” magyarázatokat szerkeszthetik. Az „Admin” a többi szerkesztőt is kezelheti.</p>
+      <p class="tipp">Itt veheted fel, módosíthatod és törölheted azokat, akik a „Hol találom meg?” magyarázatokat szerkeszthetik. Az „Admin” a többi szerkesztőt is kezelheti.</p>
       <ul class="kezelo-lista" id="kezelo-lista"></ul>
       <button type="button" class="gomb-fo" id="kezelo-uj">+ Új szerkesztő felvétele</button>
     </div>
@@ -1906,7 +1906,7 @@ document.querySelectorAll('[data-info]').forEach(hely => {
   const k = hely.dataset.info, cim = hely.dataset.cim;
   sugoCimek[k] = cim;
   const b = document.createElement('button');
-  b.type = 'button'; b.className = 'info'; b.textContent = 'i'; b.dataset.kulcs = k;
+  b.type = 'button'; b.className = 'info'; b.textContent = 'Hol találom meg?'; b.dataset.kulcs = k;
   b.setAttribute('aria-label', `Segítség: hol találod meg ezt: ${cim}`);
   b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); sugoNyit(k); });
   hely.replaceWith(b);
@@ -2508,7 +2508,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261125065010';
+const VALTOZAT = '20261125084927';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
