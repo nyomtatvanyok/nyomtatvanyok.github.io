@@ -364,7 +364,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125093227';
+var OLDAL_VERZIO = '20261125130500';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -1005,7 +1005,7 @@ var OLDAL_VERZIO = '20261125093227';
         ujra.addEventListener('click', function () { render(); window.scrollTo(0, 0); });
         wrap.appendChild(h('div', { class: 'iroda' }, h('h2', {}, 'Igénylés rögzítve'),
           h('p', { class: 'uzenet-ok' }, '✓ ' + tipus + ' · ' + ki + ' · azonosító: ' + r.id),
-          h('p', { style: 'margin:0' }, 'Elkészítési határidő: ', h('b', {}, r.deadline + ', ' + r.deadlineDay)),
+          h('p', { style: 'margin:0' }, 'Tervezett elkészítés: ', h('b', {}, r.deadline + ' ' + r.deadlineDay)),
           osszegSor,
           r.mailError ? h('p', { class: 'uzenet-hiba' }, 'Az értesítő e-mailt nem sikerült elküldeni (' + r.mailError + '), de az igénylést rögzítettük.')
             : h('p', { class: 'tipp' }, 'A visszaigazolást elküldtük ' + szemely.name + ' e-mail címére. Az elkészültéről is értesítünk.'),
@@ -1026,9 +1026,9 @@ var OLDAL_VERZIO = '20261125093227';
     var jel = h('span', { class: 'pirula ' + (kesz ? 'st-kesz' : 'st-var') }, kesz ? 'Elkészült' : 'Elkészítésre vár');
     return h('div', { class: 'sor' },
       h('div', { class: 'sor-fej' }, h('span', { class: 'nev' }, r.empName), jel,
-        h('span', { class: 'jobbra' }, r.type + ' · ' + r.id + ' · ' + r.ts)),
+        h('span', { class: 'jobbra' }, r.type + ' · ' + r.id + ' · Igénylés dátuma: ' + (r.tsHosszu || r.ts))),
       h('div', { class: 'adatok' }, adat('Sorszám', r.serial), adat(r.store ? 'Bolt' : 'Terület', hely), adat('Beosztás', r.position),
-        adat('Napi óra', r.hours), adat('Havi összeg', r.amount), adat('Feltöltés', r.topup), adat('Ok', r.reason), adat('Határidő', r.deadline),
+        adat('Napi óra', r.hours), adat('Havi összeg', r.amount), adat('Feltöltés', r.topup), adat('Ok', r.reason), adat('Tervezett elkészítés', r.deadline + (r.deadlineDay ? ' ' + r.deadlineDay : '')),
         admin ? adat('Igénylő', r.reqName) : null, kesz && r.statusAt ? adat('Elkészült, értesítve', r.statusAt) : null));
   }
 
