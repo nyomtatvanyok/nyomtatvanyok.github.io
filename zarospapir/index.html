@@ -922,7 +922,7 @@ const MEZOK = {
     ['=forgOssz', 'E11', 'Forgalom összesen R_keeper (fizető kártya NÉLKÜL)', 'ft', 'Automata kiszámolás: délelőtt + délután − fizető kártya'],
     ['fizeto', 'E12', 'Fizető kártya (saját fogyasztás)', 'ft'],
     ['megszDb', 'E13', 'Nyugta megszakítások száma', 'db', '„X jelentés” NAV-os nyugtán'],
-    ['=kosar', 'E15', 'Kosárérték (átlagos vásárlás)', 'ft', 'Automata kiszámolás: a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ R_keeper vevőszám összesen']
+    ['=kosar', 'E15', 'Kosárérték (átlagos vásárlás)', 'ft', 'Automata kiszámolás: a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ a nagyobb vevőszám (Vevőszám NAV vagy Vevőszám összesen R_keeper)']
   ],
   'g-ora': [
     ['munkaora', 'E16', 'Értékesítés munkaóra (próbanapossal együtt)', 'ora'],
@@ -1106,7 +1106,7 @@ const ALAP_KEPLETEK = {
   kartya:    { keplet: '{szep} + {bank}', leiras: 'SZÉP + bankkártya' },
   vevoOssz:  { keplet: '{vevoDe} + {vevoDu}', leiras: 'délelőtt + délután' },
   forgOssz:  { keplet: '{forgDe} + {forgDu} − {fizeto}', leiras: 'délelőtt + délután − fizető kártya' },
-  kosar:     { keplet: 'NAGYOBB({navTeljes}; {forgOssz}) ÷ {vevoOssz}', leiras: 'a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ R_keeper vevőszám összesen' },
+  kosar:     { keplet: 'NAGYOBB({navTeljes}; {forgOssz}) ÷ NAGYOBB({navVevo}; {vevoOssz})', leiras: 'a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ a nagyobb vevőszám (Vevőszám NAV vagy Vevőszám összesen R_keeper)' },
   eladora:   { keplet: 'NAGYOBB({navTeljes}; {forgOssz}) ÷ {munkaora} × 8', leiras: 'a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ munkaóra × 8' }
 };
 const KIADAS_CIM = 'Kiadás összesen';
@@ -2460,7 +2460,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261125003610';
+const VALTOZAT = '20261125003852';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
