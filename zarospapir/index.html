@@ -720,7 +720,6 @@ input.cimletes { cursor: pointer; background: var(--feher); }
         <button type="button" class="gomb-2" id="cimlet-nullaz">Mind nulla</button>
         <button type="button" class="gomb-fo" id="cimlet-kesz">Kész, beírom</button>
       </div>
-      <button type="button" class="cimlet-kezi" id="cimlet-kezi">Nem számolok címletet, csak beírom az összeget</button>
     </div>
   </div>
 </div>
@@ -1088,7 +1087,6 @@ for (const [csoport, lista] of Object.entries(MEZOK)) {
       inp.setAttribute('aria-haspopup', 'dialog');
       inp.addEventListener('click', () => { if (inp.readOnly) cimletNyit(k); });
       inp.addEventListener('keydown', e => { if (inp.readOnly && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); cimletNyit(k); } });
-      const sm2 = document.createElement('small'); sm2.textContent = 'Koppints a mezőbe: felugrik a címletszámláló.'; wrap.appendChild(sm2);
     }
     if (!auto) inp.addEventListener('blur', () => { if (alkalmazasValtas()) return; erintett.add(k); frissit(); });
     if (!auto) inp.addEventListener('input', () => { if (tipus !== 'szoveg') tagolva(inp); allapot.ertek[k] = inp.value; frissit(); });
@@ -2386,18 +2384,6 @@ $('cimlet-kesz').addEventListener('click', () => {
   $('m-' + k).value = allapot.ertek[k];
   frissit(); cimletZar();
 });
-$('cimlet-kezi').addEventListener('click', () => {
-  const k = cimletKulcs; if (!k) return;
-  cimletZar();
-  const inp = $('m-' + k);
-  inp.readOnly = false; inp.removeAttribute('inputmode'); inp.inputMode = 'decimal'; inp.classList.remove('cimletes');
-  delete allapot.cimlet[k];
-  inp.focus();
-  inp.addEventListener('blur', function vissza() {
-    inp.removeEventListener('blur', vissza);
-    inp.readOnly = true; inp.setAttribute('inputmode', 'none'); inp.classList.add('cimletes');
-  });
-});
 
 /* ---------- aláírás ---------- */
 const alairasKep = new Image();
@@ -2460,7 +2446,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261125004158';
+const VALTOZAT = '20261125004346';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
