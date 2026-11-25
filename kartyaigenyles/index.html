@@ -211,6 +211,26 @@ input[type=password] { max-width: none; }
 .attabla .vezeto { font-size: 14px; color: #8a6a4e; text-align: left; padding: 4px 8px; min-width: 140px; }
 .attabla .gomb { min-height: 40px; padding: 6px 12px; font-size: 15px; }
 .nincs-mentve { color: var(--hiba); font-weight: 700; font-size: 15px; }
+/* 4.10 Törlés ikon: rózsaszín kuka */
+.kuka { position: relative; display: inline-grid; place-items: center; width: 42px; height: 42px; padding: 0; border-radius: 10px;
+  background: #fff4f8; color: #d9467e; border: 2px solid #f3bfd3; cursor: pointer; flex: none; }
+.kuka svg { width: 22px; height: 22px; }
+.kuka:hover, .kuka:focus-visible { background: #fde2ec; border-color: #d9467e; }
+.kuka::after { content: attr(data-tipp); position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  background: #d9467e; color: #fff; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity .12s; }
+.kuka:hover::after, .kuka:focus-visible::after { opacity: 1; }
+.attabla.terulet-tabla { table-layout: fixed; min-width: 640px; }
+.attabla.terulet-tabla col.c-akt { width: 70px; } .attabla.terulet-tabla col.c-tor { width: 110px; } .attabla.terulet-tabla col.c-kap { width: 22%; }
+.attabla.terulet-tabla select, .attabla.terulet-tabla input[type=text] { min-width: 0; }
+.attabla tr.torlesre td { background: #fff4f8; }
+.attabla tr.torlesre input, .attabla tr.torlesre select { text-decoration: line-through; opacity: .55; }
+.attabla tr.uj-bolt td { background: #f6fbf3; }
+.torles-jel { display: block; margin-top: 4px; font-size: 13px; font-weight: 700; color: #d9467e; text-align: left; }
+.uj-jel { display: block; margin-top: 4px; font-size: 13px; font-weight: 700; color: var(--ok); text-align: left; }
+.visszavon { background: none; border: 0; color: #9a7a5e; text-decoration: underline; font-size: 15px; cursor: pointer; min-height: 44px; padding: 4px; }
+.terulet-fej .gomb.elso { min-height: 52px; font-size: 18px; padding: 10px 18px; }
+.terulet-fej .gomb.elso svg { width: 24px; height: 24px; }
 .terulet-fej { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .terulet-fej input[type=text] { flex: 1 1 240px; font-weight: 700; font-size: 20px; }
 .uj-sor { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -303,7 +323,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125082952';
+var OLDAL_VERZIO = '20261125084658';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -372,11 +392,13 @@ var OLDAL_VERZIO = '20261125082952';
     mentes: '<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h8V4M8 20v-6h8v6"/>',
     plusz: '<path d="M12 5v14M5 12h14"/>',
     link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    kuka: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7"/>',
     letolt: '<path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/>',
     dokumentum: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>',
     masol: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/>'
   };
   function gombElso(text, ikon, attrs) { return h('button', Object.assign({ type: 'button', class: 'gomb elso' }, attrs || {}), ikon ? svg(IKON[ikon]) : null, text); }
+  function kukaGomb(cimke, mit) { return h('button', { type: 'button', class: 'kuka', 'data-tipp': 'Törlés', 'aria-label': mit + ' törlése: ' + cimke }, svg(IKON.kuka)); }
   function gombMasod(text, attrs) { return h('button', Object.assign({ type: 'button', class: 'gomb masod' }, attrs || {}), text); }
   function norm(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
   function abc(a, b) { return String(a).localeCompare(String(b), 'hu'); }
@@ -668,7 +690,12 @@ var OLDAL_VERZIO = '20261125082952';
     var lista = [['requests', 'Összes igénylés'], ['users', 'Területi vezetők'], ['areas', 'Területek és boltok'], ['settings', 'Beállítások']];
     return h('nav', { class: 'fulek', 'aria-label': 'Nézetek' }, lista.map(function (f) {
       return h('button', { type: 'button', class: 'ful', 'aria-pressed': S.view === f[0] ? 'true' : 'false',
-        onclick: function () { S.view = f[0]; render(); window.scrollTo(0, 0); } }, f[1]);
+        onclick: function () {
+          function valt() { S.mentetlen = {}; S.view = f[0]; render(); window.scrollTo(0, 0); }
+          var nevek = Object.keys(S.mentetlen || {}).filter(function (k) { return S.mentetlen[k]; });
+          if (!nevek.length || f[0] === S.view) return valt();
+          megerosit('Mentés nélkül továbblépsz?', 'Ezen a területen el nem mentett módosítás van: ' + nevek.join(', ') + '. Ha továbblépsz, ezek elvesznek.', 'Igen, továbblépek', 'Maradok').then(function (igen) { if (igen) valt(); });
+        } }, f[1]);
     }));
   }
 
@@ -1129,49 +1156,124 @@ var OLDAL_VERZIO = '20261125082952';
       var terek = A.areas.slice().sort(function (a, b) { return (b.active - a.active) || abc(a.name, b.name); });
       var terOpciok = A.areas.slice().sort(function (x, y) { return abc(x.name, y.name); }).map(function (a) { return { value: a.id, label: a.name + (a.active ? '' : ' (inaktív)') }; });
 
+      S.mentetlen = {};
       terek.forEach(function (a) {
         var nevMezo = h('input', { type: 'text', value: a.name, 'aria-label': 'Terület neve' });
         var aktivMezo = h('input', { type: 'checkbox', checked: a.active });
-        var mentTer = gombMasod('Mentés', { class: 'gomb masod kicsi' });
+        var ment = gombElso('Mentés', 'mentes', { 'aria-label': a.name + ' terület mentése' });
+        var torolTer = kukaGomb(a.name, 'Terület');
         var jelzo = h('span', { class: 'nincs-mentve', hidden: true }, 'Nincs elmentve');
-        function valtozott() { jelzo.hidden = nevMezo.value === a.name && aktivMezo.checked === a.active; }
-        nevMezo.addEventListener('input', valtozott); aktivMezo.addEventListener('change', valtozott);
-        mentTer.addEventListener('click', function () {
-          call('saveArea', { id: a.id, name: nevMezo.value, active: aktivMezo.checked }, 'A terület mentése…').then(function (d) { mentesUtan(d, 'Terület elmentve.'); }).catch(function (e) { jelzes(e.message, true); });
-        });
-        var boltok = A.stores.filter(function (s) { return s.areaId === a.id; }).sort(function (x, y) { return (y.active - x.active) || abc(x.name, y.name); });
-
+        var sorok = [];
         var tbody = h('tbody');
-        boltok.forEach(function (s) {
-          var bn = h('input', { type: 'text', value: s.name, 'aria-label': 'Bolt neve' });
-          var bt = valaszto(terOpciok, s.areaId, function () { bv(); }, 'a területet', { 'aria-label': 'Terület: ' + s.name });
-          var ba = h('input', { type: 'checkbox', checked: s.active, 'aria-label': 'Aktív: ' + s.name, style: 'width:22px;height:22px;accent-color:var(--gomb)' });
-          var bm = gombMasod('Mentés', { class: 'gomb masod', 'aria-label': s.name + ' mentése' });
-          var bj = h('div', { class: 'nincs-mentve', hidden: true }, 'Nincs elmentve');
-          function bv() { bj.hidden = bn.value === s.name && bt.value === s.areaId && ba.checked === s.active; }
-          bn.addEventListener('input', bv); ba.addEventListener('change', bv);
-          bm.addEventListener('click', function () {
-            call('saveStore', { id: s.id, name: bn.value, areaId: bt.value, active: ba.checked }, 'A bolt mentése…').then(function (d) { mentesUtan(d, 'Bolt elmentve.'); }).catch(function (e) { jelzes(e.message, true); });
+        var tablaHely = h('div', { class: 'attabla-hely' }, h('table', { class: 'attabla terulet-tabla' },
+          h('colgroup', {}, h('col'), h('col'), h('col', { class: 'c-akt' }), h('col', { class: 'c-kap' }), h('col', { class: 'c-tor' })),
+          h('thead', {}, h('tr', {}, ['Bolt neve', 'Terület', 'Aktív', 'Kapcsolattartó', 'Törlés'].map(function (t) { return h('th', { scope: 'col' }, t); }))), tbody));
+        var ures = h('div', { class: 'ures-allapot' }, 'Ebben a területben még nincs bolt. Lent adhatsz hozzá újat.');
+
+        function valtozott() {
+          var v = nevMezo.value !== a.name || aktivMezo.checked !== a.active || sorok.some(function (x) {
+            return !x.s || x.torles || x.el.nev.value !== x.s.name || x.el.ter.value !== x.s.areaId || x.el.akt.checked !== x.s.active;
           });
-          var kik = A.users.filter(function (u) { return u.storeIds.indexOf(s.id) !== -1; }).map(function (u) { return u.name; }).sort(abc);
-          tbody.appendChild(h('tr', {}, h('td', {}, bn, bj), h('td', {}, bt), h('td', {}, ba),
-            h('td', { class: 'vezeto' }, kik.length ? kik.join(', ') : '–'), h('td', {}, bm)));
-        });
+          jelzo.hidden = !v;
+          S.mentetlen[a.name] = v;
+          var vanSor = sorok.length > 0;
+          tablaHely.hidden = !vanSor; ures.hidden = vanSor;
+        }
 
-        var ujBolt = h('input', { type: 'text', placeholder: 'Új bolt ebben a területben', 'aria-label': 'Új bolt neve (' + a.name + ')' });
+        function sorHozzaad(s0) {
+          var x = { s: s0, torles: false };
+          var cimke = s0 ? s0.name : 'új bolt';
+          x.el = {
+            nev: h('input', { type: 'text', value: s0 ? s0.name : '', 'aria-label': 'Bolt neve', placeholder: 'Bolt neve' }),
+            ter: valaszto(terOpciok, s0 ? s0.areaId : a.id, function () { valtozott(); }, 'a területet', { 'aria-label': 'Terület: ' + cimke }),
+            akt: h('input', { type: 'checkbox', checked: s0 ? s0.active : true, 'aria-label': 'Aktív: ' + cimke, style: 'width:22px;height:22px;accent-color:var(--gomb)' })
+          };
+          x.el.nev.addEventListener('input', valtozott); x.el.akt.addEventListener('change', valtozott);
+          var kik = s0 ? A.users.filter(function (u) { return u.storeIds.indexOf(s0.id) !== -1; }).map(function (u) { return u.name; }).sort(abc) : [];
+          var jel = h('span', { class: s0 ? 'torles-jel' : 'uj-jel', hidden: !!s0 }, s0 ? 'Mentéskor törlődik' : 'Új – mentéskor kerül fel');
+          var muvelet = h('td');
+          x.tr = h('tr', { class: s0 ? '' : 'uj-bolt' }, h('td', {}, x.el.nev, jel), h('td', {}, x.el.ter), h('td', {}, x.el.akt),
+            h('td', { class: 'vezeto' }, kik.length ? kik.join(', ') : '–'), muvelet);
+          function muveletRajz() {
+            muvelet.innerHTML = '';
+            if (x.torles) {
+              var vissza = h('button', { type: 'button', class: 'visszavon' }, 'Visszavonás');
+              vissza.addEventListener('click', function () { x.torles = false; x.tr.classList.remove('torlesre'); jel.hidden = true; muveletRajz(); valtozott(); });
+              muvelet.appendChild(vissza);
+              return;
+            }
+            var k = kukaGomb(x.el.nev.value || cimke, 'Bolt');
+            k.addEventListener('click', function () {
+              var nev = x.el.nev.value.trim() || 'új bolt';
+              if (!x.s) { x.tr.remove(); sorok.splice(sorok.indexOf(x), 1); valtozott(); return; }
+              megerosit('Biztosan törölni szeretnéd ezt a boltot: „' + nev + '”?',
+                'A bolt a terület Mentés gombjával törlődik véglegesen; addig a „Visszavonás” gombbal visszaállíthatod. A törlés után a bolt a területi vezetők boltjai közül is kikerül, a régi igénylésekben a neve megmarad.',
+                'Igen, törlöm', 'Mégse').then(function (igen) {
+                  if (!igen) return;
+                  x.torles = true; x.tr.classList.add('torlesre'); jel.hidden = false; muveletRajz(); valtozott();
+                });
+            });
+            muvelet.appendChild(k);
+          }
+          muveletRajz();
+          sorok.push(x); tbody.appendChild(x.tr);
+          return x;
+        }
+        A.stores.filter(function (s) { return s.areaId === a.id; })
+          .sort(function (x, y) { return (y.active - x.active) || abc(x.name, y.name); }).forEach(sorHozzaad);
+
+        var ujBolt = h('input', { type: 'text', placeholder: 'Új bolt neve ebben a területben', 'aria-label': 'Új bolt neve (' + a.name + ')' });
         var ujBoltGomb = gombMasod('Bolt hozzáadása');
-        ujBoltGomb.addEventListener('click', function () {
-          call('saveStore', { name: ujBolt.value, areaId: a.id }, 'A bolt mentése…').then(function (d) { mentesUtan(d, 'Bolt hozzáadva.'); }).catch(function (e) { jelzes(e.message, true); });
-        });
-        var vezetok = A.users.filter(function (u) { return u.areaIds.indexOf(a.id) !== -1; }).map(function (u) { return u.name; }).sort(abc);
+        function ujHozzaad() {
+          var nev = ujBolt.value.trim();
+          if (nev.length < 2) { jelzes('Írd be az új bolt nevét.', true); ujBolt.focus(); return; }
+          var x = sorHozzaad(null); x.el.nev.value = nev; ujBolt.value = ''; valtozott();
+        }
+        ujBoltGomb.addEventListener('click', ujHozzaad);
+        ujBolt.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ujHozzaad(); } });
+        nevMezo.addEventListener('input', valtozott); aktivMezo.addEventListener('change', valtozott);
 
+        ment.addEventListener('click', function () {
+          var csomag = {
+            area: { id: a.id, name: nevMezo.value, active: aktivMezo.checked },
+            stores: sorok.filter(function (x) { return !x.torles; }).map(function (x) {
+              return { id: x.s ? x.s.id : '', name: x.el.nev.value, areaId: x.el.ter.value, active: x.el.akt.checked };
+            }),
+            deleted: sorok.filter(function (x) { return x.torles && x.s; }).map(function (x) { return x.s.id; })
+          };
+          call('saveAreaBundle', csomag, 'A terület mentése…').then(function (d) {
+            var o = d.osszegzes || {}, reszek = [];
+            if (o.uj) reszek.push(o.uj + ' új bolt');
+            if (o.modositott) reszek.push(o.modositott + ' módosított bolt');
+            if (o.torolt) reszek.push(o.torolt + ' törölt bolt');
+            S.mentetlen = {};
+            mentesUtan(d, '„' + nevMezo.value.trim() + '” elmentve' + (reszek.length ? ': ' + reszek.join(', ') : '') + '.');
+          }).catch(function (e) { jelzes(e.message, true); });
+        });
+
+        torolTer.addEventListener('click', function () {
+          var db = A.stores.filter(function (s) { return s.areaId === a.id; }).length;
+          megerosit('Biztosan törölni szeretnéd ezt a területet: „' + a.name + '”?',
+            (db ? 'A területtel együtt a hozzá tartozó ' + db + ' bolt is törlődik. Ha egy boltot meg szeretnél tartani, előbb tedd át egy másik területre, és mentsd el. ' : '') +
+            'A terület a területi vezetők hozzárendeléseiből is kikerül, a régi igénylésekben a neve megmarad. A törlés azonnali, és nem vonható vissza.',
+            'Igen, törlöm', 'Mégse').then(function (igen) {
+              if (!igen) return;
+              call('deleteArea', { id: a.id }, 'A terület törlése…').then(function (d) {
+                var o = d.osszegzes || {};
+                S.mentetlen = {};
+                mentesUtan(d, '„' + o.terulet + '” terület törölve' + (o.boltok ? ' (' + o.boltok + ' bolttal együtt)' : '') + '.');
+              }).catch(function (e) { jelzes(e.message, true); });
+            });
+        });
+
+        var vezetok = A.users.filter(function (u) { return u.areaIds.indexOf(a.id) !== -1; }).map(function (u) { return u.name; }).sort(abc);
         wrap.appendChild(h('div', { class: 'iroda', style: a.active ? '' : 'opacity:.7' },
-          h('div', { class: 'terulet-fej' }, nevMezo, h('label', { class: 'kapcsolo' }, aktivMezo, 'Aktív'), mentTer, jelzo),
+          h('div', { class: 'terulet-fej' }, nevMezo, h('label', { class: 'kapcsolo' }, aktivMezo, 'Aktív'), ment, torolTer, jelzo),
           vezetok.length ? h('p', { class: 'tipp' }, 'Területi vezető: ' + vezetok.join(', ')) : null,
-          boltok.length ? h('div', { class: 'attabla-hely' }, h('table', { class: 'attabla' },
-            h('thead', {}, h('tr', {}, ['Bolt neve', 'Terület', 'Aktív', 'Kapcsolattartó', 'Mentés'].map(function (t) { return h('th', { scope: 'col' }, t); }))),
-            tbody)) : h('div', { class: 'ures-allapot' }, 'Ebben a területben még nincs bolt.'),
-          h('div', { class: 'uj-sor' }, ujBolt, ujBoltGomb)));
+          tablaHely, ures,
+          h('div', { class: 'uj-sor' }, ujBolt, ujBoltGomb),
+          h('p', { class: 'tipp' }, 'A boltokon végzett minden módosítás (név, terület, aktív, új bolt, törlés) a fenti Mentés gombbal kerül fel, egyszerre.')));
+        valtozott();
       });
       return wrap;
     });
