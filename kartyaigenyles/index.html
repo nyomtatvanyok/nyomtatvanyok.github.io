@@ -301,6 +301,23 @@ input[type=password] { max-width: none; }
 <div id="app"></div>
 
 <script>
+/* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
+   Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
+var OLDAL_VERZIO = '20261125082952';
+(function () {
+  if (!/^https:/.test(location.protocol)) return;
+  try {
+    fetch(location.pathname + '?ellenorzes=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
+      var m = t.match(/OLDAL_VERZIO = .([0-9]{14})./);
+      if (m && m[1] !== OLDAL_VERZIO && sessionStorage.getItem('lipoti_frissitve') !== m[1]) {
+        sessionStorage.setItem('lipoti_frissitve', m[1]);
+        location.replace(location.pathname + '?v=' + encodeURIComponent(m[1]) + location.hash);
+      }
+    }).catch(function () {});
+  } catch (e) {}
+})();
+</script>
+<script>
 (function () {
   'use strict';
 
