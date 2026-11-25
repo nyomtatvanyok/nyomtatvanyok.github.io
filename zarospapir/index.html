@@ -242,7 +242,8 @@ details.sugo ol { margin: 4px 0 0; padding-left: 22px; }
 .atkerdes-gombok .torles:hover { background: var(--rozsa-hover); border-color: var(--rozsa-hover); }
 
 /* sárga „i” súgógomb (a felhasználó kérésére sárga) */
-.mezo-fej { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.mezo-fej { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; }
+.mezo-fej > span { min-width: 0; }   /* a hosszú mezőnév a gomb mellett tördelődik, a gomb ugyanabban a sorban marad */
 .mezo-fej > span { font-size: 17px; font-weight: 700; line-height: 1.25; }
 .info { position: relative; flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; min-height: 28px; white-space: nowrap;
   border-radius: 999px; border: 1.5px solid #c99a06; background: #f7c948; color: var(--kakao);
@@ -421,7 +422,11 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 /* telefon */
 @media (max-width: 560px) {
   body { font-size: 18px; }
-  .iroda { padding: 16px; }
+  .iroda { padding: 12px; }
+  .mezok > .mezo { padding: 12px 10px 14px; }
+  .info { font-size: 12.5px; padding: 3px 7px; gap: 2px; }
+  .mezo-fej { gap: 6px; }
+  .mezo-fej > span { font-size: 15.5px; }
   .cimlet-ablak { padding: 0; place-items: end stretch; }
   .cimlet-kartya { width: 100%; max-height: 94dvh; border-radius: 16px 16px 0 0; border-bottom: 0; }
   .cimlet-sor { grid-template-columns: 1fr auto; grid-template-areas: "cimlet resz" "vezerlo vezerlo"; }
@@ -2508,7 +2513,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261125085232';
+const VALTOZAT = '20261125085450';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
