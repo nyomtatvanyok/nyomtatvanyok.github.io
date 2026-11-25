@@ -181,6 +181,13 @@ input[type=password] { max-width: none; }
 .kapcsolo { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; font-size: 16px; }
 .kapcsolo input { width: 22px; height: 22px; accent-color: var(--gomb); }
 .cimkek { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Darabszám-jelvények a vezető neve mellett */
+.darabok { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.darab-jel { display: inline-flex; align-items: baseline; gap: 5px; padding: 3px 12px; border-radius: 999px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.darab-jel b { font: 800 15px/1 var(--cim); font-variant-numeric: tabular-nums; }
+.darab-jel.bolt { background: var(--gomb); color: #fff; }
+.darab-jel.terulet { background: var(--liszt); color: var(--gomb); border: 1px solid var(--morzsa); }
+.darab-jel.nulla { background: #fff; color: #8a6a4e; border: 1px dashed var(--morzsa); }
 .cimke { background: var(--liszt); border: 1px solid var(--morzsa); border-radius: 999px; padding: 2px 10px; font-size: 15px; }
 .cimke.terulet { color: var(--gomb); font-weight: 700; }
 
@@ -337,7 +344,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125090215';
+var OLDAL_VERZIO = '20261125090600';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -1059,7 +1066,10 @@ var OLDAL_VERZIO = '20261125090215';
         szerkGomb.addEventListener('click', function () { vezetoSzerk(u); });
         return h('div', { class: 'sor' },
           h('div', { class: 'sor-fej' }, h('span', { class: 'nev' }, u.name),
-            u.role === 'admin' ? h('span', { class: 'jelveny', style: 'margin:0' }, 'Szerkesztő') : null,
+            u.role === 'admin' ? h('span', { class: 'jelveny', style: 'margin:0' }, 'Szerkesztő') :
+              h('span', { class: 'darabok', 'aria-label': boltok.length + ' bolt, ' + terek.length + ' terület' },
+                h('span', { class: 'darab-jel ' + (boltok.length ? 'bolt' : 'nulla') }, h('b', {}, String(boltok.length)), 'bolt'),
+                h('span', { class: 'darab-jel ' + (terek.length ? 'terulet' : 'nulla') }, h('b', {}, String(terek.length)), 'terület')),
             u.active ? null : h('span', { class: 'pirula inaktiv' }, 'Inaktív'),
             h('span', { class: 'jobbra' }, u.email)),
           u.role === 'admin' ? h('p', { class: 'tipp' }, 'Minden területet és boltot lát.') :
