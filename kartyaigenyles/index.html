@@ -364,7 +364,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125131848';
+var OLDAL_VERZIO = '20261125132404';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -471,8 +471,9 @@ var OLDAL_VERZIO = '20261125131848';
   }
   function betoltoIndul(szoveg) {
     var el = betoltoEl();
-    el.querySelector('.betolto-szoveg').textContent = szoveg || 'Betöltés…';
+    el.querySelector('.betolto-szoveg').textContent = /ment|küld|törl|belép/i.test(szoveg || '') ? (/belép/i.test(szoveg) ? 'Belépés…' : 'Mentés…') : 'Betöltés…';
     B.n++;
+    if (B.vege) { clearTimeout(B.vege); B.vege = null; return; }   // az előző betöltés épp most ért véget: folytatjuk ugyanazt
     if (B.n === 1) {
       B.p = 0; betoltoRajz(); el.classList.add('lathato');
       clearInterval(B.t);
@@ -483,8 +484,13 @@ var OLDAL_VERZIO = '20261125131848';
   function betoltoVege() {
     B.n = Math.max(0, B.n - 1);
     if (B.n) return;
-    clearInterval(B.t); B.p = 100; betoltoRajz();
-    setTimeout(function () { if (!B.n) B.el.classList.remove('lathato'); }, 260);
+    // Rövid türelmi idő: ha közvetlenül utána újabb betöltés indul, ugyanaz a betöltő fut tovább
+    B.vege = setTimeout(function () {
+      B.vege = null;
+      if (B.n) return;
+      clearInterval(B.t); B.p = 100; betoltoRajz();
+      setTimeout(function () { if (!B.n && !B.vege) B.el.classList.remove('lathato'); }, 260);
+    }, 350);
   }
 
   /* ---------- szerverhívás: Google Apps Script JSON API ---------- */
@@ -724,7 +730,7 @@ var OLDAL_VERZIO = '20261125131848';
       return;
     }
     if (szerkeszto() && !S.boot) {
-      call('bootstrap', {}, 'A szerkesztői adatok betöltése…').then(function (b) { S.boot = b; S.myId = b.me.id; render(); }).catch(function () {});
+      call('szerkesztoIndulas', {}, 'Betöltés…').then(function (d) { S.boot = d.boot; S.myId = d.boot.me.id; S.admin = d.admin; S.listaCache = d.requests; render(); }).catch(function () {});
       return;
     }
     var oldal = h('div', { class: 'oldal' });
@@ -1046,8 +1052,7 @@ var OLDAL_VERZIO = '20261125131848';
     wrap.appendChild(h('div', { class: 'szurok ketto' }, q, ty));
     var db = h('p', { class: 'talalat' }), lista = h('div');
     wrap.appendChild(db); wrap.appendChild(lista);
-    function tolt() {
-      call('listRequests', F, 'Az igénylések betöltése…').then(function (sorok) {
+    function rajz(sorok) {
         lista.innerHTML = '';
         db.textContent = sorok.length + ' találat' + (sorok.length === 300 ? ' (az első 300)' : '');
         if (!sorok.length) return lista.appendChild(h('div', { class: 'ures-allapot' }, 'Nincs a keresésnek megfelelő igénylés.'));
@@ -1056,7 +1061,17 @@ var OLDAL_VERZIO = '20261125131848';
           l.appendChild(igenylesSor(r, true));
         });
         lista.appendChild(l);
-      }).catch(function (e) { lista.innerHTML = ''; lista.appendChild(h('p', { class: 'uzenet-hiba' }, e.message)); });
+    }
+    var sorszam = 0;
+    function tolt() {
+      var ures = !F.q && !F.type, en = ++sorszam;
+      if (ures && S.listaCache) rajz(S.listaCache); else db.textContent = 'Keresés…';
+      apiHivas('listRequests', F, S.token || S.key).then(function (res) {
+        if (en !== sorszam) return;            // közben újabb keresés indult
+        if (!res || !res.ok) throw new Error((res && res.error) || 'Nem sikerült betölteni az igényléseket.');
+        if (ures) S.listaCache = res.data;
+        rajz(res.data);
+      }).catch(function (e) { if (en !== sorszam) return; lista.innerHTML = ''; lista.appendChild(h('p', { class: 'uzenet-hiba' }, e.message)); });
     }
     tolt();
     return wrap;
