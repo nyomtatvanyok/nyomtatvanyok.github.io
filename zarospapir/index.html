@@ -474,7 +474,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   </div>
 
   <section class="lepes" id="l-bolt">
-    <label id="bolt-cim"><span class="szam">1</span>Válaszd ki az üzletet<span data-info="bolt" data-cim="Üzlet kiválasztása"></span></label>
+    <label id="bolt-cim" for="kereso-gomb"><span class="szam">1</span>Válaszd ki az üzletet<span data-info="bolt" data-cim="Üzlet kiválasztása"></span></label>
     <div class="kereso" id="kereso">
       <button type="button" class="kereso-gomb ures-valasztas" id="kereso-gomb" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="bolt-cim kereso-gomb">
         <span id="kereso-felirat">– Kattints ide, és válaszd ki az üzletet –</span>
@@ -1060,7 +1060,7 @@ for (const [csoport, lista] of Object.entries(MEZOK)) {
     const k = auto ? kulcs.slice(1) : kulcs;
     mezoInfo[k] = { cella, cim, tipus, auto };
     const wrap = document.createElement('label');
-    wrap.className = 'mezo';
+    wrap.className = 'mezo'; wrap.htmlFor = 'm-' + k;   // a feliratra koppintva a mező kapja a kurzort, ne a rejtett „i” gomb
     const fej = document.createElement('div'); fej.className = 'mezo-fej';
     const sp = document.createElement('span'); sp.textContent = cim; fej.appendChild(sp);
     const ih = document.createElement('span'); ih.dataset.info = k; ih.dataset.cim = cim; fej.appendChild(ih);
@@ -1864,6 +1864,7 @@ infoFrissit();
 const sugoAblak = $('sugo-ablak');
 let sugoElozo = null;
 function sugoNyit(k) {
+  if (!szerkMod && !(vanTartalom(k) && lathatoE(k))) return;   // üres vagy rejtett magyarázat a dolgozóknak sosem nyílik meg
   sugoElozo = document.activeElement;
   szerkKulcs = k;
   $('sugo-cim').textContent = sugoCimek[k] || '';
@@ -2446,7 +2447,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261125004346';
+const VALTOZAT = '20261125004535';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
