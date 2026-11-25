@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://script.google.com">
 <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <title>Lipóti – Zárós papír</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700&family=Montserrat:wght@800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700&family=Kalam:wght@700&family=Montserrat:wght@800&display=swap">
 <style>
 /* Elrendezés: egy oszlop, számozott lépések; alul élő A4-es előnézet a kész zárós papírról. */
 :root {
@@ -1115,6 +1115,9 @@ function ellenoriz() {
 
 /* ---------- lap rajzolása (A4 álló) ---------- */
 const BETU_ALAP = "'Carlito', 'Calibri', Arial, sans-serif";
+/* „Kék tollal kitöltött” hatás: a program által beírt adatok kézírásszerű betűvel, golyóstoll-kékkel */
+const TOLL_BETU = "'Kalam', 'Segoe Print', 'Bradley Hand', cursive";
+const TOLL_SZIN = '#1c3a9e';
 function cellaNev(r, c) { return 'ABCDE'[c] + (r + 1); }
 
 function kitoltottCellak() {
@@ -1203,6 +1206,12 @@ function rajzol(canvas) {
     ctx.drawImage(alairasKep, x1 + ((x2 - x1) - w) / 2, y1 + ((y2 - y1) - h) / 2, w, h);
   }
 
+  // „Maradék eltétel másnapra”: a felirat és a szám cellája is vastag keretet kap
+  ctx.save(); ctx.lineWidth = Math.max(3, 4.5 * s); ctx.strokeStyle = '#000';
+  ctx.strokeRect(xs[0], ys[15], xs[1] - xs[0], ys[16] - ys[15]);
+  ctx.strokeRect(xs[1], ys[15], xs[2] - xs[1], ys[16] - ys[15]);
+  ctx.restore();
+
   // Napi kiadás: a fel nem használt sorokat fordított Z-vel húzzuk át (ahogy a könyvelésben szokás)
   const kiadasDb = Math.min(allapot.kiadas.length, MAX_KIADAS);
   if (kiadasDb < MAX_KIADAS) {
@@ -1222,24 +1231,35 @@ function rajzol(canvas) {
     const x1 = xs[c], x2 = xs[c + cs], y1 = ys[r], y2 = ys[r + rs];
     let cimke = cell[0], felk = cell[1], igazit = cell[3];
     let vanErtek = false;
-    if (nev in ertek && (nev === 'D1' || nev === 'E1' || nev === 'B1')) { cimke = ertek[nev]; }
+    let elotag = '';   // nyomtatott felirat a kitöltött érték előtt (pl. „Dátum: ”)
+    if (nev === 'D1' || nev === 'E1') { elotag = cell[0] + ' '; cimke = String(ertek[nev] || '').slice(cell[0].length).trim(); vanErtek = !!cimke; }
+    else if (nev === 'B1') { cimke = ertek[nev]; vanErtek = !!cimke; }
     else if (nev in ertek && !cimke) { cimke = ertek[nev]; vanErtek = !!cimke; }
+    if (elotag && !cimke) { cimke = ''; }
     if (nev === 'D39') { cimke = 'online felület'; }
-    if (!cimke) return;
+    if (!cimke && !elotag) return;
     const kicsi = r === 38;
+    if (elotag) {   // „Dátum:” / „Nap:” nyomtatva, mellette kék tollal az érték
+      const kozepY = (y1 + y2) / 2;
+      ctx.textAlign = 'left'; ctx.fillStyle = '#000'; ctx.font = `700 ${alapBetu}px ${BETU_ALAP}`;
+      ctx.fillText(elotag, x1 + pad, kozepY);
+      const w = ctx.measureText(elotag).width;
+      if (cimke) { ctx.fillStyle = TOLL_SZIN; ctx.font = `700 ${alapBetu * 1.15}px ${TOLL_BETU}`; ctx.fillText(cimke, x1 + pad + w, kozepY + alapBetu * 0.06); }
+      return;
+    }
     let meret = kicsi ? alapBetu * 8 / 12 : alapBetu * (vanErtek ? 1.3 : 1);   // a beírt számok nagyobbak
     const szel = (x2 - x1) - 2 * pad, mag = (y2 - y1) - 2 * s;
     let sorok, sorMag;
     for (let i = 0; i < 12; i++) {
-      ctx.font = `${(felk || vanErtek) ? 700 : 400} ${meret}px ${BETU_ALAP}`;
+      ctx.font = vanErtek && !kicsi ? `700 ${meret}px ${TOLL_BETU}` : `${(felk || vanErtek) ? 700 : 400} ${meret}px ${BETU_ALAP}`;
       sorok = sorokra(ctx, cimke, szel);
       sorMag = meret * 1.18;
       const tulSzeles = sorok.some(s => ctx.measureText(s).width > szel);
       if (sorok.length * sorMag <= mag && !tulSzeles) break;
       meret *= 0.93;
     }
-    ctx.fillStyle = '#000';
-    const kozep = (y1 + y2) / 2;
+    ctx.fillStyle = vanErtek && !kicsi ? TOLL_SZIN : '#000';
+    const kozep = (y1 + y2) / 2 + (vanErtek && !kicsi ? meret * 0.06 : 0);   // a kézírásos betű kicsit magasabban ül, ezt igazítjuk
     let kezd = kozep - (sorok.length - 1) * sorMag / 2;
     if (nev === 'D21') kezd = y2 - 2 * s - sorMag / 2 - (sorok.length - 1) * sorMag;
     if (r === 38) kezd = y1 + 2 * s + sorMag / 2;
@@ -1515,7 +1535,7 @@ $('letoltes').addEventListener('click', async () => {
   hl.hidden = true;
   betoltoMutat('A zárós papír elkészítése…');
   merfold(30);
-  try { await Promise.race([document.fonts.load(`700 40px Carlito`), varj(2500)]); await document.fonts.ready; } catch (e) {}
+  try { await Promise.race([Promise.all([document.fonts.load(`700 40px Carlito`), document.fonts.load(`700 40px Kalam`, '0123456789 Ftdbóra őű')]), varj(3500)]); await document.fonts.ready; } catch (e) {}
   merfold(70); await varj(120);
   const nagy = document.createElement('canvas'); nagy.width = 2480; nagy.height = 3508; // A4, 300 dpi
   rajzol(nagy);
@@ -2147,7 +2167,7 @@ function avMeretez() {
   const r = av.getBoundingClientRect(), d = window.devicePixelRatio || 1;
   av.width = Math.round(r.width * d); av.height = Math.round(r.height * d);
   actx.setTransform(d, 0, 0, d, 0, 0);
-  actx.lineCap = 'round'; actx.lineJoin = 'round'; actx.strokeStyle = '#0d1b4c';
+  actx.lineCap = 'round'; actx.lineJoin = 'round'; actx.strokeStyle = TOLL_SZIN;
   actx.lineWidth = Math.max(2.5, r.width / 160);
   avRajzolt = false;
 }
@@ -2193,7 +2213,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261124235907';
+const VALTOZAT = '20261125003031';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
