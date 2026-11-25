@@ -123,6 +123,15 @@ input.auto { background: #f1ece4; color: #6b5a48; border-color: #e3d8c6; cursor:
 .gombpar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
 .gombpar .gomb { min-width: 150px; min-height: 56px; font-size: 20px; }
 .gombpar .gomb.elso { min-height: 66px; }
+.nyilatkozat { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; max-width: 640px; background: #fff;
+  border: 2px solid var(--morzsa); border-radius: 14px; padding: 14px 16px; }
+.nyilatkozat-ikon { width: 52px; height: 52px; border-radius: 12px; background: var(--liszt); border: 2px solid var(--morzsa);
+  color: var(--barna); display: grid; place-items: center; flex: none; }
+.nyilatkozat-ikon svg { width: 28px; height: 28px; }
+.nyilatkozat-szoveg { flex: 1 1 220px; display: grid; gap: 2px; }
+.nyilatkozat-szoveg b { font-size: 19px; }
+.nyilatkozat-szoveg small { font-size: 15px; color: #8a6a4e; }
+.nyilatkozat .gomb.elso { text-decoration: none; min-width: 170px; }
 .gomb.kicsi { min-height: 46px; padding: 8px 14px; font-size: 17px; }
 
 /* Szerkesztői belépés gomb (4.5) – az oldal alján, jobbra */
@@ -338,6 +347,7 @@ input[type=password] { max-width: none; }
     el.appendChild(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
   }
   function svg(path, cls) { return h('span', { 'aria-hidden': 'true', class: cls || '', html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>' }).firstChild; }
+  var NYILATKOZAT_PDF = 'Lipoti_kartya_nyilatkozat_2026.pdf';
   var IKON = {
     le: '<path d="M6 9l6 6 6-6"/>',
     kereso: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
@@ -345,6 +355,8 @@ input[type=password] { max-width: none; }
     mentes: '<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h8V4M8 20v-6h8v6"/>',
     plusz: '<path d="M12 5v14M5 12h14"/>',
     link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    letolt: '<path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/>',
+    dokumentum: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>',
     masol: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/>'
   };
   function gombElso(text, ikon, attrs) { return h('button', Object.assign({ type: 'button', class: 'gomb elso' }, attrs || {}), ikon ? svg(IKON[ikon]) : null, text); }
@@ -804,9 +816,15 @@ input[type=password] { max-width: none; }
         'Az azonnali feltöltést akkor válaszd, ha a dolgozónak már most szüksége van az összegre. Különben a következő közös feltöltéskor kerül fel.'));
     }
 
-    var megj = h('textarea', { placeholder: 'Nem kötelező, pl. próbanapos kártya, sürgős', oninput: function () { f.note = megj.value; } });
-    megj.value = f.note;
-    wrap.appendChild(lepes('Írj megjegyzést, ha van (nem kötelező)', megj));
+    var letolto = h('a', { class: 'gomb elso', href: NYILATKOZAT_PDF, download: 'Lipoti_kartya_elfogado_nyilatkozat_2026.pdf',
+      'aria-label': 'A kártya-elfogadó nyilatkozat letöltése (PDF)' }, svg(IKON.letolt), 'Letöltés');
+    var nyilatkozat = h('div', { class: 'nyilatkozat' },
+      h('span', { class: 'nyilatkozat-ikon' }, svg(IKON.dokumentum)),
+      h('div', { class: 'nyilatkozat-szoveg' }, h('b', {}, 'Tájékoztató és elfogadó nyilatkozat'),
+        h('small', {}, 'Beléptető- és fizetőkártyához • PDF, 2 oldal')),
+      letolto);
+    wrap.appendChild(lepes('Töltsd le a kártya-elfogadó nyilatkozatot', nyilatkozat,
+      'Nyomtasd ki, és a kártya átadásakor olvastasd el, töltesd ki és írasd alá a munkavállalóval. A kártyák sorszámát az átadáskor kell beírni.'));
 
     var kuld = gombElso('Igénylés beküldése', 'kuld');
     var urit = gombMasod('Űrlap ürítése');
