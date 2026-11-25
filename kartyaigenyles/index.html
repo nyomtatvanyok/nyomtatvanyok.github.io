@@ -185,6 +185,8 @@ input[type=password] { max-width: none; }
 .cimke.terulet { color: var(--gomb); font-weight: 700; }
 
 .szurok { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.szurok.ketto { grid-template-columns: 2fr 1fr; }
+@media (max-width: 680px) { .szurok.ketto { grid-template-columns: 1fr; } }
 .szurok > * { max-width: none; }
 .talalat { color: #8a6a4e; font-size: 15px; margin: 0 0 8px; }
 
@@ -211,6 +213,18 @@ input[type=password] { max-width: none; }
 .attabla .vezeto { font-size: 14px; color: #8a6a4e; text-align: left; padding: 4px 8px; min-width: 140px; }
 .attabla .gomb { min-height: 40px; padding: 6px 12px; font-size: 15px; }
 .nincs-mentve { color: var(--hiba); font-weight: 700; font-size: 15px; }
+.kesz-kartya { width: min(560px, 100%); margin: 6vh auto 0; display: grid; gap: 16px; background: #fff; border: 4px solid var(--barna);
+  border-radius: 16px; padding: 24px 26px; box-shadow: 0 18px 50px rgba(74,40,16,.22); }
+.kesz-kartya .logo { width: 120px; height: 59px; object-fit: contain; mix-blend-mode: multiply; justify-self: center; }
+.kesz-kartya h2 { margin: 0; font: 800 22px/1.25 var(--cim); color: var(--barna); text-align: center; }
+.kesz-kartya .alcim { margin: -6px 0 0; text-align: center; color: #8a6a4e; font-size: 16px; }
+.kesz-adatok { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; border-top: 1px solid var(--morzsa); border-bottom: 1px solid var(--morzsa); padding: 12px 0; }
+.kesz-adatok dt { color: #8a6a4e; font-size: 15px; }
+.kesz-adatok dd { margin: 0; font-weight: 700; }
+.kesz-kartya .gomb.elso { width: 100%; }
+.kesz-ok { color: var(--ok); font-weight: 700; text-align: center; font-size: 19px; margin: 0; }
+.pirula.st-kesz { background: var(--ok); color: #fff; border-color: var(--ok); }
+.pirula.st-var { background: var(--liszt); color: var(--gomb); border: 1px solid var(--morzsa); }
 /* 4.10 Törlés ikon: rózsaszín kuka */
 .kuka { position: relative; display: inline-grid; place-items: center; width: 42px; height: 42px; padding: 0; border-radius: 10px;
   background: #fff4f8; color: #d9467e; border: 2px solid #f3bfd3; cursor: pointer; flex: none; }
@@ -323,7 +337,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125084658';
+var OLDAL_VERZIO = '20261125090215';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -331,7 +345,8 @@ var OLDAL_VERZIO = '20261125084658';
       var m = t.match(/OLDAL_VERZIO = .([0-9]{14})./);
       if (m && m[1] !== OLDAL_VERZIO && sessionStorage.getItem('lipoti_frissitve') !== m[1]) {
         sessionStorage.setItem('lipoti_frissitve', m[1]);
-        location.replace(location.pathname + '?v=' + encodeURIComponent(m[1]) + location.hash);
+        var q = new URLSearchParams(location.search); q.set('v', m[1]);
+        location.replace(location.pathname + '?' + q.toString() + location.hash);
       }
     }).catch(function () {});
   } catch (e) {}
@@ -625,8 +640,46 @@ var OLDAL_VERZIO = '20261125084658';
   }
   function szerkeszto() { return !!(S.token || S.key); }
 
+  var KESZ = (function () { var q = new URLSearchParams(location.search); return q.get('kesz') && q.get('t') ? { id: q.get('kesz'), t: q.get('t') } : null; })();
+  function keszOldal() {
+    var kartya = h('div', { class: 'kesz-kartya', role: 'main' }, LOGO ? h('img', { class: 'logo', src: LOGO, alt: 'Lipóti' }) : null);
+    app.appendChild(h('div', { class: 'oldal' }, kartya));
+    function hiba(uz) { kartya.appendChild(h('h2', {}, 'Nem sikerült megnyitni')); kartya.appendChild(h('p', { class: 'uzenet-hiba', role: 'alert' }, uz)); }
+    function adatok(r) {
+      var sorok = [['Dolgozó', r.empName], ['Kártya', r.type + ' · ' + r.serial], [r.store ? 'Bolt' : 'Terület', r.store || r.area],
+        ['Igénylő', r.reqName], ['Azonosító', r.id], ['Beküldve', r.ts]];
+      return h('dl', { class: 'kesz-adatok' }, sorok.map(function (x) { return [h('dt', {}, x[0]), h('dd', {}, x[1])]; }));
+    }
+    function kesz(r, szoveg) {
+      kartya.appendChild(h('h2', {}, 'A kártya elkészült'));
+      kartya.appendChild(adatok(r));
+      kartya.appendChild(h('p', { class: 'kesz-ok', role: 'status' }, szoveg));
+    }
+    call('keszAdat', KESZ, 'Az igénylés betöltése…').then(function (d) {
+      var r = d.req;
+      if (d.kesz) return kesz(r, '✓ Ezt az igénylést ' + (r.statusAt ? r.statusAt + '-kor ' : '') + 'már elkészültnek jelezted, ' + r.reqName + ' értesítést kapott.');
+      kartya.appendChild(h('h2', {}, 'Elkészült a kártya?'));
+      kartya.appendChild(h('p', { class: 'alcim' }, 'A gombbal e-mailben értesíted ' + r.reqName + ' területi vezetőt.'));
+      kartya.appendChild(adatok(r));
+      var gomb = gombElso('Igen, elkészült – értesítem', 'kuld');
+      var hibaHely = h('div', { 'aria-live': 'polite' });
+      gomb.addEventListener('click', function () {
+        hibaHely.innerHTML = '';
+        call('keszJelzes', KESZ, 'Az értesítés küldése…').then(function (x) {
+          kartya.innerHTML = '';
+          if (LOGO) kartya.appendChild(h('img', { class: 'logo', src: LOGO, alt: 'Lipóti' }));
+          if (x.mailError) { kesz(x.req, 'Elkészültként rögzítve, de az e-mailt nem sikerült elküldeni: ' + x.mailError); return; }
+          kesz(x.req, x.marKorabban ? '✓ Ezt már korábban jelezted, ' + x.req.reqName + ' értesítést kapott.' : '✓ Kész. ' + x.req.reqName + ' e-mailben értesítést kapott. Ezt az oldalt bezárhatod.');
+        }).catch(function (e) { hibaHely.appendChild(h('p', { class: 'uzenet-hiba', role: 'alert' }, e.message)); });
+      });
+      kartya.appendChild(gomb);
+      kartya.appendChild(hibaHely);
+    }).catch(function (e) { hiba(e.message); });
+  }
+
   function render() {
     app.innerHTML = '';
+    if (KESZ) return keszOldal();
     if (!S.keyChecked) return;
     if (!S.urlapAdat) {
       var mentett = null;
@@ -938,52 +991,30 @@ var OLDAL_VERZIO = '20261125084658';
   /* ---------- Igénylések listája ---------- */
   function adat(k, v) { return v === '' || v === null || v === undefined ? null : h('span', {}, k + ': ', h('b', {}, String(v))); }
 
-  function igenylesSor(r, admin, frissult) {
+  function igenylesSor(r, admin) {
     var hely = r.store ? r.store + ' (' + r.area + ')' : r.area;
-    var sor = h('div', { class: 'sor' },
-      h('div', { class: 'sor-fej' }, h('span', { class: 'nev' }, r.empName), h('span', { class: 'pirula st-' + r.status }, r.status),
+    var kesz = r.status === 'Elkészült';
+    var jel = h('span', { class: 'pirula ' + (kesz ? 'st-kesz' : 'st-var') }, kesz ? 'Elkészült' : 'Elkészítésre vár');
+    return h('div', { class: 'sor' },
+      h('div', { class: 'sor-fej' }, h('span', { class: 'nev' }, r.empName), jel,
         h('span', { class: 'jobbra' }, r.type + ' · ' + r.id + ' · ' + r.ts)),
       h('div', { class: 'adatok' }, adat('Sorszám', r.serial), adat(r.store ? 'Bolt' : 'Terület', hely), adat('Beosztás', r.position),
-        adat('Napi óra', r.hours), adat('Havi összeg', r.amount), adat('Feltöltés', r.topup), adat('Ok', r.reason), adat('Határidő', r.deadline), admin ? adat('Igénylő', r.reqName) : null, adat('Megjegyzés', r.note)));
-    if (!admin) return sor;
-
-    var st = valaszto(S.boot.statuses.map(function (s) { return { value: s, label: s }; }), r.status, function () {}, 'a státuszt', { 'aria-label': 'Státusz: ' + r.empName });
-    var ertesit = h('input', { type: 'checkbox', checked: true });
-    var ment = gombMasod('Státusz mentése', { class: 'gomb masod kicsi' });
-    ment.addEventListener('click', function () {
-      if (st.value === r.status) return jelzes('A státusz nem változott.');
-      var p = { id: r.id, status: st.value, notify: ertesit.checked };
-      function mehet(indok) {
-        if (indok !== undefined) p.note = indok;
-        call('setStatus', p, 'A státusz mentése…').then(function (res) {
-          jelzes('Elmentve: ' + res.req.status + (res.mailError ? ' (az e-mail nem ment ki: ' + res.mailError + ')' : (p.notify && /Elkészült|Elutasítva/.test(res.req.status) ? ' · az igénylőt értesítettük' : '')));
-          frissult(res.req);
-        }).catch(function (e) { jelzes(e.message, true); });
-      }
-      if (st.value === 'Elutasítva') {
-        var ta = h('textarea', { placeholder: 'Az indoklás az igénylőnek is elmegy' }); ta.value = r.note || '';
-        var megse = gombMasod('Mégse'), oke = gombElso('Elutasítás mentése', 'mentes');
-        var bezar = ablak({ cim: 'Miért utasítod el?', tartalom: h('div', { style: 'display:grid;gap:8px' }, ta, h('p', { class: 'tipp' }, 'Ezt a szöveget az igénylő is megkapja e-mailben.')), gombok: [megse, oke], fokusz: ta });
-        megse.addEventListener('click', bezar);
-        oke.addEventListener('click', function () { bezar(); mehet(ta.value); });
-      } else mehet();
-    });
-    sor.appendChild(h('div', { class: 'sor-muvelet' }, st, ment, h('label', { class: 'kapcsolo' }, ertesit, 'E-mail az igénylőnek (Elkészült / Elutasítva)')));
-    return sor;
+        adat('Napi óra', r.hours), adat('Havi összeg', r.amount), adat('Feltöltés', r.topup), adat('Ok', r.reason), adat('Határidő', r.deadline),
+        admin ? adat('Igénylő', r.reqName) : null, kesz && r.statusAt ? adat('Elkészült, értesítve', r.statusAt) : null));
   }
+
 
   function nezetOsszes() {
     var F = S.filter;
     var wrap = h('div', { style: 'display:grid;gap:14px' }, h('h2', { style: 'margin:0;font-size:24px;color:var(--barna)' }, 'Összes igénylés'),
-      h('p', { class: 'tipp' }, 'Keress név, sorszám, bolt vagy azonosító szerint. Az „Elkészült” státusz e-mailt küld az igénylőnek.'));
+      h('p', { class: 'tipp' }, 'Keress név, sorszám, bolt vagy azonosító szerint. Az elkészült kártyát az új igénylésről kapott e-mailben lévő „Kártya elkészült” gombbal jelezheted; ez értesíti az igénylő területi vezetőt.'));
     var q = h('input', { type: 'search', placeholder: 'Keresés: pl. Kiss, 0266, Szhely', value: F.q, 'aria-label': 'Keresés az igénylések között' });
-    var st = valaszto(S.boot.statuses.map(function (s) { return { value: s, label: s }; }), F.status, function (v) { F.status = v; tolt(); }, 'a státuszt', { 'aria-label': 'Státusz szűrő' });
-    st.options[0].textContent = 'Minden státusz';
+    F.status = '';
     var ty = valaszto([{ value: 'belepteto', label: 'Beléptető kártya' }, { value: 'fizeto', label: 'Fizető kártya' }], F.type, function (v) { F.type = v; tolt(); }, 'a típust', { 'aria-label': 'Típus szűrő' });
     ty.options[0].textContent = 'Minden típus';
     var idozito;
     q.addEventListener('input', function () { F.q = q.value; clearTimeout(idozito); idozito = setTimeout(tolt, 450); });
-    wrap.appendChild(h('div', { class: 'szurok' }, q, st, ty));
+    wrap.appendChild(h('div', { class: 'szurok ketto' }, q, ty));
     var db = h('p', { class: 'talalat' }), lista = h('div');
     wrap.appendChild(db); wrap.appendChild(lista);
     function tolt() {
@@ -993,10 +1024,7 @@ var OLDAL_VERZIO = '20261125084658';
         if (!sorok.length) return lista.appendChild(h('div', { class: 'ures-allapot' }, 'Nincs a keresésnek megfelelő igénylés.'));
         var l = h('div', { class: 'lista' });
         sorok.forEach(function (r) {
-          var el;
-          function frissult(uj) { var ne = igenylesSor(uj, true, frissult); el.replaceWith(ne); el = ne; }
-          el = igenylesSor(r, true, frissult);
-          l.appendChild(el);
+          l.appendChild(igenylesSor(r, true));
         });
         lista.appendChild(l);
       }).catch(function (e) { lista.innerHTML = ''; lista.appendChild(h('p', { class: 'uzenet-hiba' }, e.message)); });
