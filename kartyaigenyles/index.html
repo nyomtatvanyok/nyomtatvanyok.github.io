@@ -46,7 +46,7 @@ h1 { margin: 0; font: 800 clamp(24px, 4vw, 34px)/1.15 var(--cim); color: var(--b
   display: grid; place-items: center; font: 800 17px var(--cim); }
 .profil b { display: block; font-size: 20px; }
 .profil .email { color: #8a6a4e; font-size: 16px; word-break: break-all; }
-.jelveny { display: inline-block; background: var(--liszt); border: 1px solid var(--morzsa); border-radius: 999px;
+.jelveny { display: inline-block; background: var(--liszt); border: 1px solid var(--morzsa); border-radius: 6px;
   font: 700 13px var(--szoveg); color: var(--gomb); padding: 2px 10px; margin-top: 4px; }
 
 /* Fülek (szerkesztő): másodlagos gombok, kiválasztott teli */
@@ -87,6 +87,7 @@ option { color: var(--kakao); }
 option:nth-child(even) { background: #efedea; }
 .hibas, .hibas .kereso-gomb { border-color: var(--hiba) !important; }
 input.auto { background: #f1ece4; color: #6b5a48; border-color: #e3d8c6; cursor: not-allowed; }
+input.auto.rogzitett { width: 100%; max-width: 560px; font-size: 20px; font-weight: 700; }
 
 /* 4.4 Keresős lenyíló */
 .kereso { position: relative; width: 100%; max-width: 560px; }
@@ -111,7 +112,7 @@ input.auto { background: #f1ece4; color: #6b5a48; border-color: #e3d8c6; cursor:
 .kereso-lista li.ures-sor { color: #6b4a30; font-weight: 400; }
 .kereso-lista li[aria-selected="true"]::after { content: '  ✓'; }
 .kereso-lista li.jeles { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
-.kereso-jel { margin-left: auto; padding: 3px 12px; border-radius: 999px; background: var(--gomb); color: #fff; font-size: 16px; font-weight: 700; white-space: nowrap; }
+.kereso-jel { margin-left: auto; padding: 3px 12px; border-radius: 6px; background: var(--gomb); color: #fff; font-size: 16px; font-weight: 700; white-space: nowrap; }
 .kereso-lista li.nincs { color: #8a6a4e; font-weight: 400; cursor: default; background: none; }
 
 /* 4.5 Gombok */
@@ -163,7 +164,7 @@ input[type=password] { max-width: none; }
 .figyelmeztetes { background: var(--liszt); border: 2px solid var(--morzsa); border-radius: 10px; padding: 12px 14px; margin: 0; }
 
 /* Jelvények (státusz) – a meglévő tokenekből */
-.pirula { display: inline-block; border-radius: 999px; padding: 2px 12px; font: 700 15px var(--szoveg); white-space: nowrap; border: 1px solid transparent; }
+.pirula { display: inline-block; border-radius: 6px; padding: 2px 12px; font: 700 15px var(--szoveg); white-space: nowrap; border: 1px solid transparent; }
 .st-Rögzítve { background: var(--liszt); border-color: var(--morzsa); color: var(--gomb); }
 .st-Folyamatban { background: var(--morzsa); color: var(--kakao); }
 .st-Elkészült { background: var(--ok); color: #fff; }
@@ -198,10 +199,10 @@ input[type=password] { max-width: none; }
 .ig-tabla td.sorsz { width: 1%; }
 .ig-tabla .halvany { color: #8a6a4e; font-size: 13px; }
 .ig-tabla .sorsz { font-weight: 700; font-variant-numeric: tabular-nums; }
-.tipus-jel { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.tipus-jel { display: inline-block; padding: 2px 9px; border-radius: 6px; font-size: 13px; font-weight: 700; white-space: nowrap; }
 .tipus-jel.belepto { background: var(--liszt); color: var(--gomb); border: 1px solid var(--morzsa); }
 .tipus-jel.fizeto { background: var(--gomb); color: #fff; border: 1px solid var(--gomb); }
-.allapot-jel { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.allapot-jel { display: inline-block; padding: 2px 9px; border-radius: 6px; font-size: 13px; font-weight: 700; white-space: nowrap; }
 .allapot-jel.kesz { background: var(--ok); color: #fff; }
 .allapot-jel.var { background: #fff; color: var(--gomb); border: 1px solid var(--gomb); }
 @media (max-width: 760px) {
@@ -239,7 +240,7 @@ input[type=password] { max-width: none; }
 .nev-blokk .nev { line-height: 1.25; }
 .nev-email { font-size: 14px; color: #8a6a4e; }
 .sor-fej { min-height: 32px; }
-.cimke { background: var(--liszt); border: 1px solid var(--morzsa); border-radius: 999px; padding: 2px 10px; font-size: 15px; }
+.cimke { background: var(--liszt); border: 1px solid var(--morzsa); border-radius: 6px; padding: 2px 10px; font-size: 15px; }
 .cimke.terulet { color: var(--gomb); font-weight: 700; }
 
 .szurok { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
@@ -414,7 +415,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125142515';
+var OLDAL_VERZIO = '20261125143031';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -686,6 +687,11 @@ var OLDAL_VERZIO = '20261125142515';
   }
 
   /** Automatikus: 6 tételig natív select, fölötte keresős lenyíló */
+  /** Egyetlen lehetőség: automatikusan kiválasztott, halványszürke, nem nyitható mező. */
+  function rogzitettMezo(szoveg, mit) {
+    return h('input', { type: 'text', class: 'auto rogzitett', value: szoveg, readonly: 'readonly', tabindex: '-1',
+      'aria-label': mit + ': ' + szoveg + ' (automatikusan kiválasztva)' });
+  }
   function listaValaszto(tetelek, ertek, valtozas, mit, pelda, nincs, cimkeId, uresSor) {
     return tetelek.length > 6 ? kereso(tetelek, ertek, valtozas, mit, pelda, nincs, cimkeId, uresSor)
       : valaszto(tetelek, ertek, valtozas, mit, { 'aria-labelledby': cimkeId });
@@ -958,13 +964,15 @@ var OLDAL_VERZIO = '20261125142515';
     if (f.type === 'belepteto') {
       var terTetelek = szemely.areas.slice().sort(function (x, y) { return abc(x.name, y.name); }).map(function (a) { return { value: a.id, label: a.name }; });
       if (terTetelek.length === 1 && !f.areaId) f.areaId = terTetelek[0].value;
-      var ter = listaValaszto(terTetelek, f.areaId, function (v) { f.areaId = v; ter.classList.remove('hibas'); }, 'a területet', 'pl. Sopron', 'Nincs ilyen terület.');
+      var ter = terTetelek.length === 1 ? rogzitettMezo(terTetelek[0].label, 'Terület')
+        : listaValaszto(terTetelek, f.areaId, function (v) { f.areaId = v; ter.classList.remove('hibas'); }, 'a területet', 'pl. Sopron', 'Nincs ilyen terület.');
       hibasMezok.areaId = ter;
       wrap.appendChild(lepes('Melyik területre szól a kártya?', ter, 'A beléptető kártyával a munkavállaló a kiválasztott terület bármelyik boltjába be tud lépni, így a területed összes üzletében dolgozhat.'));
     } else {
       var boltTetelek = szemely.stores.slice().sort(function (x, y) { return abc(x.name, y.name); }).map(function (s) { return { value: s.id, label: s.name, jel: s.areaName }; });
       if (boltTetelek.length === 1 && !f.storeId) f.storeId = boltTetelek[0].value;
-      var bolt = listaValaszto(boltTetelek, f.storeId, function (v) { f.storeId = v; bolt.classList.remove('hibas'); }, 'a boltot', 'pl. Fő tér, Tesco', 'Nincs ilyen bolt.');
+      var bolt = boltTetelek.length === 1 ? rogzitettMezo(boltTetelek[0].label, 'Bolt')
+        : listaValaszto(boltTetelek, f.storeId, function (v) { f.storeId = v; bolt.classList.remove('hibas'); }, 'a boltot', 'pl. Fő tér, Tesco', 'Nincs ilyen bolt.');
       hibasMezok.storeId = bolt;
       wrap.appendChild(lepes('Melyik boltban dolgozik?', bolt));
     }
