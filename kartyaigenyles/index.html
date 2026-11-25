@@ -610,13 +610,13 @@ input[type=password] { max-width: none; }
     oldal.appendChild(fejlec());
     if (S.boot) {
       oldal.appendChild(h('div', { class: 'oszlop' }, profilsav()));
+      // A szerkesztő nem ad le igénylést: belépve az „Új igénylés” nézet helyett az igénylések listája nyílik meg.
+      if (S.view === 'new') S.view = 'requests';
       oldal.appendChild(fulek());
     } else {
       oldal.appendChild(h('div', { style: 'height:6px' }));
     }
-    // A szerkesztő nem ad le igénylést: belépve az „Új igénylés” nézet helyett az igénylések listája nyílik meg.
-    var nezet = S.boot ? (S.view === 'new' ? 'requests' : S.view) : 'new';
-    if (S.boot) S.view = nezet;
+    var nezet = S.boot ? S.view : 'new';
     var tartalom = h('div', { class: 'oszlop' + (/^(requests|users|areas|settings)$/.test(nezet) ? ' szeles' : '') });
     var v = { new: nezetUj, requests: nezetOsszes, users: nezetVezetok, areas: nezetTeruletek, settings: nezetBeallitasok }[nezet] || nezetUj;
     tartalom.appendChild(v());
