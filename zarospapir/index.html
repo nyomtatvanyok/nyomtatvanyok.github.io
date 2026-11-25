@@ -465,7 +465,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   <div class="szerk-sav" id="szerk-sav" hidden>
     <div class="monogram" aria-hidden="true">SZ</div>
     <div><div class="nev" id="szerk-nev">Szerkesztő mód</div><span class="szerep">Magyarázatok szerkesztése</span></div>
-    <p>Kattints bármelyik sárga „Hol találom meg?” gombra, és írd be, hol találja a dolgozó az adatot. Képet is csatolhatsz. A szaggatott szélű még üres, a szürkét a dolgozók nem látják.</p>
+    <p>Kattints bármelyik sárga „Honnan tudod leírni?” gombra, és írd be, hol találja a dolgozó az adatot. Képet is csatolhatsz. A szaggatott szélű még üres, a szürkét a dolgozók nem látják.</p>
     <div class="gombsor">
       <button type="button" class="gomb-2" id="szerk-kezeles" hidden>Szerkesztők kezelése</button>
       <button type="button" class="gomb-2" id="szerk-jelszo" hidden>Jelszavam módosítása</button>
@@ -651,7 +651,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <button type="button" class="bezar-x" id="sugo-x" aria-label="Magyarázat bezárása">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
     </button>
-    <p class="alcim">Hol találod meg?</p>
+    <p class="alcim">Honnan tudod leírni?</p>
     <h3 id="sugo-cim"></h3>
     <div id="sugo-nezet">
       <div class="sugo-szoveg" id="sugo-szoveg"></div>
@@ -662,7 +662,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <div id="sugo-szerk" hidden style="display:grid;gap:14px">
       <label class="kapcsolo" for="sugo-lathato">
         <input type="checkbox" id="sugo-lathato">
-        <span>Mutasd a „Hol találom meg?” gombot a dolgozóknak ennél a sornál<small id="sugo-lathato-megj">Ha ki van kapcsolva, a dolgozók nem látják a gombot, csak a szerkesztők.</small></span>
+        <span>Mutasd a „Honnan tudod leírni?” gombot a dolgozóknak ennél a sornál<small id="sugo-lathato-megj">Ha ki van kapcsolva, a dolgozók nem látják a gombot, csak a szerkesztők.</small></span>
       </label>
       <p class="mezo-cim" id="sugo-szoveg-cim">Magyarázat (hol találja a dolgozó)</p>
       <div>
@@ -772,7 +772,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     </button>
     <div class="belepo-fej"><h3 id="kezelo-cim">Szerkesztők kezelése</h3></div>
     <div id="kezelo-lista-nezet" style="display:grid;gap:14px">
-      <p class="tipp">Itt veheted fel, módosíthatod és törölheted azokat, akik a „Hol találom meg?” magyarázatokat szerkeszthetik. Az „Admin” a többi szerkesztőt is kezelheti.</p>
+      <p class="tipp">Itt veheted fel, módosíthatod és törölheted azokat, akik a „Honnan tudod leírni?” magyarázatokat szerkeszthetik. Az „Admin” a többi szerkesztőt is kezelheti.</p>
       <ul class="kezelo-lista" id="kezelo-lista"></ul>
       <button type="button" class="gomb-fo" id="kezelo-uj">+ Új szerkesztő felvétele</button>
     </div>
@@ -1906,8 +1906,8 @@ document.querySelectorAll('[data-info]').forEach(hely => {
   const k = hely.dataset.info, cim = hely.dataset.cim;
   sugoCimek[k] = cim;
   const b = document.createElement('button');
-  b.type = 'button'; b.className = 'info'; b.textContent = 'Hol találom meg?'; b.dataset.kulcs = k;
-  b.setAttribute('aria-label', `Segítség: hol találod meg ezt: ${cim}`);
+  b.type = 'button'; b.className = 'info'; b.textContent = '👆 Honnan tudod leírni?'; b.dataset.kulcs = k;
+  b.setAttribute('aria-label', `Honnan tudod leírni: ${cim}`);
   b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); sugoNyit(k); });
   hely.replaceWith(b);
 });
@@ -1941,7 +1941,7 @@ function sugoNyit(k) {
     const sz = $('sugo-szoveg'); sz.innerHTML = tisztit(adat.szoveg || '');
     sz.hidden = szovegUres(adat.szoveg);
     szerkKulcsNezet = adat.kepId || null;
-    kepBetolt($('sugo-kep'), adat.kepId, `Kép: hol találod meg ezt: ${sugoCimek[k]}`);
+    kepBetolt($('sugo-kep'), adat.kepId, `Kép: honnan tudod leírni: ${sugoCimek[k]}`);
   }
   sugoAblak.hidden = false;
   $('sugo-x').focus();
@@ -2508,7 +2508,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261125084927';
+const VALTOZAT = '20261125085232';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
