@@ -240,9 +240,11 @@ input[type=password] { max-width: none; }
 .talalat { color: #8a6a4e; font-size: 15px; margin: 0 0 8px; }
 
 /* Jelölőnégyzet-lista (felhasználó-szerkesztő) */
-.jelolok { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); border: 2px solid var(--morzsa); border-radius: 10px; overflow: hidden; }
-.jelolo { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 12px; cursor: pointer; font-size: 18px; background: #fff; }
-.jelolo:nth-child(even) { background: #efedea; }
+.jelolok { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); border: 2px solid var(--morzsa); border-radius: 10px; overflow: hidden; background: #fff; }
+.jelolo { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 12px; cursor: pointer; font-size: 17px; background: #fff;
+  white-space: nowrap; min-width: 0; box-shadow: 1px 0 0 var(--morzsa), 0 1px 0 var(--morzsa); }   /* cellák közti vékony vonal */
+.jelolo span { overflow: hidden; text-overflow: ellipsis; }
+.jelolo:hover { background: var(--liszt); }
 .jelolo.be { background: var(--morzsa); font-weight: 700; }
 .jelolo input { width: 22px; height: 22px; accent-color: var(--gomb); flex: none; }
 .csoport-fej { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 6px; font-weight: 700; }
@@ -403,7 +405,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125135307';
+var OLDAL_VERZIO = '20261125135617';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
