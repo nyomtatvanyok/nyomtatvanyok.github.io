@@ -364,7 +364,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125130500';
+var OLDAL_VERZIO = '20261125131429';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -1028,7 +1028,7 @@ var OLDAL_VERZIO = '20261125130500';
       h('div', { class: 'sor-fej' }, h('span', { class: 'nev' }, r.empName), jel,
         h('span', { class: 'jobbra' }, r.type + ' · ' + r.id + ' · Igénylés dátuma: ' + (r.tsHosszu || r.ts))),
       h('div', { class: 'adatok' }, adat('Sorszám', r.serial), adat(r.store ? 'Bolt' : 'Terület', hely), adat('Beosztás', r.position),
-        adat('Napi óra', r.hours), adat('Havi összeg', r.amount), adat('Feltöltés', r.topup), adat('Ok', r.reason), adat('Tervezett elkészítés', r.deadline + (r.deadlineDay ? ' ' + r.deadlineDay : '')),
+        adat('Napi óra', r.hours), adat('Havi összeg', r.amount), adat('Feltöltés', /^\d{4}\.\d{2}\.\d{2}\./.test(String(r.topup || '')) ? '' : r.topup), adat('Ok', r.reason), adat('Tervezett elkészítés', r.deadline + (r.deadlineDay ? ' ' + r.deadlineDay : '')),
         admin ? adat('Igénylő', r.reqName) : null, kesz && r.statusAt ? adat('Elkészült, értesítve', r.statusAt) : null));
   }
 
