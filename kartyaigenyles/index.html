@@ -183,6 +183,7 @@ input[type=password] { max-width: none; }
 .adatok b { color: var(--kakao); }
 /* Igénylések listája: sűrű, egysoros táblázat */
 .oszlop.szeles.teljes { max-width: 1280px; }
+.oszlop.szeles.vezetok-nezet { max-width: 860px; }
 .oszlop.teljes > * { min-width: 0; }
 .ig-hely { border: 1px solid var(--morzsa); border-radius: 10px; overflow: auto; max-height: 74vh; background: #fff; }
 .ig-tabla { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; }
@@ -410,7 +411,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125135741';
+var OLDAL_VERZIO = '20261125141230';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -790,7 +791,7 @@ var OLDAL_VERZIO = '20261125135741';
       oldal.appendChild(h('div', { style: 'height:6px' }));
     }
     var nezet = S.boot ? S.view : 'new';
-    var tartalom = h('div', { class: 'oszlop' + (/^(requests|users|areas|settings)$/.test(nezet) ? ' szeles' : '') + (nezet === 'requests' ? ' teljes' : '') });
+    var tartalom = h('div', { class: 'oszlop' + (/^(requests|users|areas|settings)$/.test(nezet) ? ' szeles' : '') + (nezet === 'requests' ? ' teljes' : '') + (nezet === 'users' ? ' vezetok-nezet' : '') });
     var v = { new: nezetUj, requests: nezetOsszes, users: nezetVezetok, areas: nezetTeruletek, settings: nezetBeallitasok }[nezet] || nezetUj;
     tartalom.appendChild(v());
     oldal.appendChild(tartalom);
