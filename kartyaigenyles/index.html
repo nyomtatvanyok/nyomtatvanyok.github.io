@@ -675,7 +675,7 @@ input[type=password] { max-width: none; }
       jelszo.focus();
     });
     var hiba = h('div', { 'aria-live': 'polite' });
-    var megse = gombMasod('Mégse'), belep = gombElso('Belépés', null);
+    var megse = gombMasod('Vissza'), belep = gombElso('Belépés', null);
     var fej = h('div', { class: 'belepo-fej' }, h('span', { class: 'kor' }, svg(LAKAT)),
       h('div', {}, h('h2', {}, 'Szerkesztői belépés'), h('p', {}, 'Igénylések, területi vezetők és boltok kezelése')));
     var bezar = ablak({ rendszer: true, osztaly: 'belepo', fej: fej, fokusz: email.value ? jelszo : email,
@@ -683,7 +683,7 @@ input[type=password] { max-width: none; }
         h('div', { class: 'belepo-mezo' }, h('label', { for: 'szerk-email' }, 'E-mail-cím'), email),
         h('div', { class: 'belepo-mezo' }, h('label', { for: 'szerk-jelszo' }, 'Jelszó'), h('div', { class: 'jelszo-sor' }, jelszo, mutat)),
         hiba,
-        h('p', { class: 'tipp' }, 'A szerkesztői felület csak a kijelölt munkatársak számára érhető el. Ha nem kaptál belépési adatokat, kérjük, zárd be ezt az ablakot; a kártyaigénylést a fenti űrlapon tudod leadni.'),
+        h('p', { class: 'tipp' }, 'A szerkesztői felület csak a kijelölt munkatársak számára érhető el. Ha nem kaptál belépési adatokat, kérjük, zárd be ezt az ablakot; a kártyaigénylést belépés nélkül is le tudod adni.'),
         h('button', { type: 'submit', hidden: true })),
       gombok: [megse, belep] });
     megse.addEventListener('click', bezar);
