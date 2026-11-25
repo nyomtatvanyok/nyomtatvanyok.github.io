@@ -244,8 +244,13 @@ input[type=password] { max-width: none; }
   background: #d9467e; color: #fff; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
   opacity: 0; pointer-events: none; transition: opacity .12s; }
 .kuka:hover::after, .kuka:focus-visible::after { opacity: 1; }
-.attabla.terulet-tabla { table-layout: fixed; min-width: 640px; }
-.attabla.terulet-tabla col.c-akt { width: 70px; } .attabla.terulet-tabla col.c-tor { width: 110px; } .attabla.terulet-tabla col.c-kap { width: 22%; }
+.attabla.terulet-tabla { table-layout: fixed; min-width: 620px; }
+.attabla.terulet-tabla tbody { counter-reset: boltsor; }
+.attabla.terulet-tabla tbody tr { counter-increment: boltsor; }
+.attabla.terulet-tabla td.sorszam { font: 800 15px/1 var(--cim); color: var(--barna); font-variant-numeric: tabular-nums; }
+.attabla.terulet-tabla td.sorszam::before { content: counter(boltsor) '.'; }
+.attabla.terulet-tabla col.c-ssz { width: 46px; }
+.attabla.terulet-tabla col.c-akt { width: 70px; } .attabla.terulet-tabla col.c-tor { width: 84px; } .attabla.terulet-tabla col.c-kap { width: 22%; }
 .attabla.terulet-tabla select, .attabla.terulet-tabla input[type=text] { min-width: 0; }
 .attabla tr.torlesre td { background: #fff4f8; }
 .attabla tr.torlesre input, .attabla tr.torlesre select { text-decoration: line-through; opacity: .55; }
@@ -347,7 +352,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125092429';
+var OLDAL_VERZIO = '20261125092636';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -1217,8 +1222,8 @@ var OLDAL_VERZIO = '20261125092429';
         var sorok = [];
         var tbody = h('tbody');
         var tablaHely = h('div', { class: 'attabla-hely' }, h('table', { class: 'attabla terulet-tabla' },
-          h('colgroup', {}, h('col'), h('col'), h('col', { class: 'c-akt' }), h('col', { class: 'c-kap' }), h('col', { class: 'c-tor' })),
-          h('thead', {}, h('tr', {}, ['Bolt neve', 'Terület', 'Aktív', 'Kapcsolattartó', 'Törlés'].map(function (t) { return h('th', { scope: 'col' }, t); }))), tbody));
+          h('colgroup', {}, h('col', { class: 'c-ssz' }), h('col'), h('col'), h('col', { class: 'c-akt' }), h('col', { class: 'c-kap' }), h('col', { class: 'c-tor' })),
+          h('thead', {}, h('tr', {}, ['#', 'Bolt neve', 'Terület', 'Aktív', 'Kapcsolattartó', 'Törlés'].map(function (t) { return h('th', { scope: 'col' }, t); }))), tbody));
         var ures = h('div', { class: 'ures-allapot' }, 'Ebben a területben még nincs bolt. Lent adhatsz hozzá újat.');
 
         function valtozott() {
@@ -1243,7 +1248,7 @@ var OLDAL_VERZIO = '20261125092429';
           var kik = s0 ? A.users.filter(function (u) { return u.storeIds.indexOf(s0.id) !== -1; }).map(function (u) { return u.name; }).sort(abc) : [];
           var jel = h('span', { class: s0 ? 'torles-jel' : 'uj-jel', hidden: !!s0 }, s0 ? 'Mentéskor törlődik' : 'Új – mentéskor kerül fel');
           var muvelet = h('td');
-          x.tr = h('tr', { class: s0 ? '' : 'uj-bolt' }, h('td', {}, x.el.nev, jel), h('td', {}, x.el.ter), h('td', {}, x.el.akt),
+          x.tr = h('tr', { class: s0 ? '' : 'uj-bolt' }, h('td', { class: 'sorszam', 'aria-hidden': 'true' }), h('td', {}, x.el.nev, jel), h('td', {}, x.el.ter), h('td', {}, x.el.akt),
             h('td', { class: 'vezeto' }, kik.length ? kik.join(', ') : '–'), muvelet);
           function muveletRajz() {
             muvelet.innerHTML = '';
