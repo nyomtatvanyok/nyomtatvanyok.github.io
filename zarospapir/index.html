@@ -622,10 +622,10 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <details class="sugo" open>
         <summary>Hogyan küldjem be a zárást a forgalmas csoportba?</summary>
         <ol>
-          <li>Kattints a „Letöltés képként” gombra, és mentsd el a képet.</li>
-          <li>Nyisd meg a Messenger alkalmazást.</li>
-          <li>Keresd meg a forgalmas csoportot.</li>
-          <li>Töltsd fel az előbb letöltött zárós papírt.</li>
+          <li>Kattints a „Letöltés képként” gombra.</li>
+          <li><b>Telefonon:</b> a felugró ablakban kattints a „📷 Mentés a galériába / Küldés Messengerbe” gombra. A menüben válaszd a <b>Messenger</b>t, vagy mentsd a képet a galériába.</li>
+          <li>Nyisd meg a Messenger alkalmazást, és keresd meg a forgalmas csoportot.</li>
+          <li>Töltsd fel a zárós papírt (ha még nem küldted el).</li>
         </ol>
       </details>
       <canvas id="lap" width="1240" height="1754" hidden aria-hidden="true"></canvas>
@@ -849,6 +849,24 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <button type="submit" class="gomb-fo">Mentés</button>
     </div>
   </form>
+</div>
+
+<div class="belepo-ablak" id="kesz-ablak" hidden role="dialog" aria-modal="true" aria-labelledby="kesz-cim">
+  <div class="belepo-kartya kezelo-kartya">
+    <button type="button" class="bezar-x" id="kesz-x" aria-label="Ablak bezárása">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+    <div class="belepo-fej"><h3 id="kesz-cim">Elkészült a zárós papír</h3></div>
+    <p class="uzenet" id="kesz-archiv" hidden></p>
+    <button type="button" class="gomb-fo" id="kesz-megoszt" style="width:100%">📷 Mentés a galériába / Küldés Messengerbe</button>
+    <ul class="tipp">
+      <li>Feljön a telefon menüje. <b>iPhone-on:</b> válaszd a <b>„Kép mentése”</b> pontot, és a kép a Fotók közé kerül.</li>
+      <li><b>Androidon:</b> válaszd a <b>„Mentés”</b> / <b>„Galéria”</b> pontot, vagy rögtön a <b>Messenger</b>t.</li>
+    </ul>
+    <p class="uzenet hiba" id="kesz-tipp-hiba" hidden>Nem nyílt meg a menü. Tartsd az ujjad a lenti képen, és válaszd a „Hozzáadás a Fotókhoz” / „Kép mentése” pontot.</p>
+    <img id="kesz-kep" alt="Az elkészült zárós papír" style="width:100%;border:2px solid var(--morzsa);border-radius:10px;background:#fff">
+    <button type="button" class="gomb-2" id="kesz-letolt">Letöltés fájlként (a Fájlok közé)</button>
+  </div>
 </div>
 
 <div class="betolto" id="betolto" role="status" aria-live="polite">
@@ -1682,6 +1700,8 @@ $('letoltes').addEventListener('click', async () => {
   const d = datumOlvas(allapot.datum);
   const fajl = `Zaras_${ekezetNelkul(allapot.bolt).replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}_${d.y}-${String(d.mo).padStart(2, '0')}-${String(d.d).padStart(2, '0')}.png`;
   await betoltoKesz();
+  // Telefonon (iPhone, Android) a megosztás menüvel mentünk: így a kép a Fotók / Galéria közé kerül, és rögtön küldhető Messengerre.
+  if (!letoltoCap && telefonosMentes()) { await mobilMentes(blob, fajl, d); return; }
   // 1) letöltés a telefonra / gépre (rögtön, amíg a kattintás „friss”, különben a böngésző letilthatja)
   try {
     if (letoltoCap) await letoltoCap.save({ filename: fajl, data: blob });
@@ -1715,6 +1735,47 @@ $('letoltes').addEventListener('click', async () => {
   urlapUrites();
   uzenet('✓ Kész! A zárós papír letöltve' + (gasMod ? ' és elmentve az archívumba' : '') + '. Az űrlap kiürült, kezdheted a következő zárást.', true);
 });
+
+/* ---------- telefonos mentés: galéria / Messenger a megosztás menüvel ---------- */
+function telefonosMentes() {
+  try {
+    const erinto = matchMedia('(pointer: coarse)').matches || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const f = new File([new Blob(['x'], { type: 'image/png' })], 'proba.png', { type: 'image/png' });
+    return erinto && !!(navigator.canShare && navigator.canShare({ files: [f] }));
+  } catch (e) { return false; }
+}
+let keszFajl = null, keszUrl = null, keszArchivOk = false;
+async function mobilMentes(blob, fajl, d) {
+  keszFajl = new File([blob], fajl, { type: 'image/png' });
+  if (keszUrl) URL.revokeObjectURL(keszUrl);
+  keszUrl = URL.createObjectURL(blob);
+  keszArchivOk = !gasMod;
+  if (gasMod) {   // az archívumba mentés nem igényel koppintást, ezt előre elvégezzük
+    betoltoMutat('Mentés az archívumba…'); merfold(92);
+    try { await gasHivas('zarasArchiv', { bolt: allapot.bolt, datum: d.szoveg, nev: (allapot.ertek.nev || '').trim(), png: await blobBase64(blob) }); keszArchivOk = true; }
+    catch (e) { keszArchivOk = !!(e && e.code === 'BAD' && /Ismeretlen kérés/.test(e.message)); }
+    await betoltoKesz();
+  }
+  $('kesz-kep').src = keszUrl;
+  $('kesz-archiv').hidden = !gasMod;
+  $('kesz-archiv').className = 'uzenet ' + (keszArchivOk ? 'ok' : 'hiba');
+  $('kesz-archiv').textContent = keszArchivOk ? '✓ Elmentve az archívumba is.' : '⚠ Az archívumba mentés most nem sikerült. Ments a galériába, és szólj a vezetődnek.';
+  $('kesz-ablak').hidden = false; $('kesz-megoszt').focus();
+}
+function keszBefejez(mit) {
+  $('kesz-ablak').hidden = true;
+  urlapUrites();
+  uzenet('✓ Kész! A zárós papír ' + mit + (gasMod && keszArchivOk ? ', és elmentve az archívumba' : '') + '. Az űrlap kiürült, kezdheted a következő zárást.', true);
+}
+$('kesz-megoszt').addEventListener('click', async () => {
+  try { await navigator.share({ files: [keszFajl], title: 'Zárós papír' }); keszBefejez('elmentve / elküldve'); }
+  catch (e) { if (!e || e.name !== 'AbortError') { $('kesz-tipp-hiba').hidden = false; } }
+});
+$('kesz-letolt').addEventListener('click', () => {
+  const a = document.createElement('a'); a.href = keszUrl; a.download = keszFajl.name; document.body.appendChild(a); a.click(); a.remove();
+  keszBefejez('letöltve');
+});
+$('kesz-x').addEventListener('click', () => { $('kesz-ablak').hidden = true; uzenet('A zárós papír még nincs elmentve. Kattints újra a „Letöltés képként” gombra.', false); });
 
 /* ---------- formázott szöveg: csak biztonságos elemek maradnak meg ---------- */
 const ENGEDETT = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', U: 'u', UL: 'ul', OL: 'ol', LI: 'li', BR: 'br', P: 'p', DIV: 'div' };
@@ -2447,7 +2508,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261125004747';
+const VALTOZAT = '20261125065010';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
