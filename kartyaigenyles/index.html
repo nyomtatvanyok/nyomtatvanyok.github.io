@@ -183,9 +183,10 @@ input[type=password] { max-width: none; }
 .cimkek { display: flex; flex-wrap: wrap; gap: 6px; }
 /* Darabszám-jelvények a vezető neve mellett */
 .darabok { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.darab-jel { display: inline-flex; align-items: baseline; gap: 5px; padding: 3px 12px; border-radius: 999px; font-size: 14px; font-weight: 700; white-space: nowrap; }
-.darab-jel b { font: 800 15px/1 var(--cim); font-variant-numeric: tabular-nums; }
-.darab-jel.bolt { background: var(--gomb); color: #fff; }
+.darab-jel { box-sizing: border-box; display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 13px; border: 1px solid transparent;
+  border-radius: 15px; font-size: 14px; line-height: 1; font-weight: 700; white-space: nowrap; vertical-align: middle; }
+.darab-jel b { display: inline; font: 800 15px/1 var(--cim); font-variant-numeric: tabular-nums; }
+.darab-jel.bolt { background: var(--gomb); border-color: var(--gomb); color: #fff; }
 .darab-jel.terulet { background: var(--liszt); color: var(--gomb); border: 1px solid var(--morzsa); }
 .darab-jel.nulla { background: #fff; color: #8a6a4e; border: 1px dashed var(--morzsa); }
 .cimke { background: var(--liszt); border: 1px solid var(--morzsa); border-radius: 999px; padding: 2px 10px; font-size: 15px; }
@@ -344,7 +345,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125091646';
+var OLDAL_VERZIO = '20261125091855';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
