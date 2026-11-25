@@ -589,20 +589,20 @@ input.cimletes { cursor: pointer; background: var(--feher); }
         <ul class="tipp">
           <li>Írd be, mennyi pénzt tettél a borítékba. <b>A borravalót is számold bele!</b></li>
           <li>Írd be a neved.</li>
-          <li>Koppints az <b>Aláírás</b> dobozra. Felugrik egy ablak. Ott írd alá <b>az ujjaddal</b> (számítógépen egérrel).</li>
+          <li>Kattints az <b>Aláírás</b> dobozra, és rögzítsd az aláírásod. Felugrik egy ablak: ott írd alá <b>az ujjaddal</b> (számítógépen egérrel).</li>
         </ul>
         <div class="mezo">
           <div class="mezo-fej"><span>Aláírás</span><span data-info="alairas" data-cim="Aláírás"></span></div>
           <button type="button" class="alairas-doboz" id="alairas-doboz" aria-haspopup="dialog">
             <img id="alairas-kep" alt="Az aláírásod" hidden>
-            <span id="alairas-ures">✍ Koppints ide, és írd alá</span>
+            <span id="alairas-ures">✍ Kattints ide, és rögzítsd az aláírásod</span>
           </button>
           <div class="alairas-gombok" id="alairas-gombok" hidden>
             <button type="button" class="gomb-2" id="alairas-ujrair">✍ Újra aláírom</button>
             <button type="button" class="gomb-2 veszely" id="alairas-torol">
               <svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;vertical-align:-4px;margin-right:6px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Aláírás törlése</button>
           </div>
-          <p class="hiany-uzenet" id="alairas-hiany" role="alert" hidden>⚠ Még nem írtál alá. Koppints a fenti dobozra, és írd alá.</p>
+          <p class="hiany-uzenet" id="alairas-hiany" role="alert" hidden>⚠ Még nincs aláírás. Kattints a fenti dobozra, és rögzítsd az aláírásod.</p>
         </div>
       </div>
     </section>
@@ -2393,7 +2393,7 @@ function alairasMutat() {
   $('alairas-gombok').hidden = !allapot.alairas;
   const img = $('alairas-kep');
   if (allapot.alairas) { img.src = allapot.alairas; alairasKep.src = allapot.alairas; img.hidden = false; $('alairas-ures').hidden = true; $('alairas-doboz').setAttribute('aria-label', 'Aláírás megváltoztatása'); }
-  else { img.hidden = true; img.removeAttribute('src'); $('alairas-ures').hidden = false; $('alairas-doboz').setAttribute('aria-label', 'Aláírás: koppints ide, és írd alá'); }
+  else { img.hidden = true; img.removeAttribute('src'); $('alairas-ures').hidden = false; $('alairas-doboz').setAttribute('aria-label', 'Aláírás: kattints ide, és rögzítsd az aláírásod'); }
 }
 const av = $('alairas-vaszon'); const actx = av.getContext('2d');
 let avRajzolt = false, avToll = null, alairasElozo = null;
@@ -2447,7 +2447,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261125004535';
+const VALTOZAT = '20261125004747';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
