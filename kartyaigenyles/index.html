@@ -176,6 +176,39 @@ input[type=password] { max-width: none; }
 .sor-fej .jobbra { margin-left: auto; color: #8a6a4e; font-size: 15px; }
 .adatok { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 16px; color: #8a6a4e; }
 .adatok b { color: var(--kakao); }
+/* Igénylések listája: sűrű, egysoros táblázat */
+.oszlop.szeles.teljes { max-width: 1280px; }
+.oszlop.teljes > * { min-width: 0; }
+.ig-hely { border: 1px solid var(--morzsa); border-radius: 10px; overflow: auto; max-height: 74vh; background: #fff; }
+.ig-tabla { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; }
+.ig-tabla th { position: sticky; top: 0; z-index: 1; background: var(--liszt); font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em; color: #8a6a4e; text-align: left; padding: 8px 8px; white-space: nowrap; border-bottom: 1px solid var(--morzsa); }
+.ig-tabla td { padding: 7px 8px; border-bottom: 1px solid var(--morzsa); vertical-align: middle; line-height: 1.25; }
+.ig-tabla tbody tr:nth-child(even) td { background: #efedea; }
+.ig-tabla tbody tr:last-child td { border-bottom: 0; }
+.ig-tabla th + th, .ig-tabla td + td { border-left: 1px solid var(--morzsa); }
+.ig-tabla .nw { white-space: nowrap; }
+.ig-tabla .dolgozo { font-weight: 700; font-size: 16px; white-space: nowrap; }
+.ig-tabla td.sorsz { width: 1%; }
+.ig-tabla .halvany { color: #8a6a4e; font-size: 13px; }
+.ig-tabla .sorsz { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tipus-jel { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.tipus-jel.belepto { background: var(--liszt); color: var(--gomb); border: 1px solid var(--morzsa); }
+.tipus-jel.fizeto { background: var(--gomb); color: #fff; border: 1px solid var(--gomb); }
+.allapot-jel { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.allapot-jel.kesz { background: var(--ok); color: #fff; }
+.allapot-jel.var { background: #fff; color: var(--gomb); border: 1px solid var(--gomb); }
+@media (max-width: 760px) {
+  .ig-hely { max-height: none; overflow: visible; border: 0; background: transparent; }
+  .ig-tabla thead { display: none; }
+  .ig-tabla, .ig-tabla tbody, .ig-tabla tr, .ig-tabla td { display: block; width: 100%; }
+  .ig-tabla tr { display: flex; flex-wrap: wrap; gap: 2px 12px; background: #fff; border: 1px solid var(--morzsa); border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; }
+  .ig-tabla td { width: auto !important; }
+  .ig-tabla td.dolgozo { width: 100% !important; order: -1; font-size: 17px; }
+  .ig-tabla tbody tr:nth-child(even) td { background: transparent; }
+  .ig-tabla td { border: 0 !important; padding: 2px 0; }
+  .ig-tabla td[data-c]::before { content: attr(data-c) ': '; color: #8a6a4e; font-size: 13px; }
+}
 /* Igénylések listája: keskenyebb sor */
 .sor.igenyles-sor { padding: 10px 18px; gap: 4px; }
 .sor.igenyles-sor .sor-fej { min-height: 30px; }
@@ -370,7 +403,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125132721';
+var OLDAL_VERZIO = '20261125135307';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -750,7 +783,7 @@ var OLDAL_VERZIO = '20261125132721';
       oldal.appendChild(h('div', { style: 'height:6px' }));
     }
     var nezet = S.boot ? S.view : 'new';
-    var tartalom = h('div', { class: 'oszlop' + (/^(requests|users|areas|settings)$/.test(nezet) ? ' szeles' : '') });
+    var tartalom = h('div', { class: 'oszlop' + (/^(requests|users|areas|settings)$/.test(nezet) ? ' szeles' : '') + (nezet === 'requests' ? ' teljes' : '') });
     var v = { new: nezetUj, requests: nezetOsszes, users: nezetVezetok, areas: nezetTeruletek, settings: nezetBeallitasok }[nezet] || nezetUj;
     tartalom.appendChild(v());
     oldal.appendChild(tartalom);
@@ -1032,6 +1065,39 @@ var OLDAL_VERZIO = '20261125132721';
   /* ---------- Igénylések listája ---------- */
   function adat(k, v) { return v === '' || v === null || v === undefined ? null : h('span', {}, k + ': ', h('b', {}, String(v))); }
 
+  /** Rövid igénylési ok a táblázatba (a teljes szöveg az egér alatt). */
+  function rovidOk(ok) {
+    var t = String(ok || '');
+    if (/^cserek/i.test(t)) return 'Cserekártya';
+    if (/^módos/i.test(t)) return 'Módosítás';
+    if (/^új/i.test(t)) return 'Új kártya';
+    return t;
+  }
+  function igenylesTabla(sorok) {
+    var csakNap = function (t) { return String(t || '').replace(/\s+\d{1,2}:\d{2}$/, ''); };
+    var cim = ['Dátum', 'Dolgozó', 'Kártya', 'Sorszám', 'Bolt / terület', 'Beosztás', 'Óra · összeg', 'Ok', 'Igénylő', 'Állapot'];
+    var tb = h('tbody');
+    sorok.forEach(function (r) {
+      var fiz = /fizet/i.test(r.type);
+      var kesz = r.status === 'Elkészült';
+      var ora = fiz && r.hours ? r.hours + ' óra' + (r.amount ? ' · ' + String(r.amount).replace(' / hónap', '') : '') : '–';
+      var datum = csakNap(r.tsHosszu || r.ts);
+      tb.appendChild(h('tr', { title: r.id + (kesz && r.statusAt ? ' · Elkészült: ' + csakNap(r.statusAt) : '') },
+        h('td', { class: 'nw', 'data-c': 'Dátum' }, datum),
+        h('td', { class: 'dolgozo' }, r.empName),
+        h('td', { 'data-c': 'Kártya' }, h('span', { class: 'tipus-jel ' + (fiz ? 'fizeto' : 'belepto') }, fiz ? 'Fizető' : 'Beléptető')),
+        h('td', { class: 'sorsz nw', 'data-c': 'Sorszám' }, r.serial),
+        h('td', { class: 'nw', 'data-c': r.store ? 'Bolt' : 'Terület', title: r.store ? r.area : '' }, r.store || r.area),
+        h('td', { 'data-c': 'Beosztás' }, r.position || '–'),
+        h('td', { class: 'nw', 'data-c': 'Óra · összeg' }, ora),
+        h('td', { class: 'nw', 'data-c': 'Ok', title: r.reason || '' }, rovidOk(r.reason) || '–'),
+        h('td', { class: 'nw', 'data-c': 'Igénylő' }, r.reqName),
+        h('td', { 'data-c': 'Állapot' }, h('span', { class: 'allapot-jel ' + (kesz ? 'kesz' : 'var') }, kesz ? 'Kész' : 'Vár'))));
+    });
+    return h('div', { class: 'ig-hely' }, h('table', { class: 'ig-tabla' },
+      h('thead', {}, h('tr', {}, cim.map(function (c) { return h('th', { scope: 'col' }, c); }))), tb));
+  }
+
   function igenylesSor(r, admin) {
     var hely = r.store ? r.store + ' (' + r.area + ')' : r.area;
     var kesz = r.status === 'Elkészült';
@@ -1063,11 +1129,7 @@ var OLDAL_VERZIO = '20261125132721';
         lista.innerHTML = '';
         db.textContent = sorok.length + ' találat' + (sorok.length === 300 ? ' (az első 300)' : '');
         if (!sorok.length) return lista.appendChild(h('div', { class: 'ures-allapot' }, 'Nincs a keresésnek megfelelő igénylés.'));
-        var l = h('div', { class: 'lista' });
-        sorok.forEach(function (r) {
-          l.appendChild(igenylesSor(r, true));
-        });
-        lista.appendChild(l);
+        lista.appendChild(igenylesTabla(sorok));
     }
     var sorszam = 0;
     function tolt() {
