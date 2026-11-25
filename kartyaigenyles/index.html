@@ -244,6 +244,18 @@ input[type=password] { max-width: none; }
   background: #d9467e; color: #fff; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
   opacity: 0; pointer-events: none; transition: opacity .12s; }
 .kuka:hover::after, .kuka:focus-visible::after { opacity: 1; }
+/* Szerkesztés ikon: zöld ceruza, súgóbuborékkal */
+.ceruza { position: relative; display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0; border-radius: 10px;
+  background: #f1f7ef; color: var(--ok); border: 2px solid #bcd8b4; cursor: pointer; flex: none; vertical-align: middle; }
+.ceruza svg { width: 20px; height: 20px; }
+.ceruza:hover, .ceruza:focus-visible { background: #e3f0de; border-color: var(--ok); }
+.ceruza::after { content: attr(data-tipp); position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
+  background: var(--ok); color: #fff; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 5; }
+.ceruza:hover::after, .ceruza:focus-visible::after { opacity: 1; }
+.bolt-osszesito { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px; border-radius: 18px;
+  background: var(--liszt); border: 2px solid var(--morzsa); color: #8a6a4e; font-size: 15px; font-weight: 700; white-space: nowrap; }
+.bolt-osszesito b { font: 800 17px/1 var(--cim); color: var(--barna); font-variant-numeric: tabular-nums; }
 .attabla.terulet-tabla { table-layout: fixed; min-width: 620px; }
 .attabla.terulet-tabla tbody { counter-reset: boltsor; }
 .attabla.terulet-tabla tbody tr { counter-increment: boltsor; }
@@ -352,7 +364,7 @@ input[type=password] { max-width: none; }
 <script>
 /* Frissítés-ellenőrzés: a GitHub Pages és a böngésző 10 percig tárolhatja az oldalt.
    Betöltéskor gyorsítótár nélkül lekérjük a friss változatot; ha újabb, azonnal azt nyitjuk meg. */
-var OLDAL_VERZIO = '20261125092636';
+var OLDAL_VERZIO = '20261125093227';
 (function () {
   if (!/^https:/.test(location.protocol)) return;
   try {
@@ -422,6 +434,7 @@ var OLDAL_VERZIO = '20261125092636';
     mentes: '<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h8V4M8 20v-6h8v6"/>',
     plusz: '<path d="M12 5v14M5 12h14"/>',
     link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    ceruza: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>',
     kuka: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7"/>',
     letolt: '<path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/>',
     dokumentum: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>',
@@ -1071,7 +1084,7 @@ var OLDAL_VERZIO = '20261125092636';
       wrap.appendChild(h('div', { class: 'lista' }, lista.map(function (u) {
         var boltok = A.stores.filter(function (s) { return u.storeIds.indexOf(s.id) !== -1; }).map(function (s) { return s.name; }).sort(abc);
         var terek = A.areas.filter(function (a) { return u.areaIds.indexOf(a.id) !== -1; }).map(function (a) { return a.name; }).sort(abc);
-        var szerkGomb = gombMasod('Szerkesztés', { class: 'gomb masod kicsi', 'aria-label': u.name + ' szerkesztése' });
+        var szerkGomb = h('button', { type: 'button', class: 'ceruza', 'data-tipp': 'Szerkesztés', 'aria-label': u.name + ' szerkesztése' }, svg(IKON.ceruza));
         szerkGomb.addEventListener('click', function () { vezetoSzerk(u); });
         return h('div', { class: 'sor' },
           h('div', { class: 'sor-fej' }, h('span', { class: 'nev' }, u.name),
@@ -1080,12 +1093,12 @@ var OLDAL_VERZIO = '20261125092636';
                 h('span', { class: 'darab-jel ' + (boltok.length ? 'bolt' : 'nulla') }, h('b', {}, String(boltok.length)), 'bolt'),
                 h('span', { class: 'darab-jel ' + (terek.length ? 'terulet' : 'nulla') }, h('b', {}, String(terek.length)), 'terület')),
             u.active ? null : h('span', { class: 'pirula inaktiv' }, 'Inaktív'),
+            szerkGomb,
             h('span', { class: 'jobbra' }, u.email)),
           u.role === 'admin' ? h('p', { class: 'tipp' }, 'Minden területet és boltot lát.') :
             h('div', { class: 'cimkek' }, terek.map(function (n) { return h('span', { class: 'cimke terulet' }, n); }),
               boltok.map(function (n) { return h('span', { class: 'cimke' }, n); }),
-              !terek.length && !boltok.length ? h('span', { class: 'pirula inaktiv' }, 'Nincs hozzárendelve semmi') : null),
-          h('div', { class: 'sor-muvelet' }, szerkGomb));
+              !terek.length && !boltok.length ? h('span', { class: 'pirula inaktiv' }, 'Nincs hozzárendelve semmi') : null));
       })));
       return wrap;
     });
@@ -1219,6 +1232,8 @@ var OLDAL_VERZIO = '20261125092636';
         var ment = gombElso('Mentés', 'mentes', { 'aria-label': a.name + ' terület mentése' });
         var torolTer = kukaGomb(a.name, 'Terület');
         var jelzo = h('span', { class: 'nincs-mentve', hidden: true }, 'Nincs elmentve');
+        var osszDb = h('b');
+        var osszesito = h('span', { class: 'bolt-osszesito', 'aria-live': 'polite' }, 'Összes bolt:', osszDb, 'db');
         var sorok = [];
         var tbody = h('tbody');
         var tablaHely = h('div', { class: 'attabla-hely' }, h('table', { class: 'attabla terulet-tabla' },
@@ -1232,6 +1247,7 @@ var OLDAL_VERZIO = '20261125092636';
           });
           jelzo.hidden = !v;
           S.mentetlen[a.name] = v;
+          osszDb.textContent = String(sorok.filter(function (x) { return !x.torles; }).length);
           var vanSor = sorok.length > 0;
           tablaHely.hidden = !vanSor; ures.hidden = vanSor;
         }
@@ -1323,7 +1339,7 @@ var OLDAL_VERZIO = '20261125092636';
 
         var vezetok = A.users.filter(function (u) { return u.areaIds.indexOf(a.id) !== -1; }).map(function (u) { return u.name; }).sort(abc);
         wrap.appendChild(h('div', { class: 'iroda', style: a.active ? '' : 'opacity:.7' },
-          h('div', { class: 'terulet-fej' }, nevMezo, h('label', { class: 'kapcsolo' }, aktivMezo, 'Aktív'), ment, torolTer, jelzo),
+          h('div', { class: 'terulet-fej' }, nevMezo, h('label', { class: 'kapcsolo' }, aktivMezo, 'Aktív'), ment, torolTer, jelzo, osszesito),
           vezetok.length ? h('p', { class: 'tipp' }, 'Területi vezető: ' + vezetok.join(', ')) : null,
           tablaHely, ures,
           h('div', { class: 'uj-sor' }, ujBolt, ujBoltGomb),
