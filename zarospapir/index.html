@@ -905,10 +905,10 @@ const MEZOK = {
     ['szamla', 'B7', 'Általunk kiállított számla (Rkeeper)', 'ft'],
     ['munch', 'B8', 'MUNCH', 'ft'],
     ['=navOssz', 'B9', 'Forgalom összesen NAV', 'ft', 'Automata kiszámolás: a négy ÁFA-kulcs összege'],
-    ['navVevo', 'B10', 'Vevőszám NAV', 'db', 'Rontott blokk nyugta szám NÉLKÜL'],
+    ['navVevo', 'B10', 'Vevőszám NAV', 'db'],
     ['=navTeljes', 'B11', 'Forgalom összesen NAV (számlával, MUNCH-val)', 'ft', 'Automata kiszámolás: NAV összesen + számla + MUNCH − hibás bevitel'],
     ['=elteres', 'B12', 'Eltérés NAV és Rkeeper forgalom között', 'ft', 'Automata kiszámolás: NAV teljes − R_keeper összesen'],
-    ['megszOssz', 'B13', 'Nyugta megszakítások összege', 'ft', '„X jelentés” NAV-os nyugtán']
+    ['megszOssz', 'B13', 'Nyugta megszakítások összege', 'ft']
   ],
   'g-rk': [
     ['szep', 'E3', 'Szépkártya', 'ft'],
@@ -921,7 +921,7 @@ const MEZOK = {
     ['=vevoOssz', 'E10', 'Vevőszám összesen R_keeper', 'db', 'Automata kiszámolás: délelőtt + délután'],
     ['=forgOssz', 'E11', 'Forgalom összesen R_keeper (fizető kártya NÉLKÜL)', 'ft', 'Automata kiszámolás: délelőtt + délután − fizető kártya'],
     ['fizeto', 'E12', 'Fizető kártya (saját fogyasztás)', 'ft'],
-    ['megszDb', 'E13', 'Nyugta megszakítások száma', 'db', '„X jelentés” NAV-os nyugtán'],
+    ['megszDb', 'E13', 'Nyugta megszakítások száma', 'db'],
     ['=kosar', 'E15', 'Kosárérték (átlagos vásárlás)', 'ft', 'Automata kiszámolás: a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ a nagyobb vevőszám (Vevőszám NAV vagy Vevőszám összesen R_keeper)']
   ],
   'g-ora': [
@@ -2460,7 +2460,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261125003852';
+const VALTOZAT = '20261125004158';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
