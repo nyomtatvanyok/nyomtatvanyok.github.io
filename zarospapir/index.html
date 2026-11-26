@@ -1494,7 +1494,22 @@ function rajzol(canvas) {
   }));
 
   // aláírás az E38 cellába
-  if (allapot.alairas && alairasKep.complete && alairasKep.naturalWidth) {
+  if (allapot.alairas && allapot.alairasVonal && allapot.alairasVonal.v.length) {
+    const x1 = xs[4], x2 = xs[5], y1 = ys[37], y2 = ys[38];
+    const vastag = 2.7 * s;   // közel olyan vastag, mint a kék tollas számok vonala
+    const bw = (x2 - x1) - 4 * pad - vastag, bh = (y2 - y1) * 0.8 - vastag;
+    const ar = allapot.alairasVonal.arany;
+    let w = bw, h = w / ar; if (h > bh) { h = bh; w = h * ar; }
+    const ox = x1 + ((x2 - x1) - w) / 2, oy = y1 + ((y2 - y1) - h) / 2;
+    ctx.save(); ctx.strokeStyle = TOLL_SZIN; ctx.fillStyle = TOLL_SZIN; ctx.lineWidth = vastag; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    for (const v of allapot.alairasVonal.v) {
+      if (v.length === 1) { ctx.beginPath(); ctx.arc(ox + v[0][0] * w, oy + v[0][1] * h, vastag / 2, 0, Math.PI * 2); ctx.fill(); continue; }
+      ctx.beginPath(); ctx.moveTo(ox + v[0][0] * w, oy + v[0][1] * h);
+      for (let i = 1; i < v.length; i++) ctx.lineTo(ox + v[i][0] * w, oy + v[i][1] * h);
+      ctx.stroke();
+    }
+    ctx.restore();
+  } else if (allapot.alairas && alairasKep.complete && alairasKep.naturalWidth) {
     const x1 = xs[4], x2 = xs[5], y1 = ys[37], y2 = ys[38];
     const bw = (x2 - x1) - 4 * pad, bh = (y2 - y1) * 0.92;
     const ar = Math.min(bw / alairasKep.naturalWidth, bh / alairasKep.naturalHeight);
@@ -1612,7 +1627,7 @@ function frissit() {
   const bf = $('figy-borravalo');
   if (bf) { const neg = e.borravalo != null && e.borravalo < 0; bf.hidden = !neg;
     if (neg) bf.textContent = `⚠ A borítékban ${szamIr(-e.borravalo)} Ft-tal kevesebb pénz van, mint a várt készpénz. Számold meg újra a pénzt!`; }
-  if (allapot.bolt) tarol(mentesKulcs(), { datum: allapot.datum, ertek: allapot.ertek, kiadas: allapot.kiadas, cimlet: allapot.cimlet, alairas: allapot.alairas, reszek: allapot.reszek });
+  if (allapot.bolt) tarol(mentesKulcs(), { datum: allapot.datum, ertek: allapot.ertek, kiadas: allapot.kiadas, cimlet: allapot.cimlet, alairas: allapot.alairas, alairasVonal: allapot.alairasVonal, reszek: allapot.reszek });
 
 }
 
@@ -1669,9 +1684,9 @@ function boltBeallit(b) {
   $('kereso-felirat').textContent = b;
   gomb.classList.remove('ures-valasztas');
   const mentett = olvas(mentesKulcs());
-  allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; allapot.reszek = {};
+  allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; allapot.alairasVonal = null; allapot.reszek = {};
   allapot.datum = maiDatum();
-  if (mentett && mentett.datum === allapot.datum) { allapot.ertek = mentett.ertek || {}; allapot.kiadas = mentett.kiadas || []; allapot.cimlet = mentett.cimlet || {}; allapot.alairas = mentett.alairas || null; allapot.reszek = mentett.reszek || {}; }
+  if (mentett && mentett.datum === allapot.datum) { allapot.ertek = mentett.ertek || {}; allapot.kiadas = mentett.kiadas || []; allapot.cimlet = mentett.cimlet || {}; allapot.alairas = mentett.alairas || null; allapot.alairasVonal = mentett.alairasVonal || null; allapot.reszek = mentett.reszek || {}; }
   alairasMutat();
   for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) $('m-' + k).value = info.tipus === 'szoveg' ? (allapot.ertek[k] || '') : tagolSzoveg(allapot.ertek[k] || '');
   $('m-rontottDb').value = allapot.ertek.rontottDb || '';
@@ -1813,7 +1828,7 @@ $('urites').addEventListener('click', () => kerdez(
   () => { urlapUrites(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
 function urlapUrites() {
   allapot.reszek = {};
-  allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; alairasMutat(); erintett.clear(); mindetJelol = false;
+  allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; allapot.alairasVonal = null; alairasMutat(); erintett.clear(); mindetJelol = false;
   for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) { const i = $('m-' + k); i.value = ''; i.classList.remove('hianyzik'); }
   $('m-rontottDb').value = ''; $('m-rontottDb').classList.remove('hianyzik');
   document.querySelectorAll('.hiany-uzenet').forEach(u => { u.hidden = true; });
@@ -2738,8 +2753,8 @@ function avMeretez() {
   av.width = Math.round(r.width * d); av.height = Math.round(r.height * d);
   actx.setTransform(d, 0, 0, d, 0, 0);
   actx.lineCap = 'round'; actx.lineJoin = 'round'; actx.strokeStyle = TOLL_SZIN;
-  actx.lineWidth = Math.max(2.5, r.width / 160);
-  avRajzolt = false; avMeret = r.width + 'x' + r.height;
+  actx.lineWidth = Math.max(3.5, r.width / 110);
+  avRajzolt = false; avMeret = r.width + 'x' + r.height; avVonalak = [];
   return true;
 }
 let avMeret = '';
@@ -2749,8 +2764,9 @@ function avKesz() {   // ha a vászon mérete megváltozott (pl. elfordult a tel
 }
 function avPont(e) { const r = av.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
 /* Rajzolás: egérrel és tollal pointer eseményekkel, ujjal érintés-eseményekkel (telefonon ez a megbízhatóbb). */
-function avKezd(p) { avKesz(); avToll = p; actx.beginPath(); actx.arc(p.x, p.y, actx.lineWidth / 2, 0, Math.PI * 2); actx.fillStyle = actx.strokeStyle; actx.fill(); avRajzolt = true; }
-function avHuz(p) { if (!avToll) return; actx.beginPath(); actx.moveTo(avToll.x, avToll.y); actx.lineTo(p.x, p.y); actx.stroke(); avToll = p; avRajzolt = true; }
+let avVonalak = [];   // az aláírás vonalai (pontsorok), hogy a papíron vastag tollal újra lehessen rajzolni
+function avKezd(p) { avKesz(); avToll = p; avVonalak.push([p]); actx.beginPath(); actx.arc(p.x, p.y, actx.lineWidth / 2, 0, Math.PI * 2); actx.fillStyle = actx.strokeStyle; actx.fill(); avRajzolt = true; }
+function avHuz(p) { if (!avToll) return; if (avVonalak.length) avVonalak[avVonalak.length - 1].push(p); actx.beginPath(); actx.moveTo(avToll.x, avToll.y); actx.lineTo(p.x, p.y); actx.stroke(); avToll = p; avRajzolt = true; }
 function avVeg() { avToll = null; }
 function erintesPont(e) { const t = e.touches[0] || e.changedTouches[0], r = av.getBoundingClientRect(); return { x: t.clientX - r.left, y: t.clientY - r.top }; }
 av.addEventListener('touchstart', e => { e.preventDefault(); avKezd(erintesPont(e)); }, { passive: false });
@@ -2788,6 +2804,13 @@ $('alairas-kesz').addEventListener('click', () => {
   c.width = x1 - x0 + 2 * m; c.height = y1 - y0 + 2 * m;
   c.getContext('2d').drawImage(av, x0 - m, y0 - m, c.width, c.height, 0, 0, c.width, c.height);
   allapot.alairas = c.toDataURL('image/png');
+  // vonalak 0..1 közé, az arány megtartásával (a papíron ezekből rajzolunk)
+  const pts = avVonalak.flat();
+  if (pts.length) {
+    const mx = Math.min(...pts.map(p => p.x)), my = Math.min(...pts.map(p => p.y));
+    const w = Math.max(1, Math.max(...pts.map(p => p.x)) - mx), h = Math.max(1, Math.max(...pts.map(p => p.y)) - my);
+    allapot.alairasVonal = { arany: w / h, v: avVonalak.map(v => v.map(p => [+((p.x - mx) / w).toFixed(4), +((p.y - my) / h).toFixed(4)])) };
+  } else allapot.alairasVonal = null;
   alairasMutat(); frissit(); alairasZar();
 });
 $('alairas-ujrair').addEventListener('click', alairasNyit);
@@ -2796,11 +2819,11 @@ $('alairas-torol').addEventListener('click', () => kerdez(
   ['Ha az „Igen, törlöm” gombra kattintasz, az aláírás eltűnik a papírról is.',
    'Utána újra alá kell írnod, különben a papírt nem lehet letölteni.',
    'Ha nem akarod törölni, kattints a „Mégse, megtartom” gombra.'],
-  'Igen, törlöm', () => { allapot.alairas = null; alairasKep.removeAttribute('src'); alairasMutat(); frissit(); $('alairas-doboz').focus(); }));
+  'Igen, törlöm', () => { allapot.alairas = null; allapot.alairasVonal = null; alairasKep.removeAttribute('src'); alairasMutat(); frissit(); $('alairas-doboz').focus(); }));
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261126201217';
+const VALTOZAT = '20261126203233';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
