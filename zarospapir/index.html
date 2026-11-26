@@ -396,6 +396,18 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .keplet-allapot.ok { color: var(--ok); }
 .keplet-allapot.hiba { color: var(--hiba); background: #fdf0f0; border-color: #e2b4b4; }
 
+/* kasszánkénti rublikák */
+.reszek { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.resz { display: grid; gap: 2px; min-width: 0; }
+.resz small { font-size: 14px; font-weight: 700; color: var(--masodlagos); }
+.resz .bemenet input { min-height: 48px; }
+.ossz-cim { font-size: 14px; font-weight: 700; color: var(--masodlagos); margin-top: 4px; }
+.szamlalo-sor { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 14px;
+  border: 2px solid var(--morzsa); border-radius: 12px; background: var(--liszt); }
+.szamlalo-sor .cim { flex: 1 1 200px; font-size: 18px; font-weight: 700; }
+.szamlalo-sor .cim small { display: block; font-size: 14px; font-weight: 400; color: var(--tipp); }
+.szamlalo-sor .vezerlo input { width: 64px; text-align: center; font-size: 22px; font-weight: 700; }
+
 /* aláírás */
 .alairas-doboz { width: 100%; max-width: 560px; min-height: 120px; display: grid; place-items: center; padding: 10px; background: var(--feher);
   border: 3px dashed var(--morzsa); border-radius: 14px; color: var(--ures); font-size: 21px; font-weight: 700; }
@@ -472,6 +484,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <div><div class="nev" id="szerk-nev">Szerkesztő mód</div><span class="szerep">Magyarázatok szerkesztése</span></div>
     <p>Kattints bármelyik sárga „Honnan tudod leírni?” gombra, és írd be, hol találja a dolgozó az adatot. Képet is csatolhatsz. A szaggatott szélű még üres, a szürkét a dolgozók nem látják.</p>
     <div class="gombsor">
+      <button type="button" class="gomb-2" id="szerk-bolt">Bolt beállításai</button>
       <button type="button" class="gomb-2" id="szerk-kezeles" hidden>Szerkesztők kezelése</button>
       <button type="button" class="gomb-2" id="szerk-jelszo" hidden>Jelszavam módosítása</button>
       <button type="button" class="gomb-2" id="szerk-ki">Kijelentkezés</button>
@@ -496,7 +509,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <ul class="tipp">
       <li>Kattints a fehér mezőre. Kinyílik a boltok listája.</li>
       <li>Kattints a saját boltod nevére.</li>
-      <li>Most még csak az <b>Oroszlány</b> boltot lehet választani. A többi bolt később jön.</li>
+      <li>Most még csak a <b>Bp, Békásmegyeri Piac</b> boltot lehet választani. A többi bolt később jön.</li>
     </ul>
   </section>
 
@@ -552,7 +565,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <div class="iroda"><div class="mezok" id="g-rk"></div></div>
     </section>
     <section class="lepes">
-      <h2><span class="szam">5</span>Írd be a munkaórát és a borravalót</h2>
+      <h2><span class="szam">5</span>Írd be a munkaórát</h2>
       <div class="iroda"><div class="mezok" id="g-ora"></div></div>
     </section>
     <section class="lepes">
@@ -589,10 +602,11 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       </div>
     </section>
     <section class="lepes">
-      <h2><span class="szam">9</span>Írd be a borítékot és a neved</h2>
+      <h2><span class="szam">9</span>Számold meg a borítékba tett pénzt, és írd be a neved</h2>
       <div class="iroda"><div class="mezok" id="g-zaro"></div>
         <ul class="tipp">
-          <li>Írd be, mennyi pénzt tettél a borítékba. <b>A borravalót is számold bele!</b></li>
+          <li>Koppints a borítékos mezőre, és számold meg címletenként a borítékba tett pénzt. <b>A borravaló is legyen benne!</b></li>
+          <li>A <b>borravalót a gép számolja ki</b> a borítékba tett pénzből, neked nem kell külön beírnod.</li>
           <li>Írd be a neved.</li>
           <li>Kattints az <b>Aláírás</b> dobozra, és rögzítsd az aláírásod. Felugrik egy ablak: ott írd alá <b>az ujjaddal</b> (számítógépen egérrel).</li>
         </ul>
@@ -835,6 +849,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <button type="button" data-jel="(">(</button><button type="button" data-jel=")">)</button>
       <button type="button" data-jel="NAGYOBB(; )" title="A kettő közül a nagyobb">NAGYOBB</button>
       <button type="button" data-jel="KISEBB(; )" title="A kettő közül a kisebb">KISEBB</button>
+      <button type="button" data-jel="KEREK5()" title="Kerekítés 5 forintra (készpénz)">KEREK5</button>
     </div>
     <div class="keplet-beszur">
       <select id="keplet-mezok" aria-label="Mező kiválasztása a beszúráshoz"></select>
@@ -845,7 +860,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <input type="text" id="keplet-leiras" maxlength="160" autocomplete="off">
     <ul class="tipp">
       <li>A mezőket szögletes zárójelben írd, pontosan a nevükkel, pl. <b>[Forgalom 0% (AM)]</b>. A legegyszerűbb a „+ Mező beszúrása” gombbal.</li>
-      <li>Műveletek: <b>+ − × ÷</b> és zárójel. <b>NAGYOBB(a; b)</b>: a kettő közül a nagyobb.</li>
+      <li>Műveletek: <b>+ − × ÷</b> és zárójel. <b>NAGYOBB(a; b)</b>: a kettő közül a nagyobb. <b>KEREK5(a)</b>: kerekítés 5 Ft-ra, mint a kasszában.</li>
     </ul>
     <p class="uzenet hiba" id="keplet-hiba" role="alert" hidden></p>
     <div class="parban">
@@ -872,6 +887,31 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <img id="kesz-kep" alt="Az elkészült zárós papír" style="width:100%;border:2px solid var(--morzsa);border-radius:10px;background:#fff">
     <button type="button" class="gomb-2" id="kesz-letolt">Letöltés fájlként (a Fájlok közé)</button>
   </div>
+</div>
+
+<div class="belepo-ablak" id="bolt-ablak" hidden role="dialog" aria-modal="true" aria-labelledby="bolt-ablak-cim">
+  <form class="belepo-kartya kezelo-kartya kezelo-urlap" id="bolt-urlap" novalidate>
+    <button type="button" class="bezar-x" id="bolt-x" aria-label="Ablak bezárása">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+    <div class="belepo-fej"><h3 id="bolt-ablak-cim">Bolt beállításai</h3></div>
+    <p class="tipp" style="margin-top:-6px">Bolt: <span class="pirula" id="bolt-ablak-bolt"></span> &nbsp;Csak ennél a boltnál érvényes.</p>
+    <div class="szamlalo-sor">
+      <span class="cim">NAV-os kasszák száma<small>Ennyi rublikára bomlik: ÁFA-kulcsos forgalmak, hibás bevitel, vevőszám NAV, nyugta-megszakítások.</small></span>
+      <span class="vezerlo"><button type="button" class="pm" data-cel="navKassza" data-lep="-1" aria-label="Eggyel kevesebb kassza">−</button><input type="text" id="bb-navKassza" readonly aria-label="NAV-os kasszák száma"><button type="button" class="pm" data-cel="navKassza" data-lep="1" aria-label="Eggyel több kassza">+</button></span>
+    </div>
+    <div class="szamlalo-sor">
+      <span class="cim">Bankkártya-terminálok száma<small>Ennyi rublikára bomlik: Szépkártya, Bankkártya.</small></span>
+      <span class="vezerlo"><button type="button" class="pm" data-cel="terminal" data-lep="-1" aria-label="Eggyel kevesebb terminál">−</button><input type="text" id="bb-terminal" readonly aria-label="Bankkártya-terminálok száma"><button type="button" class="pm" data-cel="terminal" data-lep="1" aria-label="Eggyel több terminál">+</button></span>
+    </div>
+    <ul class="tipp">
+      <li>Legfeljebb <b>5</b> kassza / terminál adható meg.</li>
+      <li>Ha 1-nél több van, a dolgozó minden kasszát külön rublikába ír, a gép pedig összeadja. Minden rublikát ki kell tölteni, ha nem volt forgalom, akkor <b>0</b>-t.</li>
+      <li>A zárós papírra az összeg kerül.</li>
+    </ul>
+    <p class="uzenet hiba" id="bolt-hiba" role="alert" hidden></p>
+    <div class="parban"><button type="button" class="gomb-2" id="bolt-megse">Mégse</button><button type="submit" class="gomb-fo">Mentés</button></div>
+  </form>
 </div>
 
 <div class="betolto" id="betolto" role="status" aria-live="polite">
@@ -914,7 +954,7 @@ const BOLTOK = ['Oroszlány','Tatabánya','Bp, Bécsi út','Bp, Kőris utca','Du
   'Bp, Gazdagrét','Bp, Rózsakert','Szhely, Fő tér','Szhely, Király','Szhely, Szűrcsapó','Szhely, Tesco','Győr, Arany','Győr, Bercsényi Liget',
   'Győr, ETO Park','Győr, Pláza','Győr, Interspar','Győr, Rónay','Győr, Vásárcsarnok','Balatonfüred','Sopron, Ágfalvi út',
   'Sopron, Buszpályaudvar','Sopron, Tesco','Móvár, Magyar utca','Móvár, Kossuth utca'].sort((a, b) => a.localeCompare(b, 'hu'));
-const KESZ = new Set(['Oroszlány']);
+const KESZ = new Set(['Bp, Békásmegyeri Piac']);   // az Oroszlány fejlesztése szünetel
 
 /* tipus: ft = forint, db = darab, ora = óra, szam = sima szám, szoveg */
 const MEZOK = {
@@ -949,7 +989,6 @@ const MEZOK = {
   'g-ora': [
     ['munkaora', 'E16', 'Értékesítés munkaóra (próbanapossal együtt)', 'ora'],
     ['probaora', 'E17', 'Ebből próbanapos munkaóra', 'ora'],
-    ['borravalo', 'E18', 'Borravaló', 'ft'],
     ['=eladora', 'E19', 'Egy eladóra jutó árbevétel', 'ft', 'Automata kiszámolás: a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ munkaóra × 8']
   ],
   'g-torles': [
@@ -979,12 +1018,13 @@ const MEZOK = {
   ],
   'g-zaro': [
     ['boritek', 'E36', 'Ennyi pénzt raktam a borítékba (borravalóval együtt!)', 'ft'],
+    ['=borravalo', 'E18', 'Borravaló', 'ft', 'Automata kiszámolás: a borítékba tett pénz − a várt készpénz, 5 Ft-ra kerekítve'],
     ['nev', 'E37', 'Név (olvashatóan)', 'szoveg']
   ]
 };
 const ME = { ft: 'Ft', db: 'db', ora: 'óra', szam: '', szoveg: '' };
 const MAX_KIADAS = 11;
-const CIMLETES = new Set(['borravalo', 'boritek']);
+const CIMLETES = new Set(['boritek']);
 const CIMLETEK = [[20000, 'bankjegy'], [10000, 'bankjegy'], [5000, 'bankjegy'], [2000, 'bankjegy'], [1000, 'bankjegy'], [500, 'bankjegy'],
   [200, 'érme'], [100, 'érme'], [50, 'érme'], [20, 'érme'], [10, 'érme'], [5, 'érme']];
 
@@ -1071,7 +1111,11 @@ function tarol(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch
 function olvas(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
 
 /* ---------- állapot ---------- */
-const allapot = { bolt: null, datum: maiDatum(), ertek: {}, kiadas: [], cimlet: {}, alairas: null };
+const allapot = { bolt: null, datum: maiDatum(), ertek: {}, kiadas: [], cimlet: {}, alairas: null, reszek: {} };
+/* Mezők, amelyek kasszánként / kártyaterminálonként külön rublikára bonthatók (a bolt beállítása szerint). */
+const KASSZAS = { f0: 'navKassza', f5: 'navKassza', f18: 'navKassza', f27: 'navKassza', hibas: 'navKassza', navVevo: 'navKassza',
+  megszOssz: 'navKassza', megszDb: 'navKassza', szep: 'terminal', bank: 'terminal' };
+const RESZ_NEV = { navKassza: 'kassza', terminal: 'terminál' };
 const mezoInfo = {}; // kulcs -> {cella, cim, tipus}
 let mentesKulcs = () => 'zaras:' + allapot.bolt;
 
@@ -1096,8 +1140,13 @@ for (const [csoport, lista] of Object.entries(MEZOK)) {
     if (ME[tipus]) inp.classList.add('vanme');
     be.appendChild(inp);
     if (ME[tipus]) { const me = document.createElement('span'); me.className = 'me'; me.textContent = ME[tipus]; be.appendChild(me); }
+    if (KASSZAS[k]) {   // kasszánkénti rublikák helye (a bolt beállításától függően jelenik meg)
+      const rh = document.createElement('div'); rh.className = 'reszek'; rh.id = 'reszek-' + k; rh.hidden = true; wrap.appendChild(rh);
+      const ol = document.createElement('small'); ol.className = 'ossz-cim'; ol.id = 'osszcim-' + k; ol.textContent = 'Összesen (automata kiszámolás):'; ol.hidden = true; wrap.appendChild(ol);
+    }
     wrap.appendChild(be);
     if (megj) { const sm = document.createElement('small'); sm.id = 'megj-' + k; sm.textContent = megj; wrap.appendChild(sm); }
+    if (k === 'borravalo') { const f = document.createElement('p'); f.className = 'hiany-uzenet'; f.id = 'figy-borravalo'; f.hidden = true; f.setAttribute('role', 'alert'); wrap.appendChild(f); }
     if (auto) {
       const kg = document.createElement('button'); kg.type = 'button'; kg.className = 'keplet-gomb'; kg.dataset.mezo = k; kg.hidden = true;
       kg.innerHTML = '<span aria-hidden="true">ƒ</span> Képlet'; kg.setAttribute('aria-label', `Automata kiszámolás beállítása: ${cim}`);
@@ -1128,6 +1177,8 @@ const ALAP_KEPLETEK = {
   vevoOssz:  { keplet: '{vevoDe} + {vevoDu}', leiras: 'délelőtt + délután' },
   forgOssz:  { keplet: '{forgDe} + {forgDu} − {fizeto}', leiras: 'délelőtt + délután − fizető kártya' },
   kosar:     { keplet: 'NAGYOBB({navTeljes}; {forgOssz}) ÷ NAGYOBB({navVevo}; {vevoOssz})', leiras: 'a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ a nagyobb vevőszám (Vevőszám NAV vagy Vevőszám összesen R_keeper)' },
+  borravalo: { keplet: '{boritek} − KEREK5(NAGYOBB({navTeljes}; {forgOssz}) − {kartya} − {munch} − {kiadasOssz})',
+               leiras: 'a borítékba tett pénz − a várt készpénz (nagyobb forgalom − SZÉP + bankkártya − MUNCH − kiadás), 5 Ft-ra kerekítve' },
   eladora:   { keplet: 'NAGYOBB({navTeljes}; {forgOssz}) ÷ {munkaora} × 8', leiras: 'a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ munkaóra × 8' }
 };
 const KIADAS_CIM = 'Kiadás összesen';
@@ -1140,7 +1191,7 @@ function boltKeplete(mezo, bolt) {
 }
 function kepletTokenek(sz) {
   const t = String(sz).replace(/×/g, '*').replace(/÷/g, '/').replace(/[−–]/g, '-');
-  const ki = []; const re = /\s*(?:(\d+(?:[.,]\d+)?)|\{([A-Za-z0-9]+)\}|(NAGYOBB|KISEBB)\s*\(|([-+*/();]))/gy;
+  const ki = []; const re = /\s*(?:(\d+(?:[.,]\d+)?)|\{([A-Za-z0-9]+)\}|(NAGYOBB|KISEBB|KEREK5)\s*\(|([-+*/();]))/gy;
   let m, poz = 0;
   while (poz < t.length) {
     if (/^\s*$/.test(t.slice(poz))) break;
@@ -1183,6 +1234,9 @@ function kepletErtek(keplet, ref) {
       vesz();
       const van = arg.filter(a => a != null);
       if (!van.length) return null;
+      if (x.v === 'KEREK5') {   // készpénz-kerekítés: 1–2 → le 0-ra, 3–7 → 5-re, 8–9 → fel 10-re
+        const a = van[0]; return Math.sign(a) * Math.round(Math.abs(a) / 5) * 5;
+      }
       return x.v === 'NAGYOBB' ? Math.max(...van) : Math.min(...van);
     }
     if (x.t === 'op' && x.v === '(') { const a = kifejezes(); if (!op(')')) throw new Error('Hiányzik egy záró zárójel: „)”.'); vesz(); return a; }
@@ -1233,6 +1287,17 @@ function hianyok() {
   const lista = [];
   for (const [k, info] of Object.entries(mezoInfo)) {
     if (info.auto) continue;
+    const db = reszDb(k);
+    if (db > 1) {   // kasszánként: minden rublikát ki kell tölteni
+      const r = allapot.reszek[k] || [];
+      for (let i = 0; i < db; i++) {
+        const el = $(`m-${k}-${i}`), ures = !String(r[i] || '').trim();
+        if (el) el.classList.toggle('hianyzik', ures && (mindetJelol || erintett.has(k + '#' + i)));
+        if (ures) lista.push({ cim: `${info.cim} – ${i + 1}. ${RESZ_NEV[KASSZAS[k]]}`, el });
+      }
+      hianyJelol($('m-' + k), k, false, '');
+      continue;
+    }
     const ures = !String(allapot.ertek[k] || '').trim();
     hianyJelol($('m-' + k), k, ures, info.tipus === 'szoveg' ? '⚠ Ez hiányzik. Írd be a neved.' : '⚠ Ez hiányzik. Ha nem volt ilyen, írj be 0-t.');
     if (ures) lista.push({ cim: info.cim, el: $('m-' + k) });
@@ -1444,7 +1509,10 @@ function frissit() {
   $('kiadas-ossz').textContent = 'Kiadás összesen: ' + (e.kiadasOssz == null ? '0' : szamIr(e.kiadasOssz)) + ' Ft';
   ellenoriz();
   const hi = hianyok();
-  if (allapot.bolt) tarol(mentesKulcs(), { datum: allapot.datum, ertek: allapot.ertek, kiadas: allapot.kiadas, cimlet: allapot.cimlet, alairas: allapot.alairas });
+  const bf = $('figy-borravalo');
+  if (bf) { const neg = e.borravalo != null && e.borravalo < 0; bf.hidden = !neg;
+    if (neg) bf.textContent = `⚠ A borítékban ${szamIr(-e.borravalo)} Ft-tal kevesebb pénz van, mint a várt készpénz. Számold meg újra a pénzt!`; }
+  if (allapot.bolt) tarol(mentesKulcs(), { datum: allapot.datum, ertek: allapot.ertek, kiadas: allapot.kiadas, cimlet: allapot.cimlet, alairas: allapot.alairas, reszek: allapot.reszek });
 
 }
 
@@ -1501,9 +1569,9 @@ function boltBeallit(b) {
   $('kereso-felirat').textContent = b;
   gomb.classList.remove('ures-valasztas');
   const mentett = olvas(mentesKulcs());
-  allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null;
+  allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; allapot.reszek = {};
   allapot.datum = maiDatum();
-  if (mentett && mentett.datum === allapot.datum) { allapot.ertek = mentett.ertek || {}; allapot.kiadas = mentett.kiadas || []; allapot.cimlet = mentett.cimlet || {}; allapot.alairas = mentett.alairas || null; }
+  if (mentett && mentett.datum === allapot.datum) { allapot.ertek = mentett.ertek || {}; allapot.kiadas = mentett.kiadas || []; allapot.cimlet = mentett.cimlet || {}; allapot.alairas = mentett.alairas || null; allapot.reszek = mentett.reszek || {}; }
   alairasMutat();
   for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) $('m-' + k).value = info.tipus === 'szoveg' ? (allapot.ertek[k] || '') : tagolSzoveg(allapot.ertek[k] || '');
   $('datum').value = allapot.datum;
@@ -1512,7 +1580,7 @@ function boltBeallit(b) {
   $('l-datum').classList.remove('letiltva');
   $('urlap').classList.remove('letiltva');
   frissit();
-  if (window.__kepletKesz) kepletekFrissit();
+  if (window.__kepletKesz) { reszekRajz(); kepletekFrissit(); }
 }
 function datumFrissit() {
   const d = datumOlvas($('datum').value);
@@ -1643,11 +1711,13 @@ $('urites').addEventListener('click', () => kerdez(
   'Igen, törlöm',
   () => { urlapUrites(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
 function urlapUrites() {
+  allapot.reszek = {};
   allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; alairasMutat(); erintett.clear(); mindetJelol = false;
   for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) { const i = $('m-' + k); i.value = ''; i.classList.remove('hianyzik'); }
   document.querySelectorAll('.hiany-uzenet').forEach(u => { u.hidden = true; });
   $('hibalista').hidden = true;
   $('datum').value = allapot.datum = maiDatum(); datumFrissit();
+  if (window.__kepletKesz) reszekRajz();
   kiadasRajz(); frissit();
 }
 
@@ -1978,6 +2048,90 @@ document.addEventListener('keydown', e => {
   }
 });
 
+/* --- Bolt beállításai: kasszák és kártyaterminálok száma (boltonként, a szerkesztő állítja) --- */
+function boltBeallKulcs(bolt) { return 'b-' + boltSlug(bolt || allapot.bolt); }
+function boltBeall(bolt) {
+  const ki = { navKassza: 1, terminal: 1 };
+  const t = sugok[boltBeallKulcs(bolt)];
+  if (t && t.szoveg) { try { const j = JSON.parse(t.szoveg); for (const k of Object.keys(ki)) if (j[k]) ki[k] = Math.max(1, Math.min(5, +j[k] || 1)); } catch (e) {} }
+  return ki;
+}
+function reszDb(k) { return KASSZAS[k] && allapot.bolt ? boltBeall()[KASSZAS[k]] : 1; }
+function reszOssz(k) {
+  const db = reszDb(k), r = (allapot.reszek[k] = (allapot.reszek[k] || []).slice(0, db));
+  const szamok = r.map(x => szamOlvas(x));
+  let ertek = '';
+  if (szamok.some(x => x != null && isNaN(x))) ertek = r.filter((x, i) => isNaN(szamok[i]) && szamok[i] != null).join(' ');   // hibás beírás: jelezzük
+  else if (szamok.some(x => x != null)) ertek = tagolSzoveg(String(Math.round(szamok.reduce((a, b) => a + (b || 0), 0) * 100) / 100));
+  allapot.ertek[k] = ertek;
+  $('m-' + k).value = ertek;
+  for (let i = 0; i < db; i++) { const el = $(`m-${k}-${i}`); if (el) el.classList.toggle('rossz', szamok[i] != null && isNaN(szamok[i])); }
+}
+function reszekRajz() {
+  for (const k of Object.keys(KASSZAS)) {
+    const db = reszDb(k), rh = $('reszek-' + k), fo = $('m-' + k), wrap = fo.closest('.mezo'), info = mezoInfo[k];
+    rh.textContent = '';
+    if (db > 1) {
+      if (!allapot.reszek[k] || !allapot.reszek[k].length) allapot.reszek[k] = [];
+      for (let i = 0; i < db; i++) {
+        const d = document.createElement('div'); d.className = 'resz';
+        const sm = document.createElement('small'); sm.textContent = `${i + 1}. ${RESZ_NEV[KASSZAS[k]]}`;
+        const be = document.createElement('div'); be.className = 'bemenet';
+        const inp = document.createElement('input'); inp.type = 'text'; inp.id = `m-${k}-${i}`; inp.autocomplete = 'off'; inp.inputMode = 'decimal';
+        inp.className = 'szamos' + (ME[info.tipus] ? ' vanme' : ''); inp.value = tagolSzoveg(allapot.reszek[k][i] || '');
+        inp.setAttribute('aria-label', `${info.cim} – ${i + 1}. ${RESZ_NEV[KASSZAS[k]]}`);
+        inp.addEventListener('input', () => { tagolva(inp); allapot.reszek[k][i] = inp.value; reszOssz(k); frissit(); });
+        inp.addEventListener('blur', () => { if (alkalmazasValtas()) return; erintett.add(k + '#' + i); frissit(); });
+        be.appendChild(inp);
+        if (ME[info.tipus]) { const me = document.createElement('span'); me.className = 'me'; me.textContent = ME[info.tipus]; be.appendChild(me); }
+        d.append(sm, be); rh.appendChild(d);
+      }
+      rh.hidden = false; $('osszcim-' + k).hidden = false;
+      fo.readOnly = true; fo.tabIndex = -1; fo.classList.add('auto');
+      wrap.htmlFor = `m-${k}-0`;
+      reszOssz(k);
+    } else {
+      rh.hidden = true; $('osszcim-' + k).hidden = true;
+      fo.readOnly = false; fo.tabIndex = 0; fo.classList.remove('auto');
+      wrap.htmlFor = 'm-' + k;
+      if (allapot.reszek[k]) { delete allapot.reszek[k]; }
+    }
+  }
+}
+let boltUj = null, boltElozo = null;
+function boltAblakRajz() { $('bb-navKassza').value = boltUj.navKassza; $('bb-terminal').value = boltUj.terminal;
+  document.querySelectorAll('#bolt-urlap .pm').forEach(b => { const v = boltUj[b.dataset.cel] + (+b.dataset.lep); b.disabled = v < 1 || v > 5; }); }
+$('szerk-bolt').addEventListener('click', () => {
+  boltElozo = document.activeElement; boltUj = boltBeall();
+  $('bolt-ablak-bolt').textContent = allapot.bolt; $('bolt-hiba').hidden = true; boltAblakRajz();
+  $('bolt-ablak').hidden = false; $('bolt-x').focus();
+});
+document.querySelectorAll('#bolt-urlap .pm').forEach(b => b.addEventListener('click', () => {
+  boltUj[b.dataset.cel] = Math.max(1, Math.min(5, boltUj[b.dataset.cel] + (+b.dataset.lep))); boltAblakRajz();
+}));
+function boltAblakZar() { $('bolt-ablak').hidden = true; if (boltElozo && boltElozo.isConnected) boltElozo.focus(); }
+$('bolt-x').addEventListener('click', boltAblakZar);
+$('bolt-megse').addEventListener('click', boltAblakZar);
+$('bolt-ablak').addEventListener('mousedown', e => { if (e.target === $('bolt-ablak')) boltAblakZar(); });
+$('bolt-ablak').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); boltAblakZar(); } });
+$('bolt-urlap').addEventListener('submit', async e => {
+  e.preventDefault();
+  const kulcs = boltBeallKulcs();
+  sugoCimek[kulcs] = `Bolt beállítás – ${allapot.bolt}`;
+  const szoveg = JSON.stringify({ t: 'bolt', navKassza: boltUj.navKassza, terminal: boltUj.terminal });
+  betoltoMutat('A bolt beállításainak mentése…'); merfold(80);
+  try {
+    const adat = await sugoMent(kulcs, szoveg, null, null, false);
+    sugok[kulcs] = Object.assign({}, adat, { szoveg });
+    if (gasMod) tarol('zarospapir:sugok', sugok);
+    await betoltoKesz(); boltAblakZar(); reszekRajz(); frissit();
+  } catch (er) {
+    await betoltoKesz();
+    $('bolt-hiba').textContent = er && er.code === 'AUTH' ? 'Lejárt a belépésed. Lépj be újra.' : 'Nem sikerült menteni. Ellenőrizd az internetet, és próbáld újra.';
+    $('bolt-hiba').hidden = false;
+  }
+});
+
 /* --- Automata kiszámolás: megjelenítés és szerkesztés --- */
 function kepletMegjelenit(kod) {
   return String(kod).replace(/\{([A-Za-z0-9]+)\}/g, (m, k) => k === 'kiadasOssz' ? `[${KIADAS_CIM}]` : (mezoInfo[k] ? `[${mezoInfo[k].cim}]` : m))
@@ -1995,6 +2149,8 @@ function kepletKodra(szoveg) {
 }
 function kepletekFrissit() {
   if (!allapot.bolt) return;
+  const allas = JSON.stringify(boltBeall());
+  if (allas !== window.__reszAllas) { window.__reszAllas = allas; reszekRajz(); }
   for (const k of Object.keys(ALAP_KEPLETEK)) {
     const kp = boltKeplete(k), sm = $('megj-' + k);
     if (sm) sm.textContent = 'Automata kiszámolás: ' + (kp.leiras || kepletMegjelenit(kp.keplet));
@@ -2021,7 +2177,7 @@ let kepletMezo = null, kepletElozo = null;
 function kepletBeszur(szoveg) {
   const t = $('keplet-szoveg'), a = t.selectionStart ?? t.value.length, b = t.selectionEnd ?? a;
   t.value = t.value.slice(0, a) + szoveg + t.value.slice(b);
-  let poz = a + szoveg.length; if (szoveg.endsWith('(; )')) poz = a + szoveg.indexOf('(') + 1;
+  let poz = a + szoveg.length; if (szoveg.endsWith('(; )') || szoveg.endsWith('()')) poz = a + szoveg.indexOf('(') + 1;
   t.focus(); t.setSelectionRange(poz, poz); kepletEllenoriz();
 }
 document.querySelectorAll('.keplet-jelek button').forEach(b => b.addEventListener('click', () => kepletBeszur(b.dataset.jel)));
@@ -2513,7 +2669,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261125085450';
+const VALTOZAT = '20261126130837';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
@@ -2543,7 +2699,7 @@ datumFrissit();
 kiadasRajz();
 
 const utolso = olvas('zaras:utolsoBolt');
-boltBeallit(KESZ.has(utolso) ? utolso : 'Oroszlány');
+boltBeallit(KESZ.has(utolso) ? utolso : [...KESZ][0]);
 const eredetiBolt = boltBeallit;
 gomb.addEventListener('click', () => {}, { once: true });
 new MutationObserver(() => tarol('zaras:utolsoBolt', allapot.bolt)).observe($('kereso-felirat'), { childList: true, characterData: true, subtree: true });
