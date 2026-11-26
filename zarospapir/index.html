@@ -1591,7 +1591,7 @@ function rajzol(canvas) {
           const szel = Math.max(...ket.map(t => ctx.measureText(t).width));
           if (!legjobb || szel < legjobb.szel) legjobb = { ket, szel };
         }
-        const H2 = (y2 - y1) * 0.74;   // fent-lent marad levegő a vonalig
+        const H2 = (y2 - y1) * 0.64;   // fent-lent több levegő marad a vonalig
         let m2 = cel, a2, d2, h2;
         for (let i = 0; i < 25; i++) {
           ctx.font = `700 ${m2}px ${TOLL_BETU}`;
@@ -2849,7 +2849,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261126203751';
+const VALTOZAT = '20261126203959';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
