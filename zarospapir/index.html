@@ -897,15 +897,23 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <div class="belepo-fej"><h3 id="bolt-ablak-cim">Bolt beállításai</h3></div>
     <p class="tipp" style="margin-top:-6px">Bolt: <span class="pirula" id="bolt-ablak-bolt"></span> &nbsp;Csak ennél a boltnál érvényes.</p>
     <div class="szamlalo-sor">
-      <span class="cim">NAV-os kasszák száma<small>Ennyi rublikára bomlik: ÁFA-kulcsos forgalmak, hibás bevitel, vevőszám NAV, nyugta-megszakítások.</small></span>
+      <span class="cim">Kasszák száma<small>Ennyi rublikára bomlik minden kasszánként rögzített szám: forgalmak, vevőszámok, MUNCH, számla, fizető kártya, nyugta-megszakítások, törlési indokok, termék eladások.</small></span>
       <span class="vezerlo"><button type="button" class="pm" data-cel="navKassza" data-lep="-1" aria-label="Eggyel kevesebb kassza">−</button><input type="text" id="bb-navKassza" readonly aria-label="NAV-os kasszák száma"><button type="button" class="pm" data-cel="navKassza" data-lep="1" aria-label="Eggyel több kassza">+</button></span>
     </div>
     <div class="szamlalo-sor">
       <span class="cim">Bankkártya-terminálok száma<small>Ennyi rublikára bomlik: Szépkártya, Bankkártya.</small></span>
       <span class="vezerlo"><button type="button" class="pm" data-cel="terminal" data-lep="-1" aria-label="Eggyel kevesebb terminál">−</button><input type="text" id="bb-terminal" readonly aria-label="Bankkártya-terminálok száma"><button type="button" class="pm" data-cel="terminal" data-lep="1" aria-label="Eggyel több terminál">+</button></span>
     </div>
+    <div class="szamlalo-sor">
+      <span class="cim">Kávégépek / darálók száma<small>Ennyi rublikára bomlik: Kávégép/daráló mérő óraállás.</small></span>
+      <span class="vezerlo"><button type="button" class="pm" data-cel="kavegep" data-lep="-1" aria-label="Eggyel kevesebb kávégép">−</button><input type="text" id="bb-kavegep" readonly aria-label="Kávégépek száma"><button type="button" class="pm" data-cel="kavegep" data-lep="1" aria-label="Eggyel több kávégép">+</button></span>
+    </div>
+    <div class="szamlalo-sor">
+      <span class="cim">Fagyigépek száma<small>Ennyi rublikára bomlik: Fagyigép mérő óraállás.</small></span>
+      <span class="vezerlo"><button type="button" class="pm" data-cel="fagyigep" data-lep="-1" aria-label="Eggyel kevesebb fagyigép">−</button><input type="text" id="bb-fagyigep" readonly aria-label="Fagyigépek száma"><button type="button" class="pm" data-cel="fagyigep" data-lep="1" aria-label="Eggyel több fagyigép">+</button></span>
+    </div>
     <ul class="tipp">
-      <li>Legfeljebb <b>5</b> kassza / terminál adható meg.</li>
+      <li>Mindegyikből legfeljebb <b>5</b> adható meg.</li>
       <li>Ha 1-nél több van, a dolgozó minden kasszát külön rublikába ír, a gép pedig összeadja. Minden rublikát ki kell tölteni, ha nem volt forgalom, akkor <b>0</b>-t.</li>
       <li>A zárós papírra az összeg kerül.</li>
     </ul>
@@ -1113,9 +1121,17 @@ function olvas(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); 
 /* ---------- állapot ---------- */
 const allapot = { bolt: null, datum: maiDatum(), ertek: {}, kiadas: [], cimlet: {}, alairas: null, reszek: {} };
 /* Mezők, amelyek kasszánként / kártyaterminálonként külön rublikára bonthatók (a bolt beállítása szerint). */
-const KASSZAS = { f0: 'navKassza', f5: 'navKassza', f18: 'navKassza', f27: 'navKassza', hibas: 'navKassza', navVevo: 'navKassza',
-  megszOssz: 'navKassza', megszDb: 'navKassza', szep: 'terminal', bank: 'terminal' };
-const RESZ_NEV = { navKassza: 'kassza', terminal: 'terminál' };
+/* Minden kasszánként rögzített szám kasszánként bontható; a kártyák terminálonként, a mérőórák gépenként.
+   Nem bontható: munkaóra, próbanapos munkaóra, boríték (ezek a boltra vonatkoznak). */
+const NEM_BONTHATO = new Set(['munkaora', 'probaora', 'boritek']);
+const KASSZAS = {};
+for (const lista of Object.values(MEZOK)) for (const [kulcs, , , tipus] of lista) {
+  if (kulcs.startsWith('=') || tipus === 'szoveg' || NEM_BONTHATO.has(kulcs)) continue;
+  KASSZAS[kulcs] = { szep: 'terminal', bank: 'terminal', kavegep: 'kavegep', fagyigep: 'fagyigep' }[kulcs] || 'navKassza';
+}
+const RESZ_NEV = { navKassza: 'kassza', terminal: 'terminál', kavegep: 'gép', fagyigep: 'gép' };
+const MEROORA = new Set(['kavegep', 'fagyigep']);   // óraállásokat nem adunk össze, gépenként kerülnek a papírra
+function meroSzoveg(k) { return (allapot.reszek[k] || []).map(x => { const n = szamOlvas(x); return n == null || isNaN(n) ? '' : szamIr(n, true); }).join(' / '); }
 const mezoInfo = {}; // kulcs -> {cella, cim, tipus}
 let mentesKulcs = () => 'zaras:' + allapot.bolt;
 
@@ -1355,6 +1371,7 @@ function kitoltottCellak() {
   for (const [k, info] of Object.entries(mezoInfo)) {
     if (info.auto) out[info.cella] = ertekIr(e[k], info.tipus);
     else if (info.tipus === 'szoveg') out[info.cella] = (allapot.ertek[k] || '').trim();
+    else if (MEROORA.has(KASSZAS[k]) && reszDb(k) > 1) out[info.cella] = meroSzoveg(k);   // több gép óraállása: egymás mellé
     else { const n = szamOlvas(allapot.ertek[k]); out[info.cella] = (n == null || isNaN(n)) ? '' : ertekIr(n, info.tipus); }
   }
   allapot.kiadas.slice(0, MAX_KIADAS).forEach((r, i) => {
@@ -2051,7 +2068,7 @@ document.addEventListener('keydown', e => {
 /* --- Bolt beállításai: kasszák és kártyaterminálok száma (boltonként, a szerkesztő állítja) --- */
 function boltBeallKulcs(bolt) { return 'b-' + boltSlug(bolt || allapot.bolt); }
 function boltBeall(bolt) {
-  const ki = { navKassza: 1, terminal: 1 };
+  const ki = { navKassza: 1, terminal: 1, kavegep: 1, fagyigep: 1 };
   const t = sugok[boltBeallKulcs(bolt)];
   if (t && t.szoveg) { try { const j = JSON.parse(t.szoveg); for (const k of Object.keys(ki)) if (j[k]) ki[k] = Math.max(1, Math.min(5, +j[k] || 1)); } catch (e) {} }
   return ki;
@@ -2064,7 +2081,7 @@ function reszOssz(k) {
   if (szamok.some(x => x != null && isNaN(x))) ertek = r.filter((x, i) => isNaN(szamok[i]) && szamok[i] != null).join(' ');   // hibás beírás: jelezzük
   else if (szamok.some(x => x != null)) ertek = tagolSzoveg(String(Math.round(szamok.reduce((a, b) => a + (b || 0), 0) * 100) / 100));
   allapot.ertek[k] = ertek;
-  $('m-' + k).value = ertek;
+  $('m-' + k).value = MEROORA.has(KASSZAS[k]) && ertek && !szamok.some(x => x != null && isNaN(x)) ? meroSzoveg(k) : ertek;
   for (let i = 0; i < db; i++) { const el = $(`m-${k}-${i}`); if (el) el.classList.toggle('rossz', szamok[i] != null && isNaN(szamok[i])); }
 }
 function reszekRajz() {
@@ -2087,6 +2104,7 @@ function reszekRajz() {
         d.append(sm, be); rh.appendChild(d);
       }
       rh.hidden = false; $('osszcim-' + k).hidden = false;
+      $('osszcim-' + k).textContent = MEROORA.has(KASSZAS[k]) ? 'A papírra így kerül (gépenként):' : 'Összesen (automata kiszámolás):';
       fo.readOnly = true; fo.tabIndex = -1; fo.classList.add('auto');
       wrap.htmlFor = `m-${k}-0`;
       reszOssz(k);
@@ -2099,7 +2117,7 @@ function reszekRajz() {
   }
 }
 let boltUj = null, boltElozo = null;
-function boltAblakRajz() { $('bb-navKassza').value = boltUj.navKassza; $('bb-terminal').value = boltUj.terminal;
+function boltAblakRajz() { for (const k of Object.keys(boltUj)) { const el = $('bb-' + k); if (el) el.value = boltUj[k]; }
   document.querySelectorAll('#bolt-urlap .pm').forEach(b => { const v = boltUj[b.dataset.cel] + (+b.dataset.lep); b.disabled = v < 1 || v > 5; }); }
 $('szerk-bolt').addEventListener('click', () => {
   boltElozo = document.activeElement; boltUj = boltBeall();
@@ -2118,7 +2136,7 @@ $('bolt-urlap').addEventListener('submit', async e => {
   e.preventDefault();
   const kulcs = boltBeallKulcs();
   sugoCimek[kulcs] = `Bolt beállítás – ${allapot.bolt}`;
-  const szoveg = JSON.stringify({ t: 'bolt', navKassza: boltUj.navKassza, terminal: boltUj.terminal });
+  const szoveg = JSON.stringify(Object.assign({ t: 'bolt' }, boltUj));
   betoltoMutat('A bolt beállításainak mentése…'); merfold(80);
   try {
     const adat = await sugoMent(kulcs, szoveg, null, null, false);
@@ -2669,7 +2687,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261126130837';
+const VALTOZAT = '20261126131706';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak'].some(id => $(id) && !$(id).hidden);
