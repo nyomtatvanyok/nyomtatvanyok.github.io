@@ -401,6 +401,10 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .resz { display: grid; gap: 2px; min-width: 0; }
 .resz small { font-size: 14px; font-weight: 700; color: var(--masodlagos); }
 .resz .bemenet input { min-height: 48px; }
+.reszek.szeles { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.rontott-kerdes { display: grid; gap: 4px; padding: 10px 12px; border: 2px dashed var(--morzsa); border-radius: 10px; background: var(--liszt); }
+.rontott-kerdes > span { font-size: 16px; font-weight: 700; }
+.rontott-kerdes .bemenet { max-width: 160px; }
 .ossz-cim { font-size: 14px; font-weight: 700; color: var(--masodlagos); margin-top: 4px; }
 .szamlalo-sor { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 14px;
   border: 2px solid var(--morzsa); border-radius: 12px; background: var(--liszt); }
@@ -417,6 +421,8 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .kesz-kep { width: 100%; height: auto; background: var(--feher); border-radius: 6px; box-shadow: 0 1px 2px rgba(74,40,16,.25), 0 6px 18px rgba(74,40,16,.12);
   -webkit-touch-callout: default; user-select: auto; }
 #kesz-vissza { justify-self: center; min-width: 240px; }
+#kesz-letolt { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+#kesz-letolt svg { width: 26px; height: 26px; flex: none; }
 
 /* aláírás */
 .alairas-doboz { width: 100%; max-width: 560px; min-height: 120px; display: grid; place-items: center; padding: 10px; background: var(--feher);
@@ -890,18 +896,23 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <p class="uzenet" id="kesz-archiv" hidden></p>
     <button type="button" class="gomb-2" id="kesz-ujra-archiv" hidden>Újrapróbálom az archívumba mentést</button>
     <div class="kesz-gombok">
+      <button type="button" class="gomb-fo" id="kesz-megoszt" hidden>📤 Küldés a forgalmas csoportba (Messenger)</button>
       <button type="button" class="gomb-fo" id="kesz-letolt">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Letöltés az eszközre
+        <span id="kesz-letolt-felirat">Letöltés az eszközre</span>
       </button>
-      <button type="button" class="gomb-2" id="kesz-megoszt" hidden>📤 Küldés Messengerbe / megosztás</button>
     </div>
     <p class="uzenet ok" id="kesz-uzenet" hidden></p>
-    <ul class="tipp">
-      <li><b>Telefonon:</b> a „Letöltés az eszközre” gombra koppintva a galériába mentheted. Vagy tartsd az ujjad a képen, és válaszd a „Kép mentése” / „Hozzáadás a Fotókhoz” pontot.</li>
-      <li><b>Számítógépen:</b> a „Letöltés az eszközre” gomb, vagy jobb klikk a képen → „Kép mentése másként”.</li>
-      <li>Utána nyisd meg a Messengert, és küldd be a zárós papírt a forgalmas csoportba.</li>
-    </ul>
+    <ol class="tipp" id="kesz-lepesek-telefon" hidden>
+      <li>Koppints a <b>„📤 Küldés a forgalmas csoportba”</b> gombra.</li>
+      <li>A felugró menüben válaszd a <b>Messenger</b>t (ha nem látod, húzd oldalra, vagy koppints a „Továbbiak” pontra).</li>
+      <li>Válaszd ki a <b>forgalmas csoportot</b>, és nyomd meg a <b>Küldés</b> gombot. Kész!</li>
+    </ol>
+    <ol class="tipp" id="kesz-lepesek-gep" hidden>
+      <li>Kattints a <b>„Letöltés az eszközre”</b> gombra. A kép a <b>Letöltések</b> mappába kerül.</li>
+      <li>Nyisd meg a Messengert, és a forgalmas csoportba húzd be (vagy csatold) a letöltött képet.</li>
+      <li>Ha nem találod a fájlt: jobb klikk a lenti képen → „Kép másolása”, majd a Messengerben Ctrl + V.</li>
+    </ol>
     <img id="kesz-kep" class="kesz-kep" alt="Az elkészült zárós papír">
     <button type="button" class="gomb-2" id="kesz-vissza">← Vissza, új zárás</button>
   </div>
@@ -915,12 +926,12 @@ input.cimletes { cursor: pointer; background: var(--feher); }
     <div class="belepo-fej"><h3 id="bolt-ablak-cim">Bolt beállításai</h3></div>
     <p class="tipp" style="margin-top:-6px">Bolt: <span class="pirula" id="bolt-ablak-bolt"></span> &nbsp;Csak ennél a boltnál érvényes.</p>
     <div class="szamlalo-sor">
-      <span class="cim">Kasszák száma<small>Ennyi rublikára bomlik minden kasszánként rögzített szám: forgalmak, vevőszámok, MUNCH, számla, fizető kártya, nyugta-megszakítások, törlési indokok, termék eladások.</small></span>
+      <span class="cim">Kasszák száma<small>Ennyi rublikára bomlik minden kasszánként rögzített szám. A kártyáknál ennyi „Kábeles terminál” rublika lesz.</small></span>
       <span class="vezerlo"><button type="button" class="pm" data-cel="navKassza" data-lep="-1" aria-label="Eggyel kevesebb kassza">−</button><input type="text" id="bb-navKassza" readonly aria-label="NAV-os kasszák száma"><button type="button" class="pm" data-cel="navKassza" data-lep="1" aria-label="Eggyel több kassza">+</button></span>
     </div>
     <div class="szamlalo-sor">
-      <span class="cim">Bankkártya-terminálok száma<small>Ennyi rublikára bomlik: Szépkártya, Bankkártya.</small></span>
-      <span class="vezerlo"><button type="button" class="pm" data-cel="terminal" data-lep="-1" aria-label="Eggyel kevesebb terminál">−</button><input type="text" id="bb-terminal" readonly aria-label="Bankkártya-terminálok száma"><button type="button" class="pm" data-cel="terminal" data-lep="1" aria-label="Eggyel több terminál">+</button></span>
+      <span class="cim">Tartalék terminálok száma<small>A Szépkártya és a Bankkártya mezőben a kábeles terminálok után ennyi „Tartalék terminál” rublika lesz. Lehet 0 is.</small></span>
+      <span class="vezerlo"><button type="button" class="pm" data-cel="tartalek" data-lep="-1" aria-label="Eggyel kevesebb tartalék terminál">−</button><input type="text" id="bb-tartalek" readonly aria-label="Tartalék terminálok száma"><button type="button" class="pm" data-cel="tartalek" data-lep="1" aria-label="Eggyel több tartalék terminál">+</button></span>
     </div>
     <div class="szamlalo-sor">
       <span class="cim">Kávégépek / darálók száma<small>Ennyi rublikára bomlik: Kávégép/daráló mérő óraállás.</small></span>
@@ -1141,13 +1152,21 @@ const allapot = { bolt: null, datum: maiDatum(), ertek: {}, kiadas: [], cimlet: 
 /* Mezők, amelyek kasszánként / kártyaterminálonként külön rublikára bonthatók (a bolt beállítása szerint). */
 /* Minden kasszánként rögzített szám kasszánként bontható; a kártyák terminálonként, a mérőórák gépenként.
    Nem bontható: munkaóra, próbanapos munkaóra, boríték (ezek a boltra vonatkoznak). */
-const NEM_BONTHATO = new Set(['munkaora', 'probaora', 'boritek']);
+const NEM_BONTHATO = new Set(['munkaora', 'probaora', 'boritek', 'hibas']);   // a hibás bevitel rontott blokkonként bomlik
 const KASSZAS = {};
 for (const lista of Object.values(MEZOK)) for (const [kulcs, , , tipus] of lista) {
   if (kulcs.startsWith('=') || tipus === 'szoveg' || NEM_BONTHATO.has(kulcs)) continue;
-  KASSZAS[kulcs] = { szep: 'terminal', bank: 'terminal', kavegep: 'kavegep', fagyigep: 'fagyigep' }[kulcs] || 'navKassza';
+  KASSZAS[kulcs] = { szep: 'kartya', bank: 'kartya', kavegep: 'kavegep', fagyigep: 'fagyigep' }[kulcs] || 'navKassza';
 }
-const RESZ_NEV = { navKassza: 'kassza', terminal: 'terminál', kavegep: 'gép', fagyigep: 'gép' };
+const RESZ_NEV = { navKassza: 'kassza', kartya: 'terminál', kavegep: 'gép', fagyigep: 'gép' };
+const MINDIG_RESZES = new Set(['navVevo']);   // a vevőszámból a gép vonja le a rontott blokkokat, ezért mindig rublikás
+const MAX_RONTOTT = 30;
+function rontottDb() { const n = szamOlvas(allapot.ertek.rontottDb); return n == null || isNaN(n) ? 0 : Math.max(0, Math.min(MAX_RONTOTT, Math.floor(n))); }
+function reszCimke(k, i) {
+  if (k === 'hibas') return `${i + 1}. rontott blokk`;
+  if (KASSZAS[k] === 'kartya') { const kab = boltBeall().navKassza; return i < kab ? `Kábeles terminál – ${i + 1}` : `Tartalék terminál – ${i - kab + 1}`; }
+  return `${i + 1}. ${RESZ_NEV[KASSZAS[k]]}`;
+}
 const MEROORA = new Set(['kavegep', 'fagyigep']);   // óraállásokat nem adunk össze, gépenként kerülnek a papírra
 function meroSzoveg(k) { return (allapot.reszek[k] || []).map(x => { const n = szamOlvas(x); return n == null || isNaN(n) ? '' : szamIr(n, true); }).join(' / '); }
 const mezoInfo = {}; // kulcs -> {cella, cim, tipus}
@@ -1174,7 +1193,18 @@ for (const [csoport, lista] of Object.entries(MEZOK)) {
     if (ME[tipus]) inp.classList.add('vanme');
     be.appendChild(inp);
     if (ME[tipus]) { const me = document.createElement('span'); me.className = 'me'; me.textContent = ME[tipus]; be.appendChild(me); }
-    if (KASSZAS[k]) {   // kasszánkénti rublikák helye (a bolt beállításától függően jelenik meg)
+    if (k === 'hibas') {
+      const kd = document.createElement('div'); kd.className = 'rontott-kerdes';
+      const kl = document.createElement('span'); kl.textContent = 'Mennyi rontott blokkod volt?';
+      const kb = document.createElement('div'); kb.className = 'bemenet';
+      const ki = document.createElement('input'); ki.type = 'text'; ki.id = 'm-rontottDb'; ki.inputMode = 'numeric'; ki.autocomplete = 'off'; ki.className = 'szamos vanme';
+      ki.setAttribute('aria-label', 'Rontott blokkok száma');
+      const km = document.createElement('span'); km.className = 'me'; km.textContent = 'db';
+      kb.append(ki, km); kd.append(kl, kb); wrap.appendChild(kd);
+      ki.addEventListener('input', () => { ki.value = ki.value.replace(/\D/g, '').slice(0, 2); allapot.ertek.rontottDb = ki.value; reszekRajz(); frissit(); });
+      ki.addEventListener('blur', () => { if (alkalmazasValtas()) return; erintett.add('rontottDb'); frissit(); });
+    }
+    if (KASSZAS[k] || k === 'hibas') {   // kasszánkénti rublikák helye (a bolt beállításától függően jelenik meg)
       const rh = document.createElement('div'); rh.className = 'reszek'; rh.id = 'reszek-' + k; rh.hidden = true; wrap.appendChild(rh);
       const ol = document.createElement('small'); ol.className = 'ossz-cim'; ol.id = 'osszcim-' + k; ol.textContent = 'Összesen (automata kiszámolás):'; ol.hidden = true; wrap.appendChild(ol);
     }
@@ -1321,13 +1351,17 @@ function hianyok() {
   const lista = [];
   for (const [k, info] of Object.entries(mezoInfo)) {
     if (info.auto) continue;
-    const db = reszDb(k);
-    if (db > 1) {   // kasszánként: minden rublikát ki kell tölteni
-      const r = allapot.reszek[k] || [];
+    if ((KASSZAS[k] || k === 'hibas') && reszesE(k)) {   // rublikánként: mindegyiket ki kell tölteni
+      const db = reszDb(k), r = allapot.reszek[k] || [];
+      if (k === 'hibas') {
+        const ri = $('m-rontottDb'), ures = !String(allapot.ertek.rontottDb || '').trim();
+        ri.classList.toggle('hianyzik', ures && (mindetJelol || erintett.has('rontottDb')));
+        if (ures) lista.push({ cim: 'Hibás bevitel – mennyi rontott blokkod volt? (ha nem volt, 0)', el: ri });
+      }
       for (let i = 0; i < db; i++) {
         const el = $(`m-${k}-${i}`), ures = !String(r[i] || '').trim();
         if (el) el.classList.toggle('hianyzik', ures && (mindetJelol || erintett.has(k + '#' + i)));
-        if (ures) lista.push({ cim: `${info.cim} – ${i + 1}. ${RESZ_NEV[KASSZAS[k]]}`, el });
+        if (ures) lista.push({ cim: `${info.cim} – ${reszCimke(k, i)}`, el });
       }
       hianyJelol($('m-' + k), k, false, '');
       continue;
@@ -1379,6 +1413,8 @@ const TOLL_BETU = "'Kalam', 'Segoe Print', 'Bradley Hand', cursive";
 const TOLL_SZIN = '#1c3a9e';
 function cellaNev(r, c) { return 'ABCDE'[c] + (r + 1); }
 
+/* A papírra csak a szám kerül, mértékegység (Ft, db, óra) nélkül. */
+function papirIr(n, tipus) { return (n == null || isNaN(n)) ? '' : (tipus === 'ft' ? szamIr(n) : szamIr(n, true)); }
 function kitoltottCellak() {
   const e = szamol();
   const out = {};
@@ -1387,17 +1423,17 @@ function kitoltottCellak() {
   out.D1 = 'Dátum: ' + (d ? d.szoveg : '');
   out.E1 = 'Nap: ' + (d ? d.nap : '');
   for (const [k, info] of Object.entries(mezoInfo)) {
-    if (info.auto) out[info.cella] = ertekIr(e[k], info.tipus);
+    if (info.auto) out[info.cella] = papirIr(e[k], info.tipus);
     else if (info.tipus === 'szoveg') out[info.cella] = (allapot.ertek[k] || '').trim();
     else if (MEROORA.has(KASSZAS[k]) && reszDb(k) > 1) out[info.cella] = meroSzoveg(k);   // több gép óraállása: egymás mellé
-    else { const n = szamOlvas(allapot.ertek[k]); out[info.cella] = (n == null || isNaN(n)) ? '' : ertekIr(n, info.tipus); }
+    else { const n = szamOlvas(allapot.ertek[k]); out[info.cella] = (n == null || isNaN(n)) ? '' : papirIr(n, info.tipus); }
   }
   allapot.kiadas.slice(0, MAX_KIADAS).forEach((r, i) => {
     const n = szamOlvas(r.osszeg);
     out['D' + (23 + i)] = (r.nev || '').trim();
-    out['E' + (23 + i)] = (n == null || isNaN(n)) ? '' : ertekIr(n, 'ft');
+    out['E' + (23 + i)] = (n == null || isNaN(n)) ? '' : papirIr(n, 'ft');
   });
-  out.E34 = ertekIr(e.kiadasOssz == null ? 0 : e.kiadasOssz, 'ft');
+  out.E34 = papirIr(e.kiadasOssz == null ? 0 : e.kiadasOssz, 'ft');
   out.E39 = d ? d.szoveg : '';
   return out;
 }
@@ -1475,7 +1511,7 @@ function rajzol(canvas) {
   // Napi kiadás: a fel nem használt sorokat fordított Z-vel húzzuk át (ahogy a könyvelésben szokás)
   const kiadasDb = Math.min(allapot.kiadas.length, MAX_KIADAS);
   if (kiadasDb < MAX_KIADAS) {
-    const zx1 = xs[3] + 4 * s, zx2 = xs[5] - 4 * s, zy1 = ys[22 + kiadasDb] + 4 * s, zy2 = ys[33] - 4 * s;
+    const zx1 = xs[3] + 14 * s, zx2 = xs[5] - 14 * s, zy1 = ys[22 + kiadasDb] + 9 * s, zy2 = ys[33] - 9 * s;   // a szegélytől jól beljebb
     // fordított Z: felső vonal, átló balról fent jobbra le, alsó vonal
     ctx.save(); ctx.lineWidth = Math.max(2, 3 * s); ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000';
     ctx.beginPath(); ctx.moveTo(zx2, zy1); ctx.lineTo(zx1, zy1); ctx.lineTo(zx2, zy2); ctx.lineTo(zx1, zy2); ctx.stroke();
@@ -1504,10 +1540,39 @@ function rajzol(canvas) {
       ctx.textAlign = 'left'; ctx.fillStyle = '#000'; ctx.font = `700 ${alapBetu}px ${BETU_ALAP}`;
       ctx.fillText(elotag, x1 + pad, kozepY);
       const w = ctx.measureText(elotag).width;
-      if (cimke) { ctx.fillStyle = TOLL_SZIN; ctx.font = `700 ${alapBetu * 1.15}px ${TOLL_BETU}`; ctx.fillText(cimke, x1 + pad + w, kozepY + alapBetu * 0.06); }
+      if (cimke) {
+        let m = alapBetu * 1.15; ctx.font = `700 ${m}px ${TOLL_BETU}`;
+        while (ctx.measureText(cimke).width > (x2 - x1) - 2 * pad - w && m > 6) { m *= 0.93; ctx.font = `700 ${m}px ${TOLL_BETU}`; }
+        const mm = ctx.measureText(cimke), a = mm.actualBoundingBoxAscent || m * 0.8, de = mm.actualBoundingBoxDescent || m * 0.2;
+        ctx.fillStyle = TOLL_SZIN; ctx.textBaseline = 'alphabetic'; ctx.fillText(cimke, x1 + pad + w, kozepY + (a - de) / 2); ctx.textBaseline = 'middle';
+      }
       return;
     }
-    let meret = kicsi ? alapBetu * 8 / 12 : alapBetu * (vanErtek ? 1.3 : 1);   // a beírt számok nagyobbak
+    if (vanErtek && !kicsi) {   // kék tollas érték: a cellán belül marad (a kézírásos betű magasabb, ezért a valódi méretével számolunk)
+      const szovegE = nev === 'B1' || nev === 'E37' || c === 3;   // nevek balra, számok jobbra
+      const belsoW = (x2 - x1) - 2 * pad - 2 * s, belsoH = Math.min((y2 - y1) * 0.58, (y2 - y1) - 10 * s);   // fent-lent marad levegő a vonalig
+      // egységes méret: amekkora egy alacsony (18,75 pt-os) sorba kényelmesen befér
+      let m = Math.min(alapBetu * 1.3, (18.75 * 4 / 3) * s * 0.58 / 0.76), sk, asc, desc, sorH;
+      for (let i = 0; i < 20; i++) {
+        ctx.font = `700 ${m}px ${TOLL_BETU}`;
+        sk = szovegE ? sorokra(ctx, cimke, belsoW) : [cimke];
+        // a valódi szöveg magassága számít (a számoknak nincs lelógó szára, így nagyobbak maradhatnak)
+        asc = 0; desc = 0;
+        for (const t of sk) { const mm = ctx.measureText(t); asc = Math.max(asc, mm.actualBoundingBoxAscent || m * 0.75); desc = Math.max(desc, mm.actualBoundingBoxDescent || 0); }
+        sorH = (asc + desc) * (sk.length > 1 ? 1.15 : 1);
+        if (sk.length * sorH <= belsoH && sk.every(t => ctx.measureText(t).width <= belsoW)) break;
+        m *= 0.94;
+      }
+      ctx.fillStyle = TOLL_SZIN; ctx.textBaseline = 'alphabetic';
+      const fent = (y1 + y2) / 2 - sk.length * sorH / 2;
+      sk.forEach((t, i) => {
+        const y = fent + i * sorH + (sorH - (asc + desc)) / 2 + asc;
+        if (szovegE) { ctx.textAlign = 'left'; ctx.fillText(t, x1 + pad + s, y); } else { ctx.textAlign = 'right'; ctx.fillText(t, x2 - pad - s, y); }
+      });
+      ctx.textBaseline = 'middle';
+      return;
+    }
+    let meret = kicsi ? alapBetu * 8 / 12 : alapBetu;
     const szel = (x2 - x1) - 2 * pad, mag = (y2 - y1) - 2 * s;
     let sorok, sorMag;
     for (let i = 0; i < 12; i++) {
@@ -1609,6 +1674,7 @@ function boltBeallit(b) {
   if (mentett && mentett.datum === allapot.datum) { allapot.ertek = mentett.ertek || {}; allapot.kiadas = mentett.kiadas || []; allapot.cimlet = mentett.cimlet || {}; allapot.alairas = mentett.alairas || null; allapot.reszek = mentett.reszek || {}; }
   alairasMutat();
   for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) $('m-' + k).value = info.tipus === 'szoveg' ? (allapot.ertek[k] || '') : tagolSzoveg(allapot.ertek[k] || '');
+  $('m-rontottDb').value = allapot.ertek.rontottDb || '';
   $('datum').value = allapot.datum;
   datumFrissit();
   kiadasRajz();
@@ -1749,6 +1815,7 @@ function urlapUrites() {
   allapot.reszek = {};
   allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; alairasMutat(); erintett.clear(); mindetJelol = false;
   for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) { const i = $('m-' + k); i.value = ''; i.classList.remove('hianyzik'); }
+  $('m-rontottDb').value = ''; $('m-rontottDb').classList.remove('hianyzik');
   document.querySelectorAll('.hiany-uzenet').forEach(u => { u.hidden = true; });
   $('hibalista').hidden = true;
   $('datum').value = allapot.datum = maiDatum(); datumFrissit();
@@ -1838,11 +1905,15 @@ function archivAllapot() {
 function keszOldalMutat() {
   $('kesz-kep').src = keszDataUrl;
   $('kesz-uzenet').hidden = true;
-  $('kesz-megoszt').hidden = !megosztasLehet();
+  const tel = telefonE() && megosztasLehet();
+  $('kesz-megoszt').hidden = !tel;
+  $('kesz-letolt').className = tel ? 'gomb-2' : 'gomb-fo';
+  $('kesz-letolt-felirat').textContent = tel ? 'Mentés a telefonra (galéria)' : 'Letöltés az eszközre';
+  $('kesz-lepesek-telefon').hidden = !tel; $('kesz-lepesek-gep').hidden = tel;
   archivAllapot();
   $('kesz-oldal').hidden = false; $('kesz-oldal').scrollTop = 0;
   document.body.style.overflow = 'hidden';
-  $('kesz-letolt').focus();
+  (tel ? $('kesz-megoszt') : $('kesz-letolt')).focus();
 }
 function megosztasLehet() {
   try { return !!(navigator.canShare && navigator.canShare({ files: [new File([keszBlob], keszFajlNev, { type: 'image/png' })] })); } catch (e) { return false; }
@@ -1852,15 +1923,17 @@ function keszUzenet(t, ok) { const u = $('kesz-uzenet'); u.textContent = t; u.cl
 $('kesz-letolt').addEventListener('click', async () => {
   try {
     if (letoltoCap) { await letoltoCap.save({ filename: keszFajlNev, data: keszBlob }); keszUzenet('✓ Letöltve: ' + keszFajlNev, true); return; }
-    // telefonon a megosztás menüből a „Kép mentése” a galériába teszi (iPhone-on a sima letöltés a Fájlok közé menne)
-    if (telefonE() && megosztasLehet()) {
+    // iPhone-on a megosztás menü „Kép mentése” pontja teszi a Fotók közé (a sima letöltés a Fájlok közé menne)
+    const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+    if (ios && megosztasLehet()) {
       await navigator.share({ files: [new File([keszBlob], keszFajlNev, { type: 'image/png' })], title: 'Zárós papír' });
-      keszUzenet('✓ Kész. Most küldd be a zárós papírt a forgalmas csoportba.', true); return;
+      keszUzenet('✓ Kész. Válaszd a „Kép mentése” pontot, és a kép a Fotók közé kerül.', true); return;
     }
     const url = URL.createObjectURL(keszBlob);
     const a = document.createElement('a'); a.href = url; a.download = keszFajlNev; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
-    keszUzenet('✓ Letöltve: ' + keszFajlNev + '. Most küldd be a forgalmas csoportba.', true);
+    keszUzenet(telefonE() ? '✓ Letöltve a telefonra (Letöltések / Download mappa, a galériában is megtalálod): ' + keszFajlNev
+      : '✓ Letöltve a Letöltések mappába: ' + keszFajlNev + '. Most küldd be a forgalmas csoportba.', true);
   } catch (e) {
     if (e && e.name === 'AbortError') return;
     if (e && e.code === 'declined') return;
@@ -1868,7 +1941,7 @@ $('kesz-letolt').addEventListener('click', async () => {
   }
 });
 $('kesz-megoszt').addEventListener('click', async () => {
-  try { await navigator.share({ files: [new File([keszBlob], keszFajlNev, { type: 'image/png' })], title: 'Zárós papír' }); keszUzenet('✓ Elküldve / megosztva.', true); }
+  try { await navigator.share({ files: [new File([keszBlob], keszFajlNev, { type: 'image/png' })], title: 'Zárós papír' }); keszUzenet('✓ Elküldve. Ha a Messengerben kiválasztottad a forgalmas csoportot, kész is vagy!', true); }
   catch (e) { if (!e || e.name !== 'AbortError') keszUzenet('Nem nyílt meg a megosztás. Töltsd le a képet, és küldd el a Messengerben.', false); }
 });
 $('kesz-ujra-archiv').addEventListener('click', async () => { await archivMentes(); archivAllapot(); });
@@ -2074,47 +2147,61 @@ document.addEventListener('keydown', e => {
 });
 
 /* --- Bolt beállításai: kasszák és kártyaterminálok száma (boltonként, a szerkesztő állítja) --- */
+const BOLT_MIN = { navKassza: 1, tartalek: 0, kavegep: 1, fagyigep: 1 };
 function boltBeallKulcs(bolt) { return 'b-' + boltSlug(bolt || allapot.bolt); }
 function boltBeall(bolt) {
-  const ki = { navKassza: 1, terminal: 1, kavegep: 1, fagyigep: 1 };
+  const ki = { navKassza: 1, tartalek: 0, kavegep: 1, fagyigep: 1 };
   const t = sugok[boltBeallKulcs(bolt)];
-  if (t && t.szoveg) { try { const j = JSON.parse(t.szoveg); for (const k of Object.keys(ki)) if (j[k]) ki[k] = Math.max(1, Math.min(5, +j[k] || 1)); } catch (e) {} }
+  if (t && t.szoveg) { try { const j = JSON.parse(t.szoveg); for (const k of Object.keys(ki)) if (j[k] != null) ki[k] = Math.max(BOLT_MIN[k], Math.min(5, Math.floor(+j[k]) || BOLT_MIN[k])); } catch (e) {} }
   return ki;
 }
-function reszDb(k) { return KASSZAS[k] && allapot.bolt ? boltBeall()[KASSZAS[k]] : 1; }
+function reszDb(k) {
+  if (k === 'hibas') return rontottDb();
+  if (!KASSZAS[k] || !allapot.bolt) return 1;
+  const b = boltBeall();
+  return KASSZAS[k] === 'kartya' ? b.navKassza + b.tartalek : b[KASSZAS[k]];
+}
+function reszesE(k) { return k === 'hibas' || MINDIG_RESZES.has(k) || reszDb(k) > 1; }
 function reszOssz(k) {
   const db = reszDb(k), r = (allapot.reszek[k] = (allapot.reszek[k] || []).slice(0, db));
   const szamok = r.map(x => szamOlvas(x));
   let ertek = '';
   if (szamok.some(x => x != null && isNaN(x))) ertek = r.filter((x, i) => isNaN(szamok[i]) && szamok[i] != null).join(' ');   // hibás beírás: jelezzük
-  else if (szamok.some(x => x != null)) ertek = tagolSzoveg(String(Math.round(szamok.reduce((a, b) => a + (b || 0), 0) * 100) / 100));
+  else if (szamok.some(x => x != null)) {
+    let ossz = szamok.reduce((a, b) => a + (b || 0), 0);
+    if (k === 'navVevo') ossz -= rontottDb();   // a rontott blokkok nem vásárlók
+    ertek = tagolSzoveg(String(Math.round(ossz * 100) / 100));
+  } else if (k === 'hibas' && allapot.ertek.rontottDb !== undefined && String(allapot.ertek.rontottDb).trim() !== '' && db === 0) ertek = '0';
   allapot.ertek[k] = ertek;
   $('m-' + k).value = MEROORA.has(KASSZAS[k]) && ertek && !szamok.some(x => x != null && isNaN(x)) ? meroSzoveg(k) : ertek;
   for (let i = 0; i < db; i++) { const el = $(`m-${k}-${i}`); if (el) el.classList.toggle('rossz', szamok[i] != null && isNaN(szamok[i])); }
 }
 function reszekRajz() {
-  for (const k of Object.keys(KASSZAS)) {
+  for (const k of [...Object.keys(KASSZAS), 'hibas']) {
     const db = reszDb(k), rh = $('reszek-' + k), fo = $('m-' + k), wrap = fo.closest('.mezo'), info = mezoInfo[k];
     rh.textContent = '';
-    if (db > 1) {
-      if (!allapot.reszek[k] || !allapot.reszek[k].length) allapot.reszek[k] = [];
+    if (reszesE(k)) {
+      if (!allapot.reszek[k]) allapot.reszek[k] = [];
       for (let i = 0; i < db; i++) {
         const d = document.createElement('div'); d.className = 'resz';
-        const sm = document.createElement('small'); sm.textContent = `${i + 1}. ${RESZ_NEV[KASSZAS[k]]}`;
+        const sm = document.createElement('small'); sm.textContent = reszCimke(k, i);
         const be = document.createElement('div'); be.className = 'bemenet';
         const inp = document.createElement('input'); inp.type = 'text'; inp.id = `m-${k}-${i}`; inp.autocomplete = 'off'; inp.inputMode = 'decimal';
         inp.className = 'szamos' + (ME[info.tipus] ? ' vanme' : ''); inp.value = tagolSzoveg(allapot.reszek[k][i] || '');
-        inp.setAttribute('aria-label', `${info.cim} – ${i + 1}. ${RESZ_NEV[KASSZAS[k]]}`);
+        inp.setAttribute('aria-label', `${info.cim} – ${reszCimke(k, i)}`);
         inp.addEventListener('input', () => { tagolva(inp); allapot.reszek[k][i] = inp.value; reszOssz(k); frissit(); });
         inp.addEventListener('blur', () => { if (alkalmazasValtas()) return; erintett.add(k + '#' + i); frissit(); });
         be.appendChild(inp);
         if (ME[info.tipus]) { const me = document.createElement('span'); me.className = 'me'; me.textContent = ME[info.tipus]; be.appendChild(me); }
         d.append(sm, be); rh.appendChild(d);
       }
-      rh.hidden = false; $('osszcim-' + k).hidden = false;
-      $('osszcim-' + k).textContent = MEROORA.has(KASSZAS[k]) ? 'A papírra így kerül (gépenként):' : 'Összesen (automata kiszámolás):';
+      rh.classList.toggle('szeles', KASSZAS[k] === 'kartya');
+      rh.hidden = db === 0; $('osszcim-' + k).hidden = false;
+      $('osszcim-' + k).textContent = MEROORA.has(KASSZAS[k]) ? 'A papírra így kerül (gépenként):'
+        : k === 'navVevo' ? 'Összesen, a rontott blokkok nélkül (automata kiszámolás):'
+        : k === 'hibas' ? 'Hibás bevitel összesen (automata kiszámolás):' : 'Összesen (automata kiszámolás):';
       fo.readOnly = true; fo.tabIndex = -1; fo.classList.add('auto');
-      wrap.htmlFor = `m-${k}-0`;
+      wrap.htmlFor = k === 'hibas' ? 'm-rontottDb' : `m-${k}-0`;
       reszOssz(k);
     } else {
       rh.hidden = true; $('osszcim-' + k).hidden = true;
@@ -2126,14 +2213,14 @@ function reszekRajz() {
 }
 let boltUj = null, boltElozo = null;
 function boltAblakRajz() { for (const k of Object.keys(boltUj)) { const el = $('bb-' + k); if (el) el.value = boltUj[k]; }
-  document.querySelectorAll('#bolt-urlap .pm').forEach(b => { const v = boltUj[b.dataset.cel] + (+b.dataset.lep); b.disabled = v < 1 || v > 5; }); }
+  document.querySelectorAll('#bolt-urlap .pm').forEach(b => { const v = boltUj[b.dataset.cel] + (+b.dataset.lep); b.disabled = v < BOLT_MIN[b.dataset.cel] || v > 5; }); }
 $('szerk-bolt').addEventListener('click', () => {
   boltElozo = document.activeElement; boltUj = boltBeall();
   $('bolt-ablak-bolt').textContent = allapot.bolt; $('bolt-hiba').hidden = true; boltAblakRajz();
   $('bolt-ablak').hidden = false; $('bolt-x').focus();
 });
 document.querySelectorAll('#bolt-urlap .pm').forEach(b => b.addEventListener('click', () => {
-  boltUj[b.dataset.cel] = Math.max(1, Math.min(5, boltUj[b.dataset.cel] + (+b.dataset.lep))); boltAblakRajz();
+  boltUj[b.dataset.cel] = Math.max(BOLT_MIN[b.dataset.cel], Math.min(5, boltUj[b.dataset.cel] + (+b.dataset.lep))); boltAblakRajz();
 }));
 function boltAblakZar() { $('bolt-ablak').hidden = true; if (boltElozo && boltElozo.isConnected) boltElozo.focus(); }
 $('bolt-x').addEventListener('click', boltAblakZar);
@@ -2647,31 +2734,49 @@ const av = $('alairas-vaszon'); const actx = av.getContext('2d');
 let avRajzolt = false, avToll = null, alairasElozo = null;
 function avMeretez() {
   const r = av.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+  if (r.width < 10 || r.height < 10) return false;   // még nincs kirajzolva: később újra próbáljuk
   av.width = Math.round(r.width * d); av.height = Math.round(r.height * d);
   actx.setTransform(d, 0, 0, d, 0, 0);
   actx.lineCap = 'round'; actx.lineJoin = 'round'; actx.strokeStyle = TOLL_SZIN;
   actx.lineWidth = Math.max(2.5, r.width / 160);
-  avRajzolt = false;
+  avRajzolt = false; avMeret = r.width + 'x' + r.height;
+  return true;
+}
+let avMeret = '';
+function avKesz() {   // ha a vászon mérete megváltozott (pl. elfordult a telefon), újraméretezzük, mielőtt rajzolnánk
+  const r = av.getBoundingClientRect();
+  if (r.width + 'x' + r.height !== avMeret && !avRajzolt) avMeretez();
 }
 function avPont(e) { const r = av.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
-av.addEventListener('pointerdown', e => { e.preventDefault(); av.setPointerCapture(e.pointerId); avToll = avPont(e);
-  actx.beginPath(); actx.arc(avToll.x, avToll.y, actx.lineWidth / 2, 0, Math.PI * 2); actx.fillStyle = actx.strokeStyle; actx.fill(); avRajzolt = true; });
-av.addEventListener('pointermove', e => { if (!avToll) return; e.preventDefault();
-  const p = avPont(e); actx.beginPath(); actx.moveTo(avToll.x, avToll.y); actx.lineTo(p.x, p.y); actx.stroke(); avToll = p; avRajzolt = true; });
-['pointerup', 'pointercancel', 'pointerleave'].forEach(t => av.addEventListener(t, () => { avToll = null; }));
+/* Rajzolás: egérrel és tollal pointer eseményekkel, ujjal érintés-eseményekkel (telefonon ez a megbízhatóbb). */
+function avKezd(p) { avKesz(); avToll = p; actx.beginPath(); actx.arc(p.x, p.y, actx.lineWidth / 2, 0, Math.PI * 2); actx.fillStyle = actx.strokeStyle; actx.fill(); avRajzolt = true; }
+function avHuz(p) { if (!avToll) return; actx.beginPath(); actx.moveTo(avToll.x, avToll.y); actx.lineTo(p.x, p.y); actx.stroke(); avToll = p; avRajzolt = true; }
+function avVeg() { avToll = null; }
+function erintesPont(e) { const t = e.touches[0] || e.changedTouches[0], r = av.getBoundingClientRect(); return { x: t.clientX - r.left, y: t.clientY - r.top }; }
+av.addEventListener('touchstart', e => { e.preventDefault(); avKezd(erintesPont(e)); }, { passive: false });
+av.addEventListener('touchmove', e => { e.preventDefault(); avHuz(erintesPont(e)); }, { passive: false });
+av.addEventListener('touchend', e => { e.preventDefault(); avVeg(); }, { passive: false });
+av.addEventListener('touchcancel', avVeg);
+av.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') return; e.preventDefault(); try { av.setPointerCapture(e.pointerId); } catch (x) {} avKezd(avPont(e)); });
+av.addEventListener('pointermove', e => { if (e.pointerType === 'touch' || !avToll) return; e.preventDefault(); avHuz(avPont(e)); });
+['pointerup', 'pointercancel'].forEach(t => av.addEventListener(t, e => { if (e.pointerType !== 'touch') avVeg(); }));
 function alairasNyit() {
   alairasElozo = document.activeElement;
   $('alairas-hiba').hidden = true;
   $('alairas-ablak').hidden = false;
-  avMeretez();
-  $('alairas-x').focus();
+  document.body.style.overflow = 'hidden';   // a háttér ne görögjön aláírás közben
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();   // a billentyűzet ne takarja el
+  let probalas = 0;
+  (function meretez() { if (!avMeretez() && probalas++ < 20) requestAnimationFrame(meretez); })();
+  setTimeout(() => { if (!avRajzolt) avMeretez(); }, 350);   // a telefon címsora eltűnhet, ekkor újramérünk
 }
-function alairasZar() { $('alairas-ablak').hidden = true; if (alairasElozo && alairasElozo.isConnected) alairasElozo.focus(); }
+function alairasZar() { $('alairas-ablak').hidden = true; document.body.style.overflow = ''; }
 $('alairas-doboz').addEventListener('click', alairasNyit);
 $('alairas-x').addEventListener('click', alairasZar);
 $('alairas-ablak').addEventListener('mousedown', e => { if (e.target === $('alairas-ablak')) alairasZar(); });
 $('alairas-ablak').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); alairasZar(); } });
 $('alairas-ujra').addEventListener('click', () => { avMeretez(); });
+window.addEventListener('resize', () => { if (!$('alairas-ablak').hidden && !avRajzolt) avMeretez(); });
 $('alairas-kesz').addEventListener('click', () => {
   if (!avRajzolt) { $('alairas-hiba').textContent = 'Még nem írtál alá. Húzd az ujjad a fehér mezőben.'; $('alairas-hiba').hidden = false; return; }
   // levágjuk az üres szélt
@@ -2695,7 +2800,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261126132859';
+const VALTOZAT = '20261126201217';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
