@@ -435,7 +435,11 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 #nev-gomb { font-size: 17px; }
 #nev-panel { position: static; margin-top: 6px; box-shadow: 0 6px 18px rgba(74,40,16,.14); }   /* a lista a mező alatt nyílik, a doboz széle nem vágja le (telefonon sem) */
 #nev-gomb #nev-felirat { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.kereso-lista li.uj-dolgozo { font-size: 17px; line-height: 1.25; color: var(--gomb); border-top: 2px dashed var(--morzsa); border-radius: 0 0 9px 9px; }
+.kereso-lista li.uj-dolgozo { font-size: 19px; line-height: 1.25; color: var(--gomb); border-top: 2px dashed var(--morzsa); border-radius: 0 0 9px 9px;
+  position: sticky; bottom: 0; background: var(--krem); }   /* mindig látszik a lista alján, görgetés közben is */
+.kereso-lista li.uj-dolgozo.aktiv { background: var(--morzsa); }
+#nev-lista { max-height: min(46vh, 330px); }   /* a névlista a saját dobozában görgethető */
+.kereso-lista li.nincs-talalat { font-size: 17px; font-weight: 400; color: var(--masodlagos); cursor: default; background: none; }
 .kereso-gomb.hianyzik { border-color: var(--hiba); background: #fdf0f0; }
 .ossz-cim { font-size: 14px; font-weight: 700; color: var(--masodlagos); margin-top: 4px; }
 .szamlalo-sor { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 14px;
@@ -2343,6 +2347,10 @@ function nevListaRajz() {
   nevLatszo = lista.filter(n => !q || ekezetNelkul(n).includes(q)).concat([UJ_DOLGOZO]);
   $('nev-kereso-mezo').hidden = false;   // a kereső mindig látszik
   const ul = $('nev-lista'); ul.textContent = '';
+  if (q && nevLatszo.length === 1) {   // nincs találat: szólunk, és felajánljuk az „új vagyok” pontot
+    const li = document.createElement('li'); li.className = 'nincs-talalat'; li.setAttribute('role', 'presentation');
+    li.textContent = 'Nincs ilyen név a listában.'; ul.appendChild(li);
+  }
   nevLatszo.forEach((n, i) => {
     const li = document.createElement('li'); li.setAttribute('role', 'option'); li.id = 'nevopt-' + i;
     if (n === UJ_DOLGOZO) { li.className = 'uj-dolgozo'; li.innerHTML = 'Nem találom magam,<br>még új vagyok'; }
@@ -2353,7 +2361,7 @@ function nevListaRajz() {
   });
   nevAktival(Math.max(0, nevLatszo.indexOf(allapot.ertek.nev)));
 }
-function nevAktival(i) { nevAktiv = i; [...$('nev-lista').children].forEach((li, j) => li.classList.toggle('aktiv', j === i)); const li = $('nev-lista').children[i]; if (li) li.scrollIntoView({ block: 'nearest' }); }
+function nevAktival(i) { nevAktiv = i; [...$('nev-lista').children].forEach(li => li.classList.toggle('aktiv', li.id === 'nevopt-' + i)); const li = $('nevopt-' + i); if (li) li.scrollIntoView({ block: 'nearest' }); }
 function nevNyit() { $('nev-panel').hidden = false; $('nev-gomb').setAttribute('aria-expanded', 'true'); $('nev-kereso').value = ''; nevListaRajz(); if (!telefonE()) $('nev-kereso').focus(); }
 function nevZar(f) { $('nev-panel').hidden = true; $('nev-gomb').setAttribute('aria-expanded', 'false'); if (f) $('nev-gomb').focus(); }
 function nevValaszt(i) {
@@ -3126,7 +3134,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127203442';
+const VALTOZAT = '20261127203737';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
