@@ -1581,10 +1581,28 @@ function rajzol(canvas) {
         if (sk.length * sorH <= belsoH && sk.every(t => ctx.measureText(t).width <= belsoW)) break;
         m *= 0.94;
       }
+      // Üzlet neve: ugyanakkora betű, mint a többi érték; ha nem fér ki, két sorba, balra igazítva, függőlegesen középen
+      if (nev === 'B1') {
+        m = Math.min(alapBetu * 1.3, (18.75 * 4 / 3) * s * 0.58 / 0.76);
+        ctx.font = `700 ${m}px ${TOLL_BETU}`;
+        if (ctx.measureText(cimke).width > belsoW && cimke.includes(' ')) {
+          const sz = cimke.split(' '); let lj = null;
+          for (let i = 1; i < sz.length; i++) { const k2 = [sz.slice(0, i).join(' '), sz.slice(i).join(' ')]; const w = Math.max(...k2.map(t => ctx.measureText(t).width)); if (!lj || w < lj.w) lj = { k2, w }; }
+          sk = lj.k2;
+          while (sk.some(t => ctx.measureText(t).width > belsoW) && m > 6) { m *= 0.96; ctx.font = `700 ${m}px ${TOLL_BETU}`; }
+        } else sk = [cimke];
+        for (let i = 0; i < 20; i++) {   // fent-lent maradjon levegő a vonalig
+          asc = 0; desc = 0;
+          for (const t of sk) { const mm = ctx.measureText(t); asc = Math.max(asc, mm.actualBoundingBoxAscent); desc = Math.max(desc, mm.actualBoundingBoxDescent); }
+          sorH = (asc + desc) * 0.98;
+          if (sk.length * sorH <= (y2 - y1) - 7 * s) break;
+          m *= 0.96; ctx.font = `700 ${m}px ${TOLL_BETU}`;
+        }
+      }
       // Hosszú név: ha egy sorban túl kicsi lenne, két sorba tördeljük (nagyobb betűvel)
       const cel = Math.min(alapBetu * 1.3, (18.75 * 4 / 3) * s * 0.58 / 0.76);
       const nevSor = nev === 'E37';
-      const ketSor = cimke.includes(' ') && (nevSor ? sk.length <= 2 : sk.length === 1) && (nevSor ? sk.length === 2 || m < cel * 0.98 : (szovegE && m < cel * 0.85));   // csak ha egy sorban nem fér ki nagy betűvel
+      const ketSor = nev !== 'B1' && cimke.includes(' ') && (nevSor ? sk.length <= 2 : sk.length === 1) && (nevSor ? sk.length === 2 || m < cel * 0.98 : (szovegE && m < cel * 0.85));   // csak ha egy sorban nem fér ki nagy betűvel
       if (ketSor) {
         const szavak = cimke.split(' '); let legjobb = null;
         for (let i = 1; i < szavak.length; i++) {   // a legkiegyensúlyozottabb kettévágás
@@ -2853,7 +2871,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127054524';
+const VALTOZAT = '20261127054738';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
