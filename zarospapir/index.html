@@ -1656,8 +1656,8 @@ function rajzol(canvas) {
           if (2 * h2 <= H2 && legjobb.ket.every(t => ctx.measureText(t).width <= belsoW)) break;
           m2 *= 0.95;
         }
-        // a dolgozó neve: ha egy sorban nem fér ki nagy betűvel, mindig két sorba törjük; máshol csak ha így nagyobb a betű
-        if (nevSor || m2 > m * 1.05) { m = m2; sk = legjobb.ket; asc = a2; desc = d2; sorH = h2; ctx.font = `700 ${m}px ${TOLL_BETU}`; }
+        // két sor csak akkor, ha így nagyobb (olvashatóbb) marad a betű
+        if (m2 > m * 1.05) { m = m2; sk = legjobb.ket; asc = a2; desc = d2; sorH = h2; ctx.font = `700 ${m}px ${TOLL_BETU}`; }
         else ctx.font = `700 ${m}px ${TOLL_BETU}`;
       }
       ctx.fillStyle = TOLL_SZIN; ctx.textBaseline = 'alphabetic';
@@ -2987,7 +2987,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127082018';
+const VALTOZAT = '20261127083134';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
