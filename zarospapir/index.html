@@ -413,6 +413,8 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .dolgozo-lista li:nth-child(even) { background: var(--csik); }
 .dolgozo-lista li.ures-sor { color: var(--masodlagos); font-weight: 400; }
 .nev-valaszto { max-width: none; }
+#nev-gomb { font-size: 17px; }
+#nev-gomb #nev-felirat { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .kereso-lista li.uj-dolgozo { color: var(--gomb); border-top: 2px dashed var(--morzsa); border-radius: 0 0 9px 9px; }
 .kereso-gomb.hianyzik { border-color: var(--hiba); background: #fdf0f0; }
 .ossz-cim { font-size: 14px; font-weight: 700; color: var(--masodlagos); margin-top: 4px; }
@@ -2985,7 +2987,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127081201';
+const VALTOZAT = '20261127081612';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
