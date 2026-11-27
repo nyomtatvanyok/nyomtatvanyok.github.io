@@ -1996,8 +1996,7 @@ $('letoltes').addEventListener('click', async () => {
   kepLap = null;
   if (!letoltoCap) {
     try {
-      kepLap = window.open('', '_blank');
-      if (kepLap) { kepLap.document.open(); kepLap.document.write('<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Zárós papír készül…</title></head><body style="margin:0;font:700 22px system-ui,sans-serif;color:#4a2810;background:#fbf6ee;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:20px;box-sizing:border-box">A zárós papír készül…<br>Ne zárd be ezt a lapot!</body></html>'); kepLap.document.close(); }
+      kepLap = window.open('kep.html?v=' + VALTOZAT, '_blank');   // külön oldal: töltő + a kép (a GitHubon a zarospapir/kep.html)
     } catch (e) { kepLap = null; }
   }
   betoltoMutat('A zárós papír elkészítése…');
@@ -2015,8 +2014,8 @@ $('letoltes').addEventListener('click', async () => {
   keszBlob = blob; keszFajlNev = fajl; keszAdat = { bolt: allapot.bolt, datum: d.szoveg, nev: (allapot.ertek.nev || '').trim() };
   keszDataUrl = 'data:image/png;base64,' + await blobBase64(blob);
   // Biztonsági kettős mentés: 1) automatikus letöltés az eszközre, 2) a kép külön lapon (hosszan nyomva menthető, képernyőfotózható)
-  keszAutoLetoltve = autoLetoltes();
-  const lapOk = kepLapIr();
+  const lapOk = await kepLapAtad();   // az új lap tölti le a képet, és mutatja meg
+  keszAutoLetoltve = lapOk || autoLetoltes();
   if (lapOk) { try { kepLap.focus(); } catch (e) {} }
   await archivMentes();
   urlapUrites();
@@ -2038,27 +2037,24 @@ function keszObjUrl() { if (!keszUrl) keszUrl = URL.createObjectURL(keszBlob); r
 function autoLetoltes() {
   if (letoltoCap) return false;
   try {
-    const doc = (kepLap && !kepLap.closed) ? kepLap.document : document;
+    const doc = document;
     const a = doc.createElement('a'); a.href = keszObjUrl(); a.download = keszFajlNev; a.style.display = 'none';
     doc.body.appendChild(a); a.click(); a.remove();
     return true;
   } catch (e) { return false; }
 }
-// a kép egy külön lapon, egyedül: pontosan kitölti a képernyőt (telefonon is egészben látszik)
-function kepLapHtml() {
-  return '<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-    + '<title>' + keszFajlNev.replace(/[<&]/g, '') + '</title><style>html,body{margin:0;padding:0;background:#fff;height:100%}'
-    + 'body{display:flex;align-items:center;justify-content:center;height:100vh;height:100dvh;overflow:hidden}'
-    + 'img{display:block;max-width:100vw;max-height:100vh;max-height:100dvh;width:auto;height:auto;-webkit-touch-callout:default}</style></head>'
-    + '<body><img src="' + keszDataUrl + '" alt="Zárós papír"></body></html>';
+// a kép átadása az új lapnak (kep.html): az tölti le, és mutatja egyedül, képernyőre igazítva
+async function kepLapAtad() {
+  for (let i = 0; i < 100; i++) {   // legfeljebb ~10 mp-ig várunk, hogy betöltsön
+    if (!kepLap || kepLap.closed) return false;
+    try { if (typeof kepLap.kepMutat === 'function') { kepLap.kepMutat(keszDataUrl, keszFajlNev); return true; } } catch (e) { return false; }
+    await varj(100);
+  }
+  return false;
 }
-function kepLapIr() {
-  if (!kepLap || kepLap.closed) return false;
-  try { kepLap.document.open(); kepLap.document.write(kepLapHtml()); kepLap.document.close(); return true; } catch (e) { return false; }
-}
-function kepLapNyit() {   // a kész oldal gombjáról (kattintásra mindig engedi a böngésző)
-  try { kepLap = window.open('', '_blank'); } catch (e) { kepLap = null; }
-  if (!kepLapIr()) { const a = document.createElement('a'); a.href = keszObjUrl(); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+async function kepLapNyit() {   // a kész oldal gombjáról (kattintásra mindig engedi a böngésző)
+  try { kepLap = window.open('kep.html?v=' + VALTOZAT, '_blank'); } catch (e) { kepLap = null; }
+  if (!(await kepLapAtad())) { const a = document.createElement('a'); a.href = keszObjUrl(); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
 }
 async function archivMentes() {
   keszArchivOk = !gasMod || TESZT;
@@ -3121,7 +3117,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127201124';
+const VALTOZAT = '20261127201942';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);

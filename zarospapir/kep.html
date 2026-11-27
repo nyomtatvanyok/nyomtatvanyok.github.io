@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zárós papír</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&family=Montserrat:wght@800&display=swap">
+<style>
+  :root {
+    --liszt: #fbf6ec; --krem: #f6ead2; --barna: #7a3a0e; --kakao: #4a2810; --morzsa: #e7d3b0;
+    --gyuru-ures: #E3D9CB; --gomb: #8a4513; --feher: #fff;
+    --cim: 'Montserrat', 'Arial Black', 'Segoe UI', sans-serif;
+    --szoveg: 'Carlito', 'Segoe UI', Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body { background: var(--liszt); color: var(--kakao); font: 20px/1.4 var(--szoveg); }
+
+  /* --- töltő --- */
+  .tolto { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 28px; padding: 32px 20px; text-align: center; }
+  .gyuru { width: 96px; height: 96px; animation: forog 1.1s linear infinite; }
+  .gyuru circle { fill: none; stroke-width: 10; stroke-linecap: round; }
+  @keyframes forog { to { transform: rotate(360deg); } }
+  h1 { margin: 0; font: 800 26px/1.25 var(--cim); color: var(--barna); }
+  .doboz { width: 100%; max-width: 440px; background: var(--feher); border: 4px solid var(--barna); border-radius: 18px;
+    padding: 22px 20px; box-shadow: 0 12px 34px rgba(74,40,16,.15); text-align: left; }
+  .doboz p { margin: 0 0 14px; font-size: 23px; font-weight: 700; }
+  .doboz ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .doboz li { display: flex; gap: 14px; align-items: flex-start; font-size: 22px; line-height: 1.3; }
+  .doboz li span.ikon { flex: none; font-size: 30px; line-height: 1; }
+  .vagy { font-size: 18px; font-weight: 700; color: #8a6a4e; text-transform: uppercase; letter-spacing: .08em; padding-left: 44px; }
+
+  /* --- a kép: egyedül, pontosan a képernyőre igazítva --- */
+  .kep-nezet { position: fixed; inset: 0; background: #fff; display: flex; align-items: center; justify-content: center; }
+  .kep-nezet img { display: block; max-width: 100vw; max-height: 100vh; max-height: 100dvh; width: auto; height: auto;
+    -webkit-touch-callout: default; user-select: auto; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+  <main class="tolto" id="tolto">
+    <svg class="gyuru" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="40" stroke="var(--gyuru-ures)"/>
+      <circle cx="50" cy="50" r="40" stroke="var(--gomb)" stroke-dasharray="70 252"/>
+    </svg>
+    <h1>Egy pillanat,<br>készül a zárós papír…</h1>
+    <div class="doboz">
+      <p>Mindjárt megjelenik a kép.<br>Így mentsd el:</p>
+      <ul>
+        <li><span class="ikon">👆</span><span>Tartsd rajta az <b>ujjad</b> a képen, és válaszd a <b>„Kép letöltése”</b> pontot.</span></li>
+        <li class="vagy">vagy</li>
+        <li><span class="ikon">📸</span><span>Készíts róla <b>képernyőfotót</b>.</span></li>
+      </ul>
+    </div>
+  </main>
+  <div class="kep-nezet" id="kep-nezet" hidden><img id="kep" alt="Zárós papír"></div>
+<script>
+  // A zárós papír oldala hívja meg, amikor elkészült a kép: letöltjük, és a töltő után egyedül megmutatjuk.
+  const indult = Date.now();
+  const MIN_TOLTO = 4000;   // ennyi ideig biztosan látszik a töltő, hogy el lehessen olvasni a teendőt
+  function dataUrlBlob(u) {
+    const [fej, adat] = u.split(','); const bin = atob(adat); const tomb = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) tomb[i] = bin.charCodeAt(i);
+    return new Blob([tomb], { type: (fej.match(/data:([^;]+)/) || [])[1] || 'image/png' });
+  }
+  window.kepMutat = function (dataUrl, fajlNev) {
+    try {   // 1) letöltés az eszközre
+      const url = URL.createObjectURL(dataUrlBlob(dataUrl));
+      const a = document.createElement('a'); a.href = url; a.download = fajlNev || 'zaros_papir.png'; a.style.display = 'none';
+      document.body.appendChild(a); a.click(); a.remove();
+    } catch (e) {}
+    const kep = document.getElementById('kep'); kep.src = dataUrl;   // 2) a kép külön, a képernyőre igazítva
+    if (fajlNev) document.title = fajlNev;
+    setTimeout(() => {
+      document.getElementById('tolto').hidden = true;
+      document.getElementById('kep-nezet').hidden = false;
+    }, Math.max(0, MIN_TOLTO - (Date.now() - indult)));
+    return true;
+  };
+</script>
+</body>
+</html>
