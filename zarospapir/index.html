@@ -196,9 +196,14 @@ button { font: inherit; cursor: pointer; }
   background: #2e7d32; color: #fff; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
   opacity: 0; pointer-events: none; transition: opacity .12s; }
 .ceruza:hover::after, .ceruza:focus-visible::after { opacity: 1; }
-.megse-kek { height: 42px; padding: 0 14px; border-radius: 10px; flex: none; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
-  background: #eef4fd; color: #1f5fbf; border: 2px solid #a9c6ee; }
-.megse-kek:hover, .megse-kek:focus-visible { background: #dbe8fb; border-color: #1f5fbf; }
+.megse-kek { position: relative; display: inline-grid; place-items: center; width: 42px; height: 42px; padding: 0; border-radius: 10px; flex: none; cursor: pointer;
+  background: #fff8dc; color: #c58a00; border: 2px solid #f0d47a; }
+.megse-kek svg { width: 24px; height: 24px; }
+.megse-kek:hover, .megse-kek:focus-visible { background: #fdefb8; border-color: #c58a00; }
+.megse-kek::after { content: attr(data-tipp); position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  background: #c58a00; color: #fff; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity .12s; }
+.megse-kek:hover::after, .megse-kek:focus-visible::after { opacity: 1; }
 
 /* üzenetek */
 .uzenet { margin: 0; font-weight: 700; }
@@ -497,7 +502,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   .belepes, #urites { width: 100%; }
   .attabla th { font-size: 11px; }
   .attabla td { padding: 4px; }
-  .kuka::after, .ceruza::after { display: none; }
+  .kuka::after, .ceruza::after, .megse-kek::after { display: none; }
   .atkerdes { place-items: end stretch; padding: 0; }
   .alairas-ablak { padding: 0; place-items: end stretch; }
   .alairas-kartya { border-radius: 16px 16px 0 0; border-bottom: 0; }
@@ -1855,6 +1860,7 @@ $('ma-gomb').addEventListener('click', () => { $('datum').value = allapot.datum 
 /* ---------- kiadások ---------- */
 const CERUZA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4zM13.5 6.5l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const PIPA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const VISSZA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5L4 10l5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10h9.5a5.5 5.5 0 0 1 0 11H9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const KUKA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function kiadasRajz(fokuszSor) {
   const tb = $('kiadas-sorok'); tb.textContent = '';
@@ -2419,7 +2425,7 @@ function dolgozoListaRajz() {
       if (inp) { kesz(); return; }
       inp = document.createElement('input'); inp.type = 'text'; inp.className = 'nev-szerk'; inp.value = n; inp.setAttribute('aria-label', 'A dolgozó neve');
       inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); kesz(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dolgozoListaRajz(); } });
-      const m = document.createElement('button'); m.type = 'button'; m.className = 'megse-kek'; m.textContent = 'Mégse';
+      const m = document.createElement('button'); m.type = 'button'; m.className = 'megse-kek'; m.dataset.tipp = 'Mégse'; m.innerHTML = VISSZA;
       m.setAttribute('aria-label', 'Mégse, a régi név marad'); m.addEventListener('click', () => dolgozoListaRajz());
       k.replaceWith(m);
       sp.replaceWith(inp); c.innerHTML = PIPA; c.dataset.tipp = 'Kész'; c.setAttribute('aria-label', 'Kész, a név javítása');
@@ -3024,7 +3030,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127083811';
+const VALTOZAT = '20261127084017';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
