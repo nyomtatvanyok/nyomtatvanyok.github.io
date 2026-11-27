@@ -613,11 +613,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <div class="iroda"><div class="mezok" id="g-rk"></div></div>
     </section>
     <section class="lepes">
-      <h2><span class="szam">5</span>Írd be a munkaórát</h2>
-      <div class="iroda"><div class="mezok" id="g-ora"></div></div>
-    </section>
-    <section class="lepes">
-      <h2><span class="szam">6</span>Írd be a törlési indokokat</h2>
+      <h2><span class="szam">5</span>Írd be a törlési indokokat</h2>
       <ul class="tipp">
       <li><b>Minden sort ki kell tölteni.</b></li>
       <li>Ha valami ma nem történt, írj be <b>0</b>-t (nullát). Ne hagyd üresen!</li>
@@ -625,11 +621,11 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <div class="iroda"><div class="mezok" id="g-torles"></div></div>
     </section>
     <section class="lepes">
-      <h2><span class="szam">7</span>Írd be a termék eladásokat</h2>
+      <h2><span class="szam">6</span>Írd be a termék eladásokat</h2>
       <div class="iroda"><div class="mezok" id="g-termek"></div></div>
     </section>
     <section class="lepes">
-      <h2><span class="szam">8</span>Írd be a napi készpénzes kiadásokat<span data-info="kiadas" data-cim="Napi kiadás"></span></h2>
+      <h2><span class="szam">7</span>Írd be a napi készpénzes kiadásokat<span data-info="kiadas" data-cim="Napi kiadás"></span></h2>
       <div class="iroda">
         <div class="attabla-hely">
           <table class="attabla">
@@ -642,7 +638,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
           <strong id="kiadas-ossz">Kiadás összesen: 0 Ft</strong>
         </div>
         <ul class="tipp">
-          <li><b>Ha ma nem volt kiadás:</b> ne csinálj semmit. Menj tovább a 9. lépésre.</li>
+          <li><b>Ha ma nem volt kiadás:</b> ne csinálj semmit. Menj tovább a 8. lépésre.</li>
           <li><b>Ha volt kiadás:</b> kattints az „+ Új kiadás” gombra. Írd be, mit vettél, és mennyibe került.</li>
           <li>Minden kiadás külön sorba kerül. Legfeljebb 11 kiadást írhatsz be.</li>
           <li>Az összeget az automata kiszámolás adja össze.</li>
@@ -650,7 +646,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       </div>
     </section>
     <section class="lepes">
-      <h2><span class="szam">9</span>Számold meg a borítékba tett pénzt, és írd be a neved</h2>
+      <h2><span class="szam">8</span>Számold meg a borítékba tett pénzt, és írd be a neved</h2>
       <div class="iroda"><div class="mezok" id="g-zaro"></div>
         <ul class="tipp">
           <li>Koppints a borítékos mezőre, és számold meg címletenként a borítékba tett pénzt. <b>A borravaló is legyen benne!</b></li>
@@ -671,6 +667,16 @@ input.cimletes { cursor: pointer; background: var(--feher); }
           </div>
           <p class="hiany-uzenet" id="alairas-hiany" role="alert" hidden>⚠ Még nincs aláírás. Kattints a fenti dobozra, és rögzítsd az aláírásod.</p>
         </div>
+      </div>
+    </section>
+
+    <section class="lepes">
+      <h2><span class="szam">9</span>Blokkolj ki, és írd be a munkaórát</h2>
+      <div class="iroda"><div class="mezok" id="g-ora"></div>
+        <ul class="tipp">
+          <li>Ezt a lépést hagyd <b>a végére</b>: előbb blokkolj ki, utána írd be a munkaórát.</li>
+          <li>Ha ma nem volt próbanapos, írj be <b>0</b>-t.</li>
+        </ul>
       </div>
     </section>
 
@@ -1049,7 +1055,8 @@ const MEZOK = {
     ['navVevo', 'B10', 'Vevőszám NAV', 'db'],
     ['=navTeljes', 'B11', 'Forgalom összesen NAV (számlával, MUNCH-val)', 'ft', 'Automata kiszámolás: NAV összesen + számla + MUNCH − hibás bevitel'],
     ['=elteres', 'B12', 'Eltérés NAV és Rkeeper forgalom között', 'ft', 'Automata kiszámolás: NAV teljes − R_keeper összesen'],
-    ['megszOssz', 'B13', 'Nyugta megszakítások összege', 'ft']
+    ['megszOssz', 'B13', 'Nyugta megszakítások összege', 'ft'],
+    ['megszDb', 'E13', 'Nyugta megszakítások száma', 'db']
   ],
   'g-rk': [
     ['szep', 'E3', 'Szépkártya', 'ft'],
@@ -1062,7 +1069,6 @@ const MEZOK = {
     ['=vevoOssz', 'E10', 'Vevőszám összesen R_keeper', 'db', 'Automata kiszámolás: délelőtt + délután'],
     ['=forgOssz', 'E11', 'Forgalom összesen R_keeper (fizető kártya NÉLKÜL)', 'ft', 'Automata kiszámolás: délelőtt + délután − fizető kártya'],
     ['fizeto', 'E12', 'Fizető kártya (saját fogyasztás)', 'ft'],
-    ['megszDb', 'E13', 'Nyugta megszakítások száma', 'db'],
     ['=kosar', 'E15', 'Kosárérték (átlagos vásárlás)', 'ft', 'Automata kiszámolás: a nagyobb forgalom (NAV teljes vagy R_keeper összesen) ÷ a nagyobb vevőszám (Vevőszám NAV vagy Vevőszám összesen R_keeper)']
   ],
   'g-ora': [
@@ -3117,7 +3123,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127201942';
+const VALTOZAT = '20261127202335';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
