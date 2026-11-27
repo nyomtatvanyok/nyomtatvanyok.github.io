@@ -196,6 +196,9 @@ button { font: inherit; cursor: pointer; }
   background: #2e7d32; color: #fff; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
   opacity: 0; pointer-events: none; transition: opacity .12s; }
 .ceruza:hover::after, .ceruza:focus-visible::after { opacity: 1; }
+.megse-kek { height: 42px; padding: 0 14px; border-radius: 10px; flex: none; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+  background: #eef4fd; color: #1f5fbf; border: 2px solid #a9c6ee; }
+.megse-kek:hover, .megse-kek:focus-visible { background: #dbe8fb; border-color: #1f5fbf; }
 
 /* üzenetek */
 .uzenet { margin: 0; font-weight: 700; }
@@ -2416,6 +2419,9 @@ function dolgozoListaRajz() {
       if (inp) { kesz(); return; }
       inp = document.createElement('input'); inp.type = 'text'; inp.className = 'nev-szerk'; inp.value = n; inp.setAttribute('aria-label', 'A dolgozó neve');
       inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); kesz(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dolgozoListaRajz(); } });
+      const m = document.createElement('button'); m.type = 'button'; m.className = 'megse-kek'; m.textContent = 'Mégse';
+      m.setAttribute('aria-label', 'Mégse, a régi név marad'); m.addEventListener('click', () => dolgozoListaRajz());
+      k.replaceWith(m);
       sp.replaceWith(inp); c.innerHTML = PIPA; c.dataset.tipp = 'Kész'; c.setAttribute('aria-label', 'Kész, a név javítása');
       inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length);
     });
@@ -3018,7 +3024,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127083605';
+const VALTOZAT = '20261127083811';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
