@@ -405,6 +405,16 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .rontott-kerdes { display: grid; gap: 4px; padding: 10px 12px; border: 2px dashed var(--morzsa); border-radius: 10px; background: var(--liszt); }
 .rontott-kerdes > span { font-size: 16px; font-weight: 700; }
 .rontott-kerdes .bemenet { max-width: 160px; }
+.dolgozo-szerk { display: grid; gap: 8px; padding: 12px 14px; border: 2px solid var(--morzsa); border-radius: 12px; background: var(--liszt); }
+.dolgozo-szerk .cim { font-size: 18px; font-weight: 700; }
+.dolgozo-szerk .cim small { display: block; font-size: 14px; font-weight: 400; color: var(--tipp); }
+.dolgozo-lista { list-style: none; margin: 0; padding: 0; display: grid; border: 1px solid var(--morzsa); border-radius: 10px; overflow: hidden; background: var(--feher); }
+.dolgozo-lista li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px 8px 14px; font-size: 18px; font-weight: 700; }
+.dolgozo-lista li:nth-child(even) { background: var(--csik); }
+.dolgozo-lista li.ures-sor { color: var(--masodlagos); font-weight: 400; }
+.nev-valaszto { max-width: none; }
+.kereso-lista li.uj-dolgozo { color: var(--gomb); border-top: 2px dashed var(--morzsa); border-radius: 0 0 9px 9px; }
+.kereso-gomb.hianyzik { border-color: var(--hiba); background: #fdf0f0; }
 .ossz-cim { font-size: 14px; font-weight: 700; color: var(--masodlagos); margin-top: 4px; }
 .szamlalo-sor { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 14px;
   border: 2px solid var(--morzsa); border-radius: 12px; background: var(--liszt); }
@@ -623,7 +633,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
         <ul class="tipp">
           <li>Koppints a borítékos mezőre, és számold meg címletenként a borítékba tett pénzt. <b>A borravaló is legyen benne!</b></li>
           <li>A <b>borravalót a gép számolja ki</b> a borítékba tett pénzből, neked nem kell külön beírnod.</li>
-          <li>Írd be a neved.</li>
+          <li>Válaszd ki a neved a listából. Ha nem találod, válaszd a lista alján az <b>„+ Új dolgozó”</b> pontot, és írd be a neved.</li>
           <li>Kattints az <b>Aláírás</b> dobozra, és rögzítsd az aláírásod. Felugrik egy ablak: ott írd alá <b>az ujjaddal</b> (számítógépen egérrel).</li>
         </ul>
         <div class="mezo">
@@ -941,6 +951,14 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <span class="cim">Fagyigépek száma<small>Ennyi rublikára bomlik: Fagyigép mérő óraállás.</small></span>
       <span class="vezerlo"><button type="button" class="pm" data-cel="fagyigep" data-lep="-1" aria-label="Eggyel kevesebb fagyigép">−</button><input type="text" id="bb-fagyigep" readonly aria-label="Fagyigépek száma"><button type="button" class="pm" data-cel="fagyigep" data-lep="1" aria-label="Eggyel több fagyigép">+</button></span>
     </div>
+    <div class="dolgozo-szerk">
+      <span class="cim">Dolgozók<small>Ők jelennek meg a „Név (olvashatóan)” legördülő listájában, ABC-sorrendben.</small></span>
+      <ul class="dolgozo-lista" id="bb-dolgozok"></ul>
+      <div class="jelszo-sor">
+        <input type="text" id="bb-uj-dolgozo" placeholder="Új dolgozó neve, pl. Kiss Anna" autocomplete="off" aria-label="Új dolgozó neve">
+        <button type="button" class="gomb-2" id="bb-dolgozo-hozzaad">+ Hozzáadás</button>
+      </div>
+    </div>
     <ul class="tipp">
       <li>Mindegyikből legfeljebb <b>5</b> adható meg.</li>
       <li>Ha 1-nél több van, a dolgozó minden kasszát külön rublikába ír, a gép pedig összeadja. Minden rublikát ki kell tölteni, ha nem volt forgalom, akkor <b>0</b>-t.</li>
@@ -1211,6 +1229,20 @@ for (const [csoport, lista] of Object.entries(MEZOK)) {
     }
     wrap.appendChild(be);
     if (megj) { const sm = document.createElement('small'); sm.id = 'megj-' + k; sm.textContent = megj; wrap.appendChild(sm); }
+    if (k === 'nev') {   // név: legördülő lista a bolt dolgozóival + „Új dolgozó” kézi beírással
+      const kv = document.createElement('div'); kv.className = 'kereso nev-valaszto'; kv.id = 'nev-valaszto';
+      kv.innerHTML = '<button type="button" class="kereso-gomb ures-valasztas" id="nev-gomb" aria-haspopup="listbox" aria-expanded="false">'
+        + '<span id="nev-felirat">– Kattints ide, és válaszd ki a neved –</span>'
+        + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+        + '<div class="kereso-panel" id="nev-panel" hidden><div class="kereso-mezo" id="nev-kereso-mezo">'
+        + '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+        + '<input type="text" id="nev-kereso" placeholder="Keresés: pl. Anna" autocomplete="off" aria-label="Név keresése"></div>'
+        + '<ul class="kereso-lista" id="nev-lista" role="listbox" aria-label="Dolgozók"></ul></div>';
+      wrap.insertBefore(kv, be);
+      be.hidden = true; inp.placeholder = 'Írd be a teljes neved'; wrap.removeAttribute('for');
+      // a felirat ne „nyomja meg” a lenyíló gombot még egyszer (különben rögtön be is zárna)
+      wrap.addEventListener('click', e => { if (!e.target.closest('.kereso, input, button')) { e.preventDefault(); } });
+    }
     if (k === 'borravalo') { const f = document.createElement('p'); f.className = 'hiany-uzenet'; f.id = 'figy-borravalo'; f.hidden = true; f.setAttribute('role', 'alert'); wrap.appendChild(f); }
     if (auto) {
       const kg = document.createElement('button'); kg.type = 'button'; kg.className = 'keplet-gomb'; kg.dataset.mezo = k; kg.hidden = true;
@@ -1368,8 +1400,9 @@ function hianyok() {
       continue;
     }
     const ures = !String(allapot.ertek[k] || '').trim();
-    hianyJelol($('m-' + k), k, ures, info.tipus === 'szoveg' ? '⚠ Ez hiányzik. Írd be a neved.' : '⚠ Ez hiányzik. Ha nem volt ilyen, írj be 0-t.');
-    if (ures) lista.push({ cim: info.cim, el: $('m-' + k) });
+    hianyJelol($('m-' + k), k, ures, info.tipus === 'szoveg' ? (nevKezi ? '⚠ Ez hiányzik. Írd be a neved.' : '⚠ Ez hiányzik. Válaszd ki a neved a listából.') : '⚠ Ez hiányzik. Ha nem volt ilyen, írj be 0-t.');
+    if (k === 'nev') $('nev-gomb').classList.toggle('hianyzik', ures && !nevKezi && (mindetJelol || erintett.has('nev')));
+    if (ures) lista.push({ cim: info.cim, el: k === 'nev' && !nevKezi ? $('nev-gomb') : $('m-' + k) });
   }
   allapot.kiadas.forEach((r, i) => {
     const n = $('k-nev-' + i), o = $('k-ossz-' + i);
@@ -1738,6 +1771,7 @@ function boltBeallit(b) {
   alairasMutat();
   for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) $('m-' + k).value = info.tipus === 'szoveg' ? (allapot.ertek[k] || '') : tagolSzoveg(allapot.ertek[k] || '');
   $('m-rontottDb').value = allapot.ertek.rontottDb || '';
+  nevKezi = false; if (window.__kepletKesz) nevValasztoFrissit();
   $('datum').value = allapot.datum;
   datumFrissit();
   kiadasRajz();
@@ -1879,6 +1913,7 @@ function urlapUrites() {
   allapot.ertek = {}; allapot.kiadas = []; allapot.cimlet = {}; allapot.alairas = null; allapot.alairasVonal = null; alairasMutat(); erintett.clear(); mindetJelol = false;
   for (const [k, info] of Object.entries(mezoInfo)) if (!info.auto) { const i = $('m-' + k); i.value = ''; i.classList.remove('hianyzik'); }
   $('m-rontottDb').value = ''; $('m-rontottDb').classList.remove('hianyzik');
+  nevKezi = false; nevValasztoFrissit(); $('nev-gomb').classList.remove('hianyzik');
   document.querySelectorAll('.hiany-uzenet').forEach(u => { u.hidden = true; });
   $('hibalista').hidden = true;
   $('datum').value = allapot.datum = maiDatum(); datumFrissit();
@@ -2209,13 +2244,68 @@ document.addEventListener('keydown', e => {
   }
 });
 
+/* --- Név: legördülő lista a bolt dolgozóival --- */
+let nevKezi = false, nevAktiv = -1, nevLatszo = [];
+const UJ_DOLGOZO = '__uj__';
+function nevValasztoFrissit() {
+  const n = String(allapot.ertek.nev || '').trim(), lista = allapot.bolt ? boltBeall().dolgozok : [];
+  nevKezi = !!n && !lista.includes(n) ? true : (n ? false : nevKezi && false);
+  $('m-nev').closest('.mezo').querySelector('.bemenet').hidden = !nevKezi;
+  const g = $('nev-gomb');
+  g.classList.toggle('ures-valasztas', !n && !nevKezi);
+  $('nev-felirat').textContent = nevKezi ? '+ Új dolgozó – írd be lent a neved' : (n || '– Kattints ide, és válaszd ki a neved –');
+}
+function nevListaRajz() {
+  const q = ekezetNelkul($('nev-kereso').value.trim()), lista = allapot.bolt ? boltBeall().dolgozok : [];
+  nevLatszo = lista.filter(n => !q || ekezetNelkul(n).includes(q)).concat([UJ_DOLGOZO]);
+  $('nev-kereso-mezo').hidden = lista.length <= 6;
+  const ul = $('nev-lista'); ul.textContent = '';
+  nevLatszo.forEach((n, i) => {
+    const li = document.createElement('li'); li.setAttribute('role', 'option'); li.id = 'nevopt-' + i;
+    if (n === UJ_DOLGOZO) { li.className = 'uj-dolgozo'; li.textContent = '+ Új dolgozó (a neved beírása)'; }
+    else { li.textContent = n; li.setAttribute('aria-selected', String(n === allapot.ertek.nev && !nevKezi)); }
+    li.addEventListener('mousemove', () => nevAktival(i));
+    li.addEventListener('click', () => nevValaszt(i));
+    ul.appendChild(li);
+  });
+  nevAktival(Math.max(0, nevLatszo.indexOf(allapot.ertek.nev)));
+}
+function nevAktival(i) { nevAktiv = i; [...$('nev-lista').children].forEach((li, j) => li.classList.toggle('aktiv', j === i)); const li = $('nev-lista').children[i]; if (li) li.scrollIntoView({ block: 'nearest' }); }
+function nevNyit() { $('nev-panel').hidden = false; $('nev-gomb').setAttribute('aria-expanded', 'true'); $('nev-kereso').value = ''; nevListaRajz(); (($('nev-kereso-mezo').hidden) ? $('nev-lista') : $('nev-kereso')).focus && (!$('nev-kereso-mezo').hidden && $('nev-kereso').focus()); }
+function nevZar(f) { $('nev-panel').hidden = true; $('nev-gomb').setAttribute('aria-expanded', 'false'); if (f) $('nev-gomb').focus(); }
+function nevValaszt(i) {
+  const n = nevLatszo[i]; if (n == null) return;
+  nevZar(false); erintett.add('nev');
+  if (n === UJ_DOLGOZO) {
+    nevKezi = true; allapot.ertek.nev = ''; $('m-nev').value = '';
+    $('m-nev').closest('.mezo').querySelector('.bemenet').hidden = false;
+    $('nev-felirat').textContent = '+ Új dolgozó – írd be lent a neved'; $('nev-gomb').classList.remove('ures-valasztas');
+    frissit(); $('m-nev').focus(); return;
+  }
+  nevKezi = false; allapot.ertek.nev = n; $('m-nev').value = n;
+  nevValasztoFrissit(); frissit(); $('nev-gomb').focus();
+}
+$('nev-gomb').addEventListener('click', () => $('nev-panel').hidden ? nevNyit() : nevZar(false));
+$('nev-kereso').addEventListener('input', nevListaRajz);
+$('nev-valaszto').addEventListener('keydown', e => {
+  if ($('nev-panel').hidden) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); nevAktival(Math.min(nevLatszo.length - 1, nevAktiv + 1)); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); nevAktival(Math.max(0, nevAktiv - 1)); }
+  else if (e.key === 'Enter') { e.preventDefault(); nevValaszt(nevAktiv); }
+  else if (e.key === 'Escape') { e.preventDefault(); nevZar(true); }
+});
+document.addEventListener('click', e => { if (!$('nev-panel').hidden && !$('nev-valaszto').contains(e.target)) nevZar(false); });
+
 /* --- Bolt beállításai: kasszák és kártyaterminálok száma (boltonként, a szerkesztő állítja) --- */
 const BOLT_MIN = { navKassza: 1, tartalek: 0, kavegep: 1, fagyigep: 1 };
 function boltBeallKulcs(bolt) { return 'b-' + boltSlug(bolt || allapot.bolt); }
 function boltBeall(bolt) {
   const ki = { navKassza: 1, tartalek: 0, kavegep: 1, fagyigep: 1 };
+  let dolgozok = [];
   const t = sugok[boltBeallKulcs(bolt)];
-  if (t && t.szoveg) { try { const j = JSON.parse(t.szoveg); for (const k of Object.keys(ki)) if (j[k] != null) ki[k] = Math.max(BOLT_MIN[k], Math.min(5, Math.floor(+j[k]) || BOLT_MIN[k])); } catch (e) {} }
+  if (t && t.szoveg) { try { const j = JSON.parse(t.szoveg); for (const k of Object.keys(ki)) if (j[k] != null) ki[k] = Math.max(BOLT_MIN[k], Math.min(5, Math.floor(+j[k]) || BOLT_MIN[k]));
+    if (Array.isArray(j.dolgozok)) dolgozok = j.dolgozok.map(x => String(x).trim()).filter(Boolean); } catch (e) {} }
+  ki.dolgozok = [...new Set(dolgozok)].sort((a, b) => a.localeCompare(b, 'hu'));
   return ki;
 }
 function reszDb(k) {
@@ -2276,15 +2366,39 @@ function reszekRajz() {
 }
 let boltUj = null, boltElozo = null;
 function boltAblakRajz() { for (const k of Object.keys(boltUj)) { const el = $('bb-' + k); if (el) el.value = boltUj[k]; }
+  dolgozoListaRajz();
   document.querySelectorAll('#bolt-urlap .pm').forEach(b => { const v = boltUj[b.dataset.cel] + (+b.dataset.lep); b.disabled = v < BOLT_MIN[b.dataset.cel] || v > 5; }); }
 $('szerk-bolt').addEventListener('click', () => {
-  boltElozo = document.activeElement; boltUj = boltBeall();
+  boltElozo = document.activeElement; boltUj = boltBeall(); boltUj.dolgozok = boltUj.dolgozok.slice(); $('bb-uj-dolgozo').value = '';
   $('bolt-ablak-bolt').textContent = allapot.bolt; $('bolt-hiba').hidden = true; boltAblakRajz();
   $('bolt-ablak').hidden = false; $('bolt-x').focus();
 });
 document.querySelectorAll('#bolt-urlap .pm').forEach(b => b.addEventListener('click', () => {
   boltUj[b.dataset.cel] = Math.max(BOLT_MIN[b.dataset.cel], Math.min(5, boltUj[b.dataset.cel] + (+b.dataset.lep))); boltAblakRajz();
 }));
+function dolgozoListaRajz() {
+  const ul = $('bb-dolgozok'); ul.textContent = '';
+  if (!boltUj.dolgozok.length) { const li = document.createElement('li'); li.className = 'ures-sor'; li.textContent = 'Még nincs dolgozó felvéve.'; ul.appendChild(li); return; }
+  boltUj.dolgozok.forEach((n, i) => {
+    const li = document.createElement('li');
+    const sp = document.createElement('span'); sp.textContent = n;
+    const k = document.createElement('button'); k.type = 'button'; k.className = 'kuka'; k.dataset.tipp = 'Törlés'; k.innerHTML = KUKA;
+    k.setAttribute('aria-label', `${n} törlése`);
+    k.addEventListener('click', () => kerdez('Biztosan törölni akarod ezt a dolgozót?', 'Ezt a dolgozót törlöd a listából:', n,
+      ['Ha az „Igen, törlöm” gombra kattintasz, a neve nem jelenik meg többé a legördülő listában.', 'A törlés a „Mentés” gombbal lesz végleges.',
+       'Ha nem akarod törölni, kattints a „Mégse, megtartom” gombra.'], 'Igen, törlöm', () => { boltUj.dolgozok.splice(i, 1); dolgozoListaRajz(); }));
+    li.append(sp, k); ul.appendChild(li);
+  });
+}
+function dolgozoHozzaad() {
+  const n = $('bb-uj-dolgozo').value.trim().replace(/\s+/g, ' ');
+  if (!n) { $('bb-uj-dolgozo').focus(); return; }
+  if (!boltUj.dolgozok.some(x => x.toLowerCase() === n.toLowerCase())) boltUj.dolgozok.push(n);
+  boltUj.dolgozok.sort((a, b) => a.localeCompare(b, 'hu'));
+  $('bb-uj-dolgozo').value = ''; dolgozoListaRajz(); $('bb-uj-dolgozo').focus();
+}
+$('bb-dolgozo-hozzaad').addEventListener('click', dolgozoHozzaad);
+$('bb-uj-dolgozo').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); dolgozoHozzaad(); } });
 function boltAblakZar() { $('bolt-ablak').hidden = true; if (boltElozo && boltElozo.isConnected) boltElozo.focus(); }
 $('bolt-x').addEventListener('click', boltAblakZar);
 $('bolt-megse').addEventListener('click', boltAblakZar);
@@ -2300,7 +2414,7 @@ $('bolt-urlap').addEventListener('submit', async e => {
     const adat = await sugoMent(kulcs, szoveg, null, null, false);
     sugok[kulcs] = Object.assign({}, adat, { szoveg });
     if (gasMod) tarol('zarospapir:sugok', sugok);
-    await betoltoKesz(); boltAblakZar(); reszekRajz(); frissit();
+    await betoltoKesz(); boltAblakZar(); reszekRajz(); nevValasztoFrissit(); frissit();
   } catch (er) {
     await betoltoKesz();
     $('bolt-hiba').textContent = er && er.code === 'AUTH' ? 'Lejárt a belépésed. Lépj be újra.' : 'Nem sikerült menteni. Ellenőrizd az internetet, és próbáld újra.';
@@ -2326,7 +2440,7 @@ function kepletKodra(szoveg) {
 function kepletekFrissit() {
   if (!allapot.bolt) return;
   const allas = JSON.stringify(boltBeall());
-  if (allas !== window.__reszAllas) { window.__reszAllas = allas; reszekRajz(); }
+  if (allas !== window.__reszAllas) { window.__reszAllas = allas; reszekRajz(); nevValasztoFrissit(); }
   for (const k of Object.keys(ALAP_KEPLETEK)) {
     const kp = boltKeplete(k), sm = $('megj-' + k);
     if (sm) sm.textContent = 'Automata kiszámolás: ' + (kp.leiras || kepletMegjelenit(kp.keplet));
@@ -2871,7 +2985,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127054738';
+const VALTOZAT = '20261127081201';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
