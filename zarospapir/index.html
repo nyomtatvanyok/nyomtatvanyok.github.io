@@ -2061,8 +2061,8 @@ function kepLapNyit() {   // a kész oldal gombjáról (kattintásra mindig enge
   if (!kepLapIr()) { const a = document.createElement('a'); a.href = keszObjUrl(); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
 }
 async function archivMentes() {
-  keszArchivOk = !gasMod;
-  if (!gasMod) return;
+  keszArchivOk = !gasMod || TESZT;
+  if (!gasMod || TESZT) return;   // teszt: nem kerül az archívumba
   betoltoMutat('Mentés az archívumba…'); merfold(92);
   try { await gasHivas('zarasArchiv', Object.assign({ png: keszDataUrl.split(',')[1] }, keszAdat)); keszArchivOk = true; }
   catch (e) { keszArchivOk = !!(e && e.code === 'BAD' && /Ismeretlen kérés/.test(e.message)); }
@@ -2628,6 +2628,43 @@ $('keplet-urlap').addEventListener('submit', async e => {
 });
 window.__kepletKesz = true;
 
+/* --- TESZT: ?teszt a címben → kitöltött minta (2026.11.27., Békásmegyeri Piac), nem kerül az archívumba --- */
+const TESZT = /[?&]teszt\b/.test(location.search);
+if (TESZT) {
+  mentesKulcs = () => 'zaras-teszt:' + allapot.bolt;   // a teszt nem írja felül a valódi, félbehagyott kitöltést
+  const sav = document.createElement('div');
+  sav.textContent = 'TESZT – a minta adatokkal kitöltve. Ez a zárás NEM kerül az archívumba.';
+  sav.style.cssText = 'position:sticky;top:0;z-index:90;background:#a32020;color:#fff;font:700 16px var(--szoveg);text-align:center;padding:8px 12px';
+  document.body.prepend(sav);
+  Promise.resolve(window.__sugokKesz).then(() => varj(300)).then(() => {
+    const ir = (sel, v) => { const el = document.querySelector(sel); if (!el) return false; el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); return true; };
+    const v = { f0: '1050', f5: '503835', f18: '394569', f27: '40213', szamla: '1250', munch: '3000', megszOssz: '3287',
+      szep: '43344', bank: '549424', vevoDe: '373', vevoDu: '301', forgDe: '511160', forgDu: '431668', fizeto: '0', megszDb: '4',
+      munkaora: '46,87', probaora: '0', t1: '65985', t2: '9857', t3: '0', t4: '23975', t5: '0', t6: '22350', t7: '0', t8: '0', t9: '0', t10: '0',
+      t11: '3960', t12: '4119462', t13: '20466', t14: '4935', kifli: '803', szendvics: '38', matcha: '1', kave: '68', kavegep: '47161', fagyi: '0', fagyigep: '0' };
+    ir('#m-rontottDb', '1');
+    setTimeout(() => {
+      const tobb = (k, ertek) => {   // kasszánként bontott mezőnél az első rublikába kerül az összeg, a többibe 0
+        const r = document.querySelectorAll(`[id^="m-${k}-"]`);
+        if (!r.length) return ir('#m-' + k, ertek);
+        r.forEach((el, i) => { el.value = i ? '0' : ertek; el.dispatchEvent(new Event('input', { bubbles: true })); });
+      };
+      tobb('hibas', '1090'); tobb('navVevo', '675');
+      for (const [k, x] of Object.entries(v)) tobb(k, x);
+      const b = $('m-boritek'); const ro = b.readOnly; b.readOnly = false; b.value = '311 200'; b.dispatchEvent(new Event('input', { bubbles: true })); b.readOnly = ro;
+      if (!allapot.kiadas.length) {
+        $('kiadas-uj').click(); ir('#k-nev-0', 'Terítő'); ir('#k-ossz-0', '6000');
+        $('kiadas-uj').click(); ir('#k-nev-1', 'Auchan'); ir('#k-ossz-1', '30735');
+      }
+      const n = 'Szerencse Napsugár';
+      if (boltBeall().dolgozok.includes(n)) { allapot.ertek.nev = n; $('m-nev').value = n; nevKezi = false; nevValasztoFrissit(); }
+      else { nevKezi = true; ir('#m-nev', n); nevValasztoFrissit(); }
+      frissit();
+      if (document.activeElement) document.activeElement.blur(); window.scrollTo({ top: 0 });
+    }, 200);
+  });
+}
+
 /* --- kép nagyítása --- */
 $('sugo-kep').addEventListener('load', () => { $('sugo-kep-tipp').hidden = $('sugo-kep').hidden; });
 $('sugo-kep').addEventListener('click', () => {
@@ -2915,7 +2952,7 @@ if (gasMod) {
   $('lablec').hidden = false;
   const elozo = olvas('zarospapir:sugok');
   if (elozo && typeof elozo === 'object') { Object.assign(sugok, elozo); infoFrissit(); }
-  gasHivas('sugok', {}).then(d => {
+  window.__sugokKesz = gasHivas('sugok', {}).then(d => {
     for (const k of Object.keys(sugok)) delete sugok[k];
     Object.assign(sugok, d || {});
     tarol('zarospapir:sugok', sugok); infoFrissit();
@@ -3084,7 +3121,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127200735';
+const VALTOZAT = '20261127201124';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
