@@ -1582,7 +1582,7 @@ function rajzol(canvas) {
       // Hosszú név: ha egy sorban túl kicsi lenne, két sorba tördeljük (nagyobb betűvel)
       const cel = Math.min(alapBetu * 1.3, (18.75 * 4 / 3) * s * 0.58 / 0.76);
       const nevSor = nev === 'E37';
-      const ketSor = cimke.includes(' ') && (nevSor ? sk.length <= 2 : sk.length === 1) && (nevSor ? sk.length === 2 || (m < cel * 0.98 || cimke.trim().split(/\s+/).length >= 3) : (szovegE && m < cel * 0.85));
+      const ketSor = cimke.includes(' ') && (nevSor ? sk.length <= 2 : sk.length === 1) && (nevSor ? sk.length === 2 || m < cel * 0.98 : (szovegE && m < cel * 0.85));   // csak ha egy sorban nem fér ki nagy betűvel
       if (ketSor) {
         const szavak = cimke.split(' '); let legjobb = null;
         for (let i = 1; i < szavak.length; i++) {   // a legkiegyensúlyozottabb kettévágás
@@ -1601,14 +1601,16 @@ function rajzol(canvas) {
           if (2 * h2 <= H2 && legjobb.ket.every(t => ctx.measureText(t).width <= belsoW)) break;
           m2 *= 0.95;
         }
-        if (nevSor || m2 > m * 1.08) { m = m2; sk = legjobb.ket; asc = a2; desc = d2; sorH = h2; ctx.font = `700 ${m}px ${TOLL_BETU}`; }
+        // két sor csak akkor, ha így nagyobb (olvashatóbb) marad a betű
+        if (m2 > m * 1.05) { m = m2; sk = legjobb.ket; asc = a2; desc = d2; sorH = h2; ctx.font = `700 ${m}px ${TOLL_BETU}`; }
         else ctx.font = `700 ${m}px ${TOLL_BETU}`;
       }
       ctx.fillStyle = TOLL_SZIN; ctx.textBaseline = 'alphabetic';
       const fent = (y1 + y2) / 2 - sk.length * sorH / 2;
       sk.forEach((t, i) => {
         const y = fent + i * sorH + (sorH - (asc + desc)) / 2 + asc;
-        if (szovegE) { ctx.textAlign = 'left'; ctx.fillText(t, x1 + pad + s, y); } else { ctx.textAlign = 'right'; ctx.fillText(t, x2 - pad - s, y); }
+        if (nev === 'E37') { ctx.textAlign = 'center'; ctx.fillText(t, (x1 + x2) / 2, y); }   // a dolgozó neve középre
+        else if (szovegE) { ctx.textAlign = 'left'; ctx.fillText(t, x1 + pad + s, y); } else { ctx.textAlign = 'right'; ctx.fillText(t, x2 - pad - s, y); }
       });
       ctx.textBaseline = 'middle';
       return;
@@ -2849,7 +2851,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261126203959';
+const VALTOZAT = '20261127053251';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
