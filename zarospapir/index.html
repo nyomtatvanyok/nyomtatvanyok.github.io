@@ -2016,11 +2016,18 @@ $('letoltes').addEventListener('click', async () => {
   keszDataUrl = 'data:image/png;base64,' + await blobBase64(blob);
   // Biztonsági kettős mentés: 1) automatikus letöltés az eszközre, 2) a kép külön lapon (hosszan nyomva menthető, képernyőfotózható)
   keszAutoLetoltve = autoLetoltes();
-  kepLapIr();
+  const lapOk = kepLapIr();
+  if (lapOk) { try { kepLap.focus(); } catch (e) {} }
   await archivMentes();
   urlapUrites();
-  uzenet('✓ A zárás elkészült. Az űrlap kiürült, kezdheted a következő zárást.', true);
-  keszOldalMutat();
+  // Rendes eset: a dolgozó már az új lapon van (letöltve + kép). Ide csak akkor kell a kész oldal, ha az új lap nem nyílt meg, vagy az archiválás nem sikerült.
+  if (lapOk && keszArchivOk) {
+    uzenet('✓ A zárás elkészült: a kép letöltődött, és új lapon megnyílt. Az űrlap kiürült, kezdheted a következő zárást.', true);
+    window.scrollTo({ top: 0 });
+  } else {
+    uzenet('✓ A zárás elkészült. Az űrlap kiürült, kezdheted a következő zárást.', true);
+    keszOldalMutat();
+  }
 });
 
 /* ---------- kész oldal: kép, letöltés, megosztás ---------- */
@@ -3077,7 +3084,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127200435';
+const VALTOZAT = '20261127200735';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
