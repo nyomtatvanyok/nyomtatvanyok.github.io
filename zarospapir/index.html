@@ -435,7 +435,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 #nev-gomb { font-size: 17px; }
 #nev-panel { position: static; margin-top: 6px; box-shadow: 0 6px 18px rgba(74,40,16,.14); }   /* a lista a mező alatt nyílik, a doboz széle nem vágja le (telefonon sem) */
 #nev-gomb #nev-felirat { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.kereso-lista li.uj-dolgozo { color: var(--gomb); border-top: 2px dashed var(--morzsa); border-radius: 0 0 9px 9px; }
+.kereso-lista li.uj-dolgozo { font-size: 17px; line-height: 1.25; color: var(--gomb); border-top: 2px dashed var(--morzsa); border-radius: 0 0 9px 9px; }
 .kereso-gomb.hianyzik { border-color: var(--hiba); background: #fdf0f0; }
 .ossz-cim { font-size: 14px; font-weight: 700; color: var(--masodlagos); margin-top: 4px; }
 .szamlalo-sor { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 14px;
@@ -653,7 +653,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
         <ul class="tipp">
           <li>Koppints a borítékos mezőre, és számold meg címletenként a borítékba tett pénzt. <b>A borravaló is legyen benne!</b></li>
           <li>A <b>borravalót a gép számolja ki</b> a borítékba tett pénzből, neked nem kell külön beírnod.</li>
-          <li>Válaszd ki a neved a listából. Ha nem találod, válaszd a lista alján az <b>„+ Új dolgozó”</b> pontot, és írd be a neved.</li>
+          <li>Válaszd ki a neved a listából. Ha nem találod, válaszd a lista alján a <b>„Nem találom magam, még új vagyok”</b> pontot, és írd be a neved.</li>
           <li>Kattints az <b>Aláírás</b> dobozra, és rögzítsd az aláírásod. Felugrik egy ablak: ott írd alá <b>az ujjaddal</b> (számítógépen egérrel).</li>
         </ul>
         <div class="mezo">
@@ -1267,7 +1267,7 @@ for (const [csoport, lista] of Object.entries(MEZOK)) {
         + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
         + '<div class="kereso-panel" id="nev-panel" hidden><div class="kereso-mezo" id="nev-kereso-mezo">'
         + '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
-        + '<input type="text" id="nev-kereso" placeholder="Keresés: pl. Anna" autocomplete="off" aria-label="Név keresése"></div>'
+        + '<input type="text" id="nev-kereso" placeholder="Keresés: írd be a neved" autocomplete="off" aria-label="Név keresése"></div>'
         + '<ul class="kereso-lista" id="nev-lista" role="listbox" aria-label="Dolgozók"></ul></div>';
       wrap.insertBefore(kv, be);
       be.hidden = true; inp.placeholder = 'Írd be a teljes neved'; wrap.removeAttribute('for');
@@ -2336,16 +2336,16 @@ function nevValasztoFrissit() {
   $('m-nev').closest('.mezo').querySelector('.bemenet').hidden = !nevKezi;
   const g = $('nev-gomb');
   g.classList.toggle('ures-valasztas', !n && !nevKezi);
-  $('nev-felirat').textContent = nevKezi ? '+ Új dolgozó – írd be lent a neved' : (n || '– Kattints ide, és válaszd ki a neved –');
+  $('nev-felirat').textContent = nevKezi ? 'Új vagyok – írd be lent a neved' : (n || '– Kattints ide, és válaszd ki a neved –');
 }
 function nevListaRajz() {
   const q = ekezetNelkul($('nev-kereso').value.trim()), lista = allapot.bolt ? boltBeall().dolgozok : [];
   nevLatszo = lista.filter(n => !q || ekezetNelkul(n).includes(q)).concat([UJ_DOLGOZO]);
-  $('nev-kereso-mezo').hidden = lista.length <= 6;
+  $('nev-kereso-mezo').hidden = false;   // a kereső mindig látszik
   const ul = $('nev-lista'); ul.textContent = '';
   nevLatszo.forEach((n, i) => {
     const li = document.createElement('li'); li.setAttribute('role', 'option'); li.id = 'nevopt-' + i;
-    if (n === UJ_DOLGOZO) { li.className = 'uj-dolgozo'; li.textContent = '+ Új dolgozó (a neved beírása)'; }
+    if (n === UJ_DOLGOZO) { li.className = 'uj-dolgozo'; li.innerHTML = 'Nem találom magam,<br>még új vagyok'; }
     else { li.textContent = n; li.setAttribute('aria-selected', String(n === allapot.ertek.nev && !nevKezi)); }
     li.addEventListener('mousemove', () => nevAktival(i));
     li.addEventListener('click', () => nevValaszt(i));
@@ -2354,7 +2354,7 @@ function nevListaRajz() {
   nevAktival(Math.max(0, nevLatszo.indexOf(allapot.ertek.nev)));
 }
 function nevAktival(i) { nevAktiv = i; [...$('nev-lista').children].forEach((li, j) => li.classList.toggle('aktiv', j === i)); const li = $('nev-lista').children[i]; if (li) li.scrollIntoView({ block: 'nearest' }); }
-function nevNyit() { $('nev-panel').hidden = false; $('nev-gomb').setAttribute('aria-expanded', 'true'); $('nev-kereso').value = ''; nevListaRajz(); (($('nev-kereso-mezo').hidden) ? $('nev-lista') : $('nev-kereso')).focus && (!$('nev-kereso-mezo').hidden && $('nev-kereso').focus()); }
+function nevNyit() { $('nev-panel').hidden = false; $('nev-gomb').setAttribute('aria-expanded', 'true'); $('nev-kereso').value = ''; nevListaRajz(); if (!telefonE()) $('nev-kereso').focus(); }
 function nevZar(f) { $('nev-panel').hidden = true; $('nev-gomb').setAttribute('aria-expanded', 'false'); if (f) $('nev-gomb').focus(); }
 function nevValaszt(i) {
   const n = nevLatszo[i]; if (n == null) return;
@@ -2362,7 +2362,7 @@ function nevValaszt(i) {
   if (n === UJ_DOLGOZO) {
     nevKezi = true; allapot.ertek.nev = ''; $('m-nev').value = '';
     $('m-nev').closest('.mezo').querySelector('.bemenet').hidden = false;
-    $('nev-felirat').textContent = '+ Új dolgozó – írd be lent a neved'; $('nev-gomb').classList.remove('ures-valasztas');
+    $('nev-felirat').textContent = 'Új vagyok – írd be lent a neved'; $('nev-gomb').classList.remove('ures-valasztas');
     frissit(); $('m-nev').focus(); return;
   }
   nevKezi = false; allapot.ertek.nev = n; $('m-nev').value = n;
@@ -3126,7 +3126,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127202639';
+const VALTOZAT = '20261127202918';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
