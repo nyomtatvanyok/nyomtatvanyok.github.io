@@ -933,17 +933,18 @@ input.cimletes { cursor: pointer; background: var(--feher); }
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span id="kesz-letolt-felirat">Letöltés az eszközre</span>
       </button>
+      <button type="button" class="gomb-2" id="kesz-uj-lap">🖼 Kép megnyitása új lapon</button>
     </div>
     <p class="uzenet ok" id="kesz-uzenet" hidden></p>
     <ol class="tipp" id="kesz-lepesek-telefon" hidden>
-      <li>Koppints a <b>„📤 Küldés a forgalmas csoportba”</b> gombra.</li>
-      <li>A felugró menüben válaszd a <b>Messenger</b>t (ha nem látod, húzd oldalra, vagy koppints a „Továbbiak” pontra).</li>
-      <li>Válaszd ki a <b>forgalmas csoportot</b>, és nyomd meg a <b>Küldés</b> gombot. Kész!</li>
+      <li>A kép <b>már letöltődött</b> a telefonra, és <b>külön lapon is megnyílt</b>.</li>
+      <li>Koppints a <b>„📤 Küldés a forgalmas csoportba”</b> gombra, válaszd a <b>Messenger</b>t, majd a <b>forgalmas csoportot</b>, és nyomd meg a <b>Küldés</b> gombot.</li>
+      <li>Ha nem találod a képet: koppints a <b>„🖼 Kép megnyitása új lapon”</b> gombra, és tartsd rajta az ujjad → „Kép letöltése”, vagy készíts róla képernyőfotót.</li>
     </ol>
     <ol class="tipp" id="kesz-lepesek-gep" hidden>
-      <li>Kattints a <b>„Letöltés az eszközre”</b> gombra. A kép a <b>Letöltések</b> mappába kerül.</li>
+      <li>A kép <b>már letöltődött</b> a <b>Letöltések</b> mappába, és <b>külön lapon is megnyílt</b>.</li>
       <li>Nyisd meg a Messengert, és a forgalmas csoportba húzd be (vagy csatold) a letöltött képet.</li>
-      <li>Ha nem találod a fájlt: jobb klikk a lenti képen → „Kép másolása”, majd a Messengerben Ctrl + V.</li>
+      <li>Ha nem találod a fájlt: az új lapon jobb klikk a képen → „Kép mentése másként” vagy „Kép másolása”, majd a Messengerben Ctrl + V.</li>
     </ol>
     <img id="kesz-kep" class="kesz-kep" alt="Az elkészült zárós papír">
     <button type="button" class="gomb-2" id="kesz-vissza">← Vissza, új zárás</button>
@@ -1991,6 +1992,14 @@ $('letoltes').addEventListener('click', async () => {
     hl.hidden = false; uzenet('Javítsd a pirossal jelölt mezőket, utána töltsd le újra.', false); return;
   }
   hl.hidden = true;
+  // Új lap azonnal, a kattintás pillanatában (később a böngésző letiltaná). Ide kerül a kép, és innen töltődik le.
+  kepLap = null;
+  if (!letoltoCap) {
+    try {
+      kepLap = window.open('', '_blank');
+      if (kepLap) { kepLap.document.open(); kepLap.document.write('<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Zárós papír készül…</title></head><body style="margin:0;font:700 22px system-ui,sans-serif;color:#4a2810;background:#fbf6ee;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:20px;box-sizing:border-box">A zárós papír készül…<br>Ne zárd be ezt a lapot!</body></html>'); kepLap.document.close(); }
+    } catch (e) { kepLap = null; }
+  }
   betoltoMutat('A zárós papír elkészítése…');
   merfold(30);
   try { await Promise.race([Promise.all([document.fonts.load(`700 40px Carlito`), document.fonts.load(`700 40px Kalam`, '0123456789 Ftdbóra őű')]), varj(3500)]); await document.fonts.ready; } catch (e) {}
@@ -2005,6 +2014,9 @@ $('letoltes').addEventListener('click', async () => {
   // A zárás elkészült: archívumba mentjük, az űrlapot kiürítjük, és külön oldalon mutatjuk a letöltéshez.
   keszBlob = blob; keszFajlNev = fajl; keszAdat = { bolt: allapot.bolt, datum: d.szoveg, nev: (allapot.ertek.nev || '').trim() };
   keszDataUrl = 'data:image/png;base64,' + await blobBase64(blob);
+  // Biztonsági kettős mentés: 1) automatikus letöltés az eszközre, 2) a kép külön lapon (hosszan nyomva menthető, képernyőfotózható)
+  keszAutoLetoltve = autoLetoltes();
+  kepLapIr();
   await archivMentes();
   urlapUrites();
   uzenet('✓ A zárás elkészült. Az űrlap kiürült, kezdheted a következő zárást.', true);
@@ -2013,6 +2025,34 @@ $('letoltes').addEventListener('click', async () => {
 
 /* ---------- kész oldal: kép, letöltés, megosztás ---------- */
 let keszBlob = null, keszFajlNev = '', keszAdat = null, keszDataUrl = '', keszArchivOk = false;
+let kepLap = null, keszAutoLetoltve = false, keszUrl = '';
+function keszObjUrl() { if (!keszUrl) keszUrl = URL.createObjectURL(keszBlob); return keszUrl; }
+// a kép letöltése az eszközre (telefonon a Letöltések / Download mappába, ezt a galéria is mutatja)
+function autoLetoltes() {
+  if (letoltoCap) return false;
+  try {
+    const doc = (kepLap && !kepLap.closed) ? kepLap.document : document;
+    const a = doc.createElement('a'); a.href = keszObjUrl(); a.download = keszFajlNev; a.style.display = 'none';
+    doc.body.appendChild(a); a.click(); a.remove();
+    return true;
+  } catch (e) { return false; }
+}
+// a kép egy külön lapon, egyedül: pontosan kitölti a képernyőt (telefonon is egészben látszik)
+function kepLapHtml() {
+  return '<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<title>' + keszFajlNev.replace(/[<&]/g, '') + '</title><style>html,body{margin:0;padding:0;background:#fff;height:100%}'
+    + 'body{display:flex;align-items:center;justify-content:center;height:100vh;height:100dvh;overflow:hidden}'
+    + 'img{display:block;max-width:100vw;max-height:100vh;max-height:100dvh;width:auto;height:auto;-webkit-touch-callout:default}</style></head>'
+    + '<body><img src="' + keszDataUrl + '" alt="Zárós papír"></body></html>';
+}
+function kepLapIr() {
+  if (!kepLap || kepLap.closed) return false;
+  try { kepLap.document.open(); kepLap.document.write(kepLapHtml()); kepLap.document.close(); return true; } catch (e) { return false; }
+}
+function kepLapNyit() {   // a kész oldal gombjáról (kattintásra mindig engedi a böngésző)
+  try { kepLap = window.open('', '_blank'); } catch (e) { kepLap = null; }
+  if (!kepLapIr()) { const a = document.createElement('a'); a.href = keszObjUrl(); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+}
 async function archivMentes() {
   keszArchivOk = !gasMod;
   if (!gasMod) return;
@@ -2030,6 +2070,9 @@ function archivAllapot() {
 function keszOldalMutat() {
   $('kesz-kep').src = keszDataUrl;
   $('kesz-uzenet').hidden = true;
+  $('kesz-uj-lap').hidden = !!letoltoCap;
+  if (keszAutoLetoltve) keszUzenet('✓ A kép letöltődött a ' + (telefonE() ? 'telefonra (Letöltések / Download mappa, a galériában is megtalálod)' : 'Letöltések mappába') + ': ' + keszFajlNev
+    + (kepLap && !kepLap.closed ? '. Külön lapon is megnyitottuk: ott hosszan nyomva is mentheted, vagy képernyőfotót készíthetsz róla.' : ''), true);
   const tel = telefonE() && megosztasLehet();
   $('kesz-megoszt').hidden = !tel;
   $('kesz-letolt').className = tel ? 'gomb-2' : 'gomb-fo';
@@ -2069,6 +2112,7 @@ $('kesz-megoszt').addEventListener('click', async () => {
   try { await navigator.share({ files: [new File([keszBlob], keszFajlNev, { type: 'image/png' })], title: 'Zárós papír' }); keszUzenet('✓ Elküldve. Ha a Messengerben kiválasztottad a forgalmas csoportot, kész is vagy!', true); }
   catch (e) { if (!e || e.name !== 'AbortError') keszUzenet('Nem nyílt meg a megosztás. Töltsd le a képet, és küldd el a Messengerben.', false); }
 });
+$('kesz-uj-lap').addEventListener('click', kepLapNyit);
 $('kesz-ujra-archiv').addEventListener('click', async () => { await archivMentes(); archivAllapot(); });
 $('kesz-vissza').addEventListener('click', () => {
   $('kesz-oldal').hidden = true; document.body.style.overflow = '';
@@ -3033,7 +3077,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127195534';
+const VALTOZAT = '20261127200435';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
