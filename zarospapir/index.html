@@ -188,6 +188,14 @@ button { font: inherit; cursor: pointer; }
   background: var(--rozsa); color: var(--feher); font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
   opacity: 0; pointer-events: none; transition: opacity .12s; }
 .kuka:hover::after, .kuka:focus-visible::after { opacity: 1; }
+.ceruza { position: relative; display: inline-grid; place-items: center; width: 42px; height: 42px; padding: 0; border-radius: 10px; flex: none;
+  background: #f1f8f2; color: #2e7d32; border: 2px solid #b5d9b8; cursor: pointer; }
+.ceruza svg { width: 22px; height: 22px; }
+.ceruza:hover, .ceruza:focus-visible { background: #dcefdd; border-color: #2e7d32; }
+.ceruza::after { content: attr(data-tipp); position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  background: #2e7d32; color: #fff; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity .12s; }
+.ceruza:hover::after, .ceruza:focus-visible::after { opacity: 1; }
 
 /* üzenetek */
 .uzenet { margin: 0; font-weight: 700; }
@@ -411,6 +419,9 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .dolgozo-lista { list-style: none; margin: 0; padding: 0; display: grid; border: 1px solid var(--morzsa); border-radius: 10px; overflow: hidden; background: var(--feher); }
 .dolgozo-lista li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px 8px 14px; font-size: 18px; font-weight: 700; }
 .dolgozo-lista li:nth-child(even) { background: var(--csik); }
+.dolgozo-lista .gombok { display: flex; gap: 8px; flex: none; }
+.dolgozo-lista li > span { min-width: 0; overflow-wrap: anywhere; }
+.dolgozo-lista input.nev-szerk { flex: 1; min-width: 0; font: inherit; padding: 6px 10px; border: 2px solid #2e7d32; border-radius: 8px; background: var(--feher); color: inherit; }
 .dolgozo-lista li.ures-sor { color: var(--masodlagos); font-weight: 400; }
 .nev-valaszto { max-width: none; }
 #nev-gomb { font-size: 17px; }
@@ -483,7 +494,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   .belepes, #urites { width: 100%; }
   .attabla th { font-size: 11px; }
   .attabla td { padding: 4px; }
-  .kuka::after { display: none; }
+  .kuka::after, .ceruza::after { display: none; }
   .atkerdes { place-items: end stretch; padding: 0; }
   .alairas-ablak { padding: 0; place-items: end stretch; }
   .alairas-kartya { border-radius: 16px 16px 0 0; border-bottom: 0; }
@@ -954,7 +965,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
       <span class="vezerlo"><button type="button" class="pm" data-cel="fagyigep" data-lep="-1" aria-label="Eggyel kevesebb fagyigép">−</button><input type="text" id="bb-fagyigep" readonly aria-label="Fagyigépek száma"><button type="button" class="pm" data-cel="fagyigep" data-lep="1" aria-label="Eggyel több fagyigép">+</button></span>
     </div>
     <div class="dolgozo-szerk">
-      <span class="cim">Dolgozók<small>Ők jelennek meg a „Név (olvashatóan)” legördülő listájában, ABC-sorrendben.</small></span>
+      <span class="cim">Dolgozók<small>Ők jelennek meg a „Név (olvashatóan)” legördülő listájában, ABC-sorrendben. A zöld ceruzával javíthatod a nevet, a kukával törölheted.</small></span>
       <ul class="dolgozo-lista" id="bb-dolgozok"></ul>
       <div class="jelszo-sor">
         <input type="text" id="bb-uj-dolgozo" placeholder="Új dolgozó neve, pl. Kiss Anna" autocomplete="off" aria-label="Új dolgozó neve">
@@ -1839,6 +1850,8 @@ $('datum').addEventListener('blur', () => { const d = datumOlvas($('datum').valu
 $('ma-gomb').addEventListener('click', () => { $('datum').value = allapot.datum = maiDatum(); datumFrissit(); frissit(); });
 
 /* ---------- kiadások ---------- */
+const CERUZA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4zM13.5 6.5l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const PIPA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const KUKA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function kiadasRajz(fokuszSor) {
   const tb = $('kiadas-sorok'); tb.textContent = '';
@@ -2389,7 +2402,25 @@ function dolgozoListaRajz() {
     k.addEventListener('click', () => kerdez('Biztosan törölni akarod ezt a dolgozót?', 'Ezt a dolgozót törlöd a listából:', n,
       ['Ha az „Igen, törlöm” gombra kattintasz, a neve nem jelenik meg többé a legördülő listában.', 'A törlés a „Mentés” gombbal lesz végleges.',
        'Ha nem akarod törölni, kattints a „Mégse, megtartom” gombra.'], 'Igen, törlöm', () => { boltUj.dolgozok.splice(i, 1); dolgozoListaRajz(); }));
-    li.append(sp, k); ul.appendChild(li);
+    const c = document.createElement('button'); c.type = 'button'; c.className = 'ceruza'; c.dataset.tipp = 'Név javítása'; c.innerHTML = CERUZA;
+    c.setAttribute('aria-label', `${n} nevének javítása`);
+    let inp = null;
+    const kesz = () => {
+      const uj = inp.value.trim().replace(/\s+/g, ' ');
+      if (uj && !boltUj.dolgozok.some((x, j) => j !== i && x.toLowerCase() === uj.toLowerCase())) {
+        boltUj.dolgozok[i] = uj; boltUj.dolgozok.sort((a, b) => a.localeCompare(b, 'hu'));
+      }
+      dolgozoListaRajz();
+    };
+    c.addEventListener('click', () => {
+      if (inp) { kesz(); return; }
+      inp = document.createElement('input'); inp.type = 'text'; inp.className = 'nev-szerk'; inp.value = n; inp.setAttribute('aria-label', 'A dolgozó neve');
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); kesz(); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dolgozoListaRajz(); } });
+      sp.replaceWith(inp); c.innerHTML = PIPA; c.dataset.tipp = 'Kész'; c.setAttribute('aria-label', 'Kész, a név javítása');
+      inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length);
+    });
+    const g = document.createElement('div'); g.className = 'gombok'; g.append(c, k);
+    li.append(sp, g); ul.appendChild(li);
   });
 }
 function dolgozoHozzaad() {
@@ -2987,7 +3018,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127083356';
+const VALTOZAT = '20261127083605';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
