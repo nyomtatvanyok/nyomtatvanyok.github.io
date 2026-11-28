@@ -347,8 +347,8 @@ function kepMappa() {
 /* ===================== Zárások archívuma ===================== */
 /**
  * Minden letöltött zárós papír közvetlenül ide kerül, almappák nélkül:
- *   Zárási papírok archívuma / 2026.11.25. szerda – Oroszlány – zárós papír.png
- * Ha ugyanarra a napra többször töltik le, a név végére „– 2. változat”, „– 3. változat” kerül.
+ *   Zárási papírok archívuma / 261125._Oroszlány_zárós papír.png
+ * Ha ugyanarra a napra többször töltik le, a név végére „_2. változat”, „_3. változat” kerül.
  */
 function zarasArchiv(p) {
   var bolt = String(p.bolt || '').trim();
@@ -373,8 +373,9 @@ function zarasArchiv(p) {
   // maga a feltöltés (a lassú rész) már zár nélkül, párhuzamosan megy.
   var mappa = DriveApp.getFolderById(ARCHIV_MAPPA);
   var datumSzoveg = ev + '.' + (ho < 10 ? '0' : '') + ho + '.' + (nap < 10 ? '0' : '') + nap + '.';
-  var alap = datumSzoveg + ' ' + NAPOK[d.getUTCDay()] + ' – ' + bolt + ' – zárós papír';
-  var nevE = function (k) { return k <= 1 ? alap + '.png' : alap + ' – ' + k + '. változat.png'; };
+  // rövid név, pl. „261126._Bp, Békásmegyeri Piac_zárós papír.png”, ismétlésnél „…_zárós papír_2. változat.png”
+  var alap = String(ev).slice(-2) + (ho < 10 ? '0' : '') + ho + (nap < 10 ? '0' : '') + nap + '._' + bolt + '_zárós papír';
+  var nevE = function (k) { return k <= 1 ? alap + '.png' : alap + '_' + k + '. változat.png'; };
   var zar = LockService.getScriptLock();
   if (!zar.tryLock(30000)) dob('Most sokan mentenek egyszerre. Próbáld újra pár másodperc múlva.', 'BUSY');
   var nev;
@@ -401,4 +402,22 @@ function lapKell(nev) {
   var lap = SpreadsheetApp.getActive().getSheetByName(nev);
   if (!lap) dob('A „' + nev + '” fül hiányzik. Futtasd a „beallitas” függvényt.', 'SERVER');
   return lap;
+}
+
+
+/**
+ * EGYSZERI: a régi, hosszú nevű archív fájlokat átnevezi az új, rövid formára.
+ *   „2026.11.26. csütörtök – Bp, Békásmegyeri Piac – zárós papír – 2. változat.png” → „261126._Bp, Békásmegyeri Piac_zárós papír_2. változat.png”
+ * Futtatás: az Apps Script szerkesztőben válaszd ki a „regiNevekAtnevezese” függvényt, és nyomd meg a Futtatás gombot.
+ */
+function regiNevekAtnevezese() {
+  var it = DriveApp.getFolderById(ARCHIV_MAPPA).getFiles(), db = 0;
+  while (it.hasNext()) {
+    var f = it.next(), n = f.getName();
+    var m = /^(\d{4})\.(\d{2})\.(\d{2})\. \S+ – (.+) – zárós papír(?: – (\d+)\. változat)?\.png$/.exec(n);
+    if (!m) continue;
+    f.setName(m[1].slice(-2) + m[2] + m[3] + '._' + m[4] + '_zárós papír' + (m[5] ? '_' + m[5] + '. változat' : '') + '.png');
+    db++;
+  }
+  Logger.log(db + ' fájl átnevezve.');
 }

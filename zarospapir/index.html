@@ -421,11 +421,11 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .keplet-allapot.hiba { color: var(--hiba); background: #fdf0f0; border-color: #e2b4b4; }
 
 /* kasszánkénti rublikák */
-.reszek { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.reszek { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
 .resz { display: grid; gap: 2px; min-width: 0; }
 .resz small { font-size: 14px; font-weight: 700; color: var(--masodlagos); }
 .resz .bemenet input { min-height: 48px; }
-.reszek.szeles { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.reszek.szeles { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 .rontott-kerdes { display: grid; gap: 4px; padding: 10px 12px; border: 2px dashed var(--morzsa); border-radius: 10px; background: var(--liszt); }
 .rontott-kerdes > span { font-size: 16px; font-weight: 700; }
 .rontott-kerdes .bemenet { max-width: 160px; }
@@ -488,6 +488,21 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   background: var(--barna); color: var(--feher); font-size: 19px; font-weight: 700; box-shadow: 0 -6px 20px rgba(74,40,16,.25); }
 .uj-valtozat button { background: var(--feher); color: var(--barna); border: 0; border-radius: 12px; min-height: 52px; padding: 8px 20px; font-size: 19px; font-weight: 700; }
+/* --- saját számbillentyűzet (telefonon a rendszer-billentyűzet helyett) --- */
+.billentyuzet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 92; background: var(--krem); border-top: 3px solid var(--barna);
+  box-shadow: 0 -10px 30px rgba(74,40,16,.22); padding: 8px max(8px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+  user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.billentyuzet-fej { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 2px 4px 8px; min-height: 30px; }
+.billentyuzet-cim { font-size: 15px; font-weight: 700; color: var(--kakao); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.billentyuzet-racs { display: grid; grid-template-columns: repeat(3, 1fr) 1.15fr; gap: 7px; max-width: 520px; margin: 0 auto; }
+.billentyuzet button { min-height: 52px; border-radius: 12px; border: 2px solid var(--morzsa); background: var(--feher); color: var(--kakao);
+  font: 800 26px/1 var(--cim); box-shadow: 0 2px 0 var(--morzsa); padding: 0; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.billentyuzet button.lenyomva { transform: translateY(2px); box-shadow: none; background: var(--liszt); }
+.billentyuzet button.fn { font: 700 16px/1.15 var(--szoveg); color: var(--barna); background: var(--liszt); }
+.billentyuzet button.fn svg { width: 26px; height: 26px; }
+.billentyuzet button.kesz-gomb { background: var(--barna); border-color: var(--barna); color: var(--feher); box-shadow: 0 2px 0 var(--gomb-hover); font: 800 18px/1 var(--cim); }
+.billentyuzet button:disabled { opacity: .35; }
+.billentyuzet-kicsi { min-height: 30px !important; padding: 0 12px !important; font: 700 15px var(--szoveg) !important; border-radius: 9px !important; box-shadow: none !important; }
 .uj-valtozat.fent { top: 0; bottom: auto; padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: 10px; box-shadow: 0 6px 20px rgba(74,40,16,.25); }
 
 /* --- alkalmazás (PWA) letöltése: felugró ablak, ami összegyűrődik a bal alsó sarokba --- */
@@ -528,7 +543,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   .info { font-size: 12.5px; padding: 3px 7px; gap: 2px; }
   .mezo-fej { gap: 6px; }
   .mezo-fej > span { font-size: 15.5px; }
-  .cimlet-ablak { padding: 0; place-items: end stretch; }
+  .cimlet-ablak { padding: 0 0 var(--billentyu-h, 0px); place-items: end stretch; }
   .cimlet-kartya { width: 100%; max-height: 94dvh; border-radius: 16px 16px 0 0; border-bottom: 0; }
   .cimlet-sor { grid-template-columns: 1fr auto; grid-template-areas: "cimlet resz" "vezerlo vezerlo"; }
   .vezerlo { justify-content: space-between; }
@@ -922,6 +937,19 @@ input.cimletes { cursor: pointer; background: var(--feher); }
   <button type="button" id="uj-valtozat-gomb">Frissítés most</button>
 </div>
 
+<div class="billentyuzet" id="billentyuzet" hidden aria-label="Számbillentyűzet">
+  <div class="billentyuzet-fej"><span class="billentyuzet-cim" id="billentyuzet-cim"></span><button type="button" class="billentyuzet-kicsi" data-b="kesz">Bezárás ✕</button></div>
+  <div class="billentyuzet-racs">
+    <button type="button" data-b="1">1</button><button type="button" data-b="2">2</button><button type="button" data-b="3">3</button>
+    <button type="button" class="fn" data-b="torol" aria-label="Törlés"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h11v14H9l-6-7 6-7zM12 9l5 6M17 9l-5 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button type="button" data-b="4">4</button><button type="button" data-b="5">5</button><button type="button" data-b="6">6</button>
+    <button type="button" class="fn" data-b="elozo">▲<br>Előző</button>
+    <button type="button" data-b="7">7</button><button type="button" data-b="8">8</button><button type="button" data-b="9">9</button>
+    <button type="button" class="fn" data-b="kov">▼<br>Következő</button>
+    <button type="button" data-b="," id="billentyu-vesszo">,</button><button type="button" data-b="0">0</button><button type="button" data-b="000">000</button>
+    <button type="button" class="kesz-gomb" data-b="kesz">Kész ✓</button>
+  </div>
+</div>
 <div class="telepito" id="telepito" hidden role="dialog" aria-labelledby="telepito-cim">
   <button type="button" class="telepito-x" id="telepito-x" aria-label="Bezárás"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
   <img class="telepito-ikon" src="ikon/ikon-192.png" alt="">
@@ -2070,7 +2098,7 @@ $('letoltes').addEventListener('click', async () => {
   merfold(96);
   const blob = await new Promise(r => nagy.toBlob(r, 'image/png'));
   const d = datumOlvas(allapot.datum);
-  const fajl = `Zaras_${ekezetNelkul(allapot.bolt).replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}_${d.y}-${String(d.mo).padStart(2, '0')}-${String(d.d).padStart(2, '0')}.png`;
+  const fajl = `${String(d.y).slice(-2)}${String(d.mo).padStart(2, '0')}${String(d.d).padStart(2, '0')}._${allapot.bolt.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\\/:*?"<>|]/g, '')}_zaros papir.png`;   // pl. 261126._Bp, Bekasmegyeri Piac_zaros papir.png (a letöltött fájl ékezet nélkül, mert egyes telefonok az ékezetes nevet „download”-ra cserélik; az archívumban ékezetes)
   await betoltoKesz();
   // A zárás elkészült: archívumba mentjük, az űrlapot kiürítjük, és külön oldalon mutatjuk a letöltéshez.
   keszBlob = blob; keszFajlNev = fajl; keszAdat = { bolt: allapot.bolt, datum: d.szoveg, nev: (allapot.ertek.nev || '').trim() };
@@ -3208,7 +3236,7 @@ if (ONALLO) {
   $('uj-valtozat-szoveg').textContent = 'Az alkalmazás frissült! Frissítéskor a beírt adatok törlődnek, ezért a zárás után frissíts.';
   $('uj-valtozat-gomb').textContent = '🔄 Frissítés';
 }
-const VALTOZAT = '20261128101646';
+const VALTOZAT = '20261128103555';
 function vanBeirtAdat() { return Object.values(allapot.ertek || {}).some(v => String(v || '').trim()) || (allapot.kiadas || []).length > 0 || !!allapot.alairas; }
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
@@ -3232,6 +3260,93 @@ $('uj-valtozat-gomb').addEventListener('click', () => location.replace(ujCim(ujV
 valtozatEllenoriz(true);
 setInterval(() => valtozatEllenoriz(false), 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) valtozatEllenoriz(false); });
+
+/* ---------- saját számbillentyűzet: telefonon a számmezőknél a rendszer-billentyűzet helyett ---------- */
+const SAJAT_BILL = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } })();
+let billMezo = null;
+function szamMezoE(el) {
+  return !!(el && el.tagName === 'INPUT' && !el.readOnly && !el.disabled && (el.dataset.billentyu || /^(decimal|numeric)$/.test(el.inputMode || el.getAttribute('inputmode') || ''))
+    && !el.closest('.billentyuzet') && el.id !== 'datum');
+}
+function billMezoCim(el) {
+  const m = el.closest('.mezo'), r = el.closest('.resz');
+  const fo = m && m.querySelector('.mezo-fej > span, :scope > span');
+  const al = r && r.querySelector('small');
+  let t = (fo ? fo.textContent.trim() : '') + (al ? ' – ' + al.textContent.trim() : '');
+  if (!t && el.closest('#kiadas-sorok')) t = 'Kiadás összege';
+  if (!t) { const c = document.querySelector(`label[for="${el.id}"]`); t = c ? c.textContent.trim() : ''; }
+  return t;
+}
+function billMutat(el) {
+  billMezo = el;
+  const b = $('billentyuzet');
+  $('billentyuzet-cim').textContent = billMezoCim(el);
+  $('billentyu-vesszo').disabled = !/munkaora|probaora/.test(el.id);
+  if (b.hidden) { b.hidden = false; if (!LASSU2) b.animate([{ transform: 'translateY(100%)' }, { transform: 'none' }], { duration: 180, easing: 'ease-out' }); }
+  const h = b.offsetHeight; document.documentElement.style.setProperty('--billentyu-h', h + 'px'); document.body.style.paddingBottom = h + 'px';
+  setTimeout(() => {   // a mező a billentyűzet fölött legyen
+    const r = el.getBoundingClientRect(), also = innerHeight - h - 16;
+    if (r.bottom > also || r.top < 70) window.scrollBy({ top: r.top - (also - r.height) / 2 - 40, behavior: 'smooth' });
+  }, 30);
+}
+function billRejt() { $('billentyuzet').hidden = true; billMezo = null; document.body.style.paddingBottom = ''; document.documentElement.style.removeProperty('--billentyu-h'); }
+const LASSU2 = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+function billIr(el, szoveg) {
+  let a = el.selectionStart ?? el.value.length, v = el.selectionEnd ?? el.value.length;
+  if (szoveg === null) {   // törlés
+    if (a === v) { if (a === 0) return; a--; if (el.value[a] === ' ' || el.value[a] === ' ' || el.value[a] === ' ') a = Math.max(0, a - 1); }
+    el.setRangeText('', a, v, 'end');
+  } else el.setRangeText(szoveg, a, v, 'end');
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  try { const n = el.value.length; if (szoveg !== null && a >= el.value.length - szoveg.length - 3) el.setSelectionRange(n, n); } catch (e) {}
+}
+function billLeptet(irany) {
+  const kont = (billMezo && billMezo.closest('.cimlet-ablak, .sugo-ablak, .bolt-ablak, [role="dialog"]')) || $('urlap');
+  const mind = [...kont.querySelectorAll('input')].filter(x => !x.readOnly && !x.disabled && x.offsetParent !== null && x.type !== 'hidden');
+  const i = mind.indexOf(billMezo); const kov = mind[i + irany];
+  if (kov) { kov.focus({ preventScroll: true }); if (!szamMezoE(kov)) { billRejt(); kov.scrollIntoView({ block: 'center', behavior: 'smooth' }); } }
+  else billLezar();
+}
+function billLezar() {   // a billentyűzet még egy pillanatig a helyén marad, hogy a koppintás ne „essen át” az alatta lévő mezőre
+  const el = billMezo; billMezo = null; if (el) el.blur();
+  setTimeout(() => { if (!billMezo) billRejt(); }, 380);
+}
+if (SAJAT_BILL) {
+  // a koppintás pillanatában kikapcsoljuk a rendszer-billentyűzetet a számmezőkön
+  document.addEventListener('pointerdown', e => {
+    const el = e.target.closest && e.target.closest('input');
+    if (szamMezoE(el) && !el.dataset.billentyu) { el.dataset.billentyu = el.inputMode || 'decimal'; el.setAttribute('inputmode', 'none'); }
+  }, true);
+  document.addEventListener('focusin', e => {
+    const el = e.target;
+    if (szamMezoE(el)) { if (!el.dataset.billentyu) { el.dataset.billentyu = el.inputMode || 'decimal'; el.setAttribute('inputmode', 'none'); } billMutat(el); }
+    else if (!e.target.closest('.billentyuzet')) billRejt();
+  });
+  document.addEventListener('focusout', () => {
+    setTimeout(() => { if (billMezo && document.activeElement !== billMezo && !(document.activeElement && document.activeElement.closest('.billentyuzet'))) billRejt(); }, 120);
+  });
+  const bill = $('billentyuzet');
+  bill.addEventListener('pointerdown', e => {   // a fókusz a mezőn marad, a billentyűzet nem tűnik el
+    const g = e.target.closest('button'); if (!g || g.disabled) return;
+    e.preventDefault(); g.classList.add('lenyomva');
+    const el = billMezo; const k = g.dataset.b;
+    if (k === 'kesz') { billLezar(); return; }
+    if (!el) return;
+    if (k === 'torol') billIr(el, null);
+    else if (k === 'elozo') billLeptet(-1);
+    else if (k === 'kov') billLeptet(1);
+    else {
+      const tiszta = el.value.replace(/\s|\u00a0|\u202f/g, '');
+      if ((k === '000' || k === '0') && (tiszta === '' || tiszta === '0') && el.selectionStart === el.value.length) { if (k === '0' && tiszta === '') billIr(el, '0'); }   // nem kezdődhet sok nullával
+      else if (/^[1-9]$/.test(k) && tiszta === '0' && el.selectionStart === el.value.length) { el.value = ''; billIr(el, k); }
+      else billIr(el, k);
+    }
+    if (navigator.vibrate) { try { navigator.vibrate(8); } catch (er) {} }
+  });
+  const fel = e => { const g = e.target.closest && e.target.closest('button'); bill.querySelectorAll('.lenyomva').forEach(x => x.classList.remove('lenyomva')); };
+  bill.addEventListener('pointerup', fel); bill.addEventListener('pointercancel', fel); bill.addEventListener('pointerleave', fel);
+  bill.addEventListener('click', e => e.preventDefault());
+}
 
 /* ---------- alkalmazás (PWA): háttérszolgáltatás + letöltésre hívó ablak ---------- */
 const WEBES = /^https?:/.test(location.protocol) && !claudeFelulet;
