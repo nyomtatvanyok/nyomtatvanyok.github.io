@@ -369,19 +369,27 @@ function zarasArchiv(p) {
   cache.put(ck, String(db + 1), 3600);
   cache.put('arch_osszes', String(ossz + 1), 3600);
 
-  var zar = LockService.getScriptLock(); zar.waitLock(20000);
+  // Sok egyidejű mentésnél se akadjon: a zár csak a fájlnév lefoglalásáig tart (pár tized mp),
+  // maga a feltöltés (a lassú rész) már zár nélkül, párhuzamosan megy.
+  var mappa = DriveApp.getFolderById(ARCHIV_MAPPA);
+  var datumSzoveg = ev + '.' + (ho < 10 ? '0' : '') + ho + '.' + (nap < 10 ? '0' : '') + nap + '.';
+  var alap = datumSzoveg + ' ' + NAPOK[d.getUTCDay()] + ' – ' + bolt + ' – zárós papír';
+  var nevE = function (k) { return k <= 1 ? alap + '.png' : alap + ' – ' + k + '. változat.png'; };
+  var zar = LockService.getScriptLock();
+  if (!zar.tryLock(30000)) dob('Most sokan mentenek egyszerre. Próbáld újra pár másodperc múlva.', 'BUSY');
+  var nev;
   try {
-    var honapMappa = DriveApp.getFolderById(ARCHIV_MAPPA);
-    var datumSzoveg = ev + '.' + (ho < 10 ? '0' : '') + ho + '.' + (nap < 10 ? '0' : '') + nap + '.';
-    var alap = datumSzoveg + ' ' + NAPOK[d.getUTCDay()] + ' – ' + bolt + ' – zárós papír';
-    var nev = alap + '.png', i = 2;
-    while (honapMappa.getFilesByName(nev).hasNext()) { nev = alap + ' – ' + i + '. változat.png'; i++; }
-    var fajl = honapMappa.createFile(Utilities.newBlob(bajtok, 'image/png', nev));
-    var kitolto = String(p.nev || '').trim().slice(0, 100);
-    fajl.setDescription('Zárós papír · ' + bolt + ' · ' + datumSzoveg + (kitolto ? ' · Kitöltötte: ' + kitolto : '') +
-      ' · Feltöltve: ' + Utilities.formatDate(new Date(), 'Europe/Budapest', 'yyyy.MM.dd. HH:mm'));
-    return { nev: nev, url: fajl.getUrl() };
+    var nk = 'nev_' + Utilities.base64EncodeWebSafe(alap);
+    var kov = Math.max(1, Number(cache.get(nk) || 1));
+    while (mappa.getFilesByName(nevE(kov)).hasNext()) kov++;
+    nev = nevE(kov);
+    cache.put(nk, String(kov + 1), 1800);   // a következő mentés ugyanerre a napra már a következő számot kapja
   } finally { zar.releaseLock(); }
+  var fajl = mappa.createFile(Utilities.newBlob(bajtok, 'image/png', nev));
+  var kitolto = String(p.nev || '').trim().slice(0, 100);
+  fajl.setDescription('Zárós papír · ' + bolt + ' · ' + datumSzoveg + (kitolto ? ' · Kitöltötte: ' + kitolto : '') +
+    ' · Feltöltve: ' + Utilities.formatDate(new Date(), 'Europe/Budapest', 'yyyy.MM.dd. HH:mm'));
+  return { nev: nev, url: fajl.getUrl() };
 }
 
 function almappa(szulo, nev) {

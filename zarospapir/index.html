@@ -2133,8 +2133,16 @@ async function archivMentes() {
   keszArchivOk = !gasMod || TESZT;
   if (!gasMod || TESZT) return;   // teszt: nem kerül az archívumba
   betoltoMutat('Mentés az archívumba…'); merfold(92);
-  try { await gasHivas('zarasArchiv', Object.assign({ png: keszDataUrl.split(',')[1] }, keszAdat)); keszArchivOk = true; }
-  catch (e) { keszArchivOk = !!(e && e.code === 'BAD' && /Ismeretlen kérés/.test(e.message)); }
+  // Ha sokan mentenek egyszerre és a szerver épp foglalt, magától újrapróbálja (szétszórt várakozással), a dolgozónak nem kell semmit tennie.
+  const varakozas = [0, 2000, 4500, 8000];
+  for (let i = 0; i < varakozas.length; i++) {
+    if (varakozas[i]) await varj(varakozas[i] + Math.random() * 1500);
+    try { await gasHivas('zarasArchiv', Object.assign({ png: keszDataUrl.split(',')[1] }, keszAdat)); keszArchivOk = true; break; }
+    catch (e) {
+      keszArchivOk = !!(e && e.code === 'BAD' && /Ismeretlen kérés/.test(e.message));
+      if (keszArchivOk || (e && (e.code === 'BAD' || e.code === 'LOCKED'))) break;   // ezeken az újrapróbálás nem segít
+    }
+  }
   await betoltoKesz();
 }
 function archivAllapot() {
@@ -3025,7 +3033,7 @@ if (gasMod) {
   $('lablec').hidden = false;
   const elozo = olvas('zarospapir:sugok');
   if (elozo && typeof elozo === 'object') { Object.assign(sugok, elozo); infoFrissit(); }
-  window.__sugokKesz = gasHivas('sugok', {}).then(d => {
+  window.__sugokKesz = gasHivas('sugok', {}).catch(() => varj(2500 + Math.random() * 2000).then(() => gasHivas('sugok', {}))).then(d => {
     for (const k of Object.keys(sugok)) delete sugok[k];
     Object.assign(sugok, d || {});
     tarol('zarospapir:sugok', sugok); infoFrissit();
@@ -3200,7 +3208,7 @@ if (ONALLO) {
   $('uj-valtozat-szoveg').textContent = 'Az alkalmazás frissült! Frissítéskor a beírt adatok törlődnek, ezért a zárás után frissíts.';
   $('uj-valtozat-gomb').textContent = '🔄 Frissítés';
 }
-const VALTOZAT = '20261128101507';
+const VALTOZAT = '20261128101646';
 function vanBeirtAdat() { return Object.values(allapot.ertek || {}).some(v => String(v || '').trim()) || (allapot.kiadas || []).length > 0 || !!allapot.alairas; }
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
