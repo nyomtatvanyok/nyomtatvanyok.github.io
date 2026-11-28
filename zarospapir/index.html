@@ -2058,7 +2058,7 @@ $('letoltes').addEventListener('click', async () => {
   kepLap = null;
   if (!letoltoCap) {
     try {
-      kepLap = ONALLO ? kepKeretNyit() : window.open('kep.html?v=' + VALTOZAT, '_blank');   // külön oldal: töltő + a kép (alkalmazásban az alkalmazáson belül)
+      kepLap = (ONALLO || IOS) ? kepKeretNyit() : window.open('kep.html?v=' + VALTOZAT, '_blank');   // külön oldal: töltő + a kép (alkalmazásban az alkalmazáson belül)
     } catch (e) { kepLap = null; }
   }
   betoltoMutat('A zárós papír elkészítése…');
@@ -2106,7 +2106,7 @@ function autoLetoltes() {
     return true;
   } catch (e) { return false; }
 }
-// letöltött alkalmazásban nincs „új lap”: a képoldal az alkalmazáson belül, teljes képernyőn nyílik meg
+// letöltött alkalmazásban és iPhone-on (ott a háttérbe tett lap leáll) a képoldal ugyanezen a lapon, teljes képernyőn nyílik meg
 function kepKeretNyit() {
   const regi = document.getElementById('kep-keret'); if (regi) regi.remove();
   const d = document.createElement('div'); d.className = 'kep-keret'; d.id = 'kep-keret';
@@ -2126,7 +2126,7 @@ async function kepLapAtad() {
   return false;
 }
 async function kepLapNyit() {   // a kész oldal gombjáról (kattintásra mindig engedi a böngésző)
-  try { kepLap = ONALLO ? kepKeretNyit() : window.open('kep.html?v=' + VALTOZAT, '_blank'); } catch (e) { kepLap = null; }
+  try { kepLap = (ONALLO || IOS) ? kepKeretNyit() : window.open('kep.html?v=' + VALTOZAT, '_blank'); } catch (e) { kepLap = null; }
   if (!(await kepLapAtad())) { const a = document.createElement('a'); a.href = keszObjUrl(); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
 }
 async function archivMentes() {
@@ -3200,7 +3200,7 @@ if (ONALLO) {
   $('uj-valtozat-szoveg').textContent = 'Az alkalmazás frissült! A beírt adataid megmaradnak.';
   $('uj-valtozat-gomb').textContent = '🔄 Frissítés';
 }
-const VALTOZAT = '20261128095616';
+const VALTOZAT = '20261128101044';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);

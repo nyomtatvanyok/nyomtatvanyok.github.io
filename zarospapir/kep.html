@@ -61,7 +61,7 @@
     <div class="doboz">
       <p>Mindjárt megjelenik a kép.<br>Így mentsd el:</p>
       <ul>
-        <li><span class="ikon">👆</span><span>Tartsd rajta az <b>ujjad</b> a képen, és válaszd a <b>„Kép letöltése”</b> pontot.</span></li>
+        <li><span class="ikon">👆</span><span>Tartsd rajta az <b>ujjad</b> a képen, és válaszd a <b id="mentes-pont">„Kép letöltése”</b> pontot.</span></li>
         <li class="vagy">vagy</li>
         <li><span class="ikon">📸</span><span>Készíts róla <b>képernyőfotót</b>.</span></li>
       </ul>
@@ -94,6 +94,7 @@
   }, 50);
   window.kepSzazalek = function (x) { if (!kesz) cel = Math.max(cel, Math.min(95, x)); };
   const IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  if (IOS) document.getElementById('mentes-pont').textContent = '„Hozzáadás a Fotókhoz”';
   window.kepMutat = function (dataUrl, fajlNev) {
     // a képet ebben a lapban alakítjuk fájllá (blob), így az iPhone Safari is biztosan meg tudja jeleníteni
     let blobUrl = '';
