@@ -1,7 +1,7 @@
 // Lipóti zárós papír – alkalmazás (PWA) háttérszolgáltatás.
 // Mindig a weboldal legfrissebb változatát tölti (hálózat először), így az alkalmazás és a weboldal 100%-ban ugyanaz.
 // A tárolt másolat csak akkor kell, ha épp nincs internet.
-const TAR = 'zarospapir-v1';
+const TAR = 'zarospapir-v2';
 const ALAP = ['./', './index.html', './kep.html', './manifest.webmanifest', './ikon/ikon-192.png', './ikon/ikon-512.png'];
 
 self.addEventListener('install', e => {
@@ -17,7 +17,7 @@ self.addEventListener('fetch', e => {
   if (u.origin !== location.origin) return;   // a Google (súgók, archívum) kérései érintetlenül mennek
   e.respondWith((async () => {
     try {
-      const v = await fetch(k, { cache: 'no-store' });
+      const v = k.mode === 'navigate' ? await fetch(k) : await fetch(k, { cache: 'no-store' });   // Safari-ban a navigációs kérés nem kaphat beállítást
       if (v && v.ok && !u.searchParams.has('_')) {   // a változat-ellenőrző kérést nem tároljuk
         const kulcs = k.mode === 'navigate' ? new Request(u.origin + u.pathname) : k;
         const c = await caches.open(TAR); c.put(kulcs, v.clone()).catch(() => {});

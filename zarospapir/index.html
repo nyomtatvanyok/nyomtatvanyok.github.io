@@ -3200,7 +3200,8 @@ if (ONALLO) {
   $('uj-valtozat-szoveg').textContent = 'Az alkalmazás frissült! A beírt adataid megmaradnak.';
   $('uj-valtozat-gomb').textContent = '🔄 Frissítés';
 }
-const VALTOZAT = '20261128101044';
+const VALTOZAT = '20261128101338';
+function frissulJelol() { try { sessionStorage.setItem('zarospapir:frissul', '1'); } catch (e) {} }   // a saját frissítés után megmaradnak a beírt adatok
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
@@ -3215,11 +3216,11 @@ async function valtozatEllenoriz(elso) {
     if (!m || m[1] === VALTOZAT) return;
     ujValtozat = m[1];
     const gepel = (document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) || !!utolsoMezo;
-    if (elso || (!ONALLO && !nyitottAblak() && !gepel)) location.replace(ujCim(ujValtozat));
+    if (elso || (!ONALLO && !nyitottAblak() && !gepel)) { frissulJelol(); location.replace(ujCim(ujValtozat)); }
     else $('uj-valtozat').hidden = false;   // az alkalmazásban csak szólunk (fent), a frissítés gombra frissül
   } catch (e) { /* offline: marad a mostani */ }
 }
-$('uj-valtozat-gomb').addEventListener('click', () => location.replace(ujCim(ujValtozat || Date.now())));
+$('uj-valtozat-gomb').addEventListener('click', () => { frissulJelol(); location.replace(ujCim(ujValtozat || Date.now())); });
 valtozatEllenoriz(true);
 setInterval(() => valtozatEllenoriz(false), 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) valtozatEllenoriz(false); });
@@ -3302,6 +3303,14 @@ datumFrissit();
 kiadasRajz();
 
 const utolso = olvas('zaras:utolsoBolt');
+// A félbehagyott kitöltés csak az oldal saját frissítésekor (új változat) marad meg.
+// Ha a dolgozó újra megnyitja vagy újratölti a linket, az eszköz elfelejti a be nem küldött adatokat, tiszta lappal indul.
+(function () {
+  let megtart = false;
+  try { megtart = sessionStorage.getItem('zarospapir:frissul') === '1'; sessionStorage.removeItem('zarospapir:frissul'); } catch (e) {}
+  if (megtart) return;
+  try { Object.keys(localStorage).filter(k => /^zaras(-teszt)?:/.test(k) && k !== 'zaras:utolsoBolt').forEach(k => localStorage.removeItem(k)); } catch (e) {}
+})();
 boltBeallit(KESZ.has(utolso) ? utolso : [...KESZ][0]);
 const eredetiBolt = boltBeallit;
 gomb.addEventListener('click', () => {}, { once: true });

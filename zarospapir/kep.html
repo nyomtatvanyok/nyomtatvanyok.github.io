@@ -70,6 +70,18 @@
   <div class="kep-nezet" id="kep-nezet" hidden><img id="kep" alt="Zárós papír">
     <p class="doboz" id="hiba" hidden style="margin:20px;font-size:21px;font-weight:700">⚠ A kép nem jelent meg. Lépj vissza az előző lapra: ott el tudod menteni a képet.</p></div>
 <script>
+  // Ha ezt a lapot nem a zárós papír nyitotta meg (pl. a Safari visszaállított egy régi lapot, vagy valaki közvetlenül nyitotta meg),
+  // akkor nincs mire várni: azonnal a kitöltő oldalra visz.
+  (function () {
+    let szulo = null;
+    try { szulo = window.opener || (window.parent !== window ? window.parent : null); } catch (e) { szulo = null; }
+    if (!szulo) { location.replace('./'); return; }
+    setTimeout(() => {   // ha 25 mp alatt sem jön meg a kép, nem hagyjuk itt ragadni
+      if (window.__kepMegjott) return;
+      try { if (window.parent !== window) return; } catch (e) {}
+      location.replace('./');
+    }, 25000);
+  })();
   // A zárós papír oldala hívja meg, amikor elkészült a kép: letöltjük, és a töltő után egyedül megmutatjuk.
   const indult = Date.now();
   const MIN_TOLTO = 4000;   // ennyi ideig biztosan látszik a töltő, hogy el lehessen olvasni a teendőt
@@ -96,6 +108,7 @@
   const IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
   if (IOS) document.getElementById('mentes-pont').textContent = '„Hozzáadás a Fotókhoz”';
   window.kepMutat = function (dataUrl, fajlNev) {
+    window.__kepMegjott = true;
     // a képet ebben a lapban alakítjuk fájllá (blob), így az iPhone Safari is biztosan meg tudja jeleníteni
     let blobUrl = '';
     try { blobUrl = URL.createObjectURL(dataUrlBlob(String(dataUrl))); } catch (e) { blobUrl = ''; }
