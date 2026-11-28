@@ -1565,7 +1565,7 @@ function rajzol(canvas) {
   // aláírás az E38 cellába
   if (allapot.alairas && allapot.alairasVonal && allapot.alairasVonal.v.length) {
     const x1 = xs[4], x2 = xs[5], y1 = ys[37], y2 = ys[38];
-    const vastag = 2.7 * s;   // közel olyan vastag, mint a kék tollas számok vonala
+    const vastag = 1.7 * s;   // vékony tollvonal
     const bw = (x2 - x1) - 4 * pad - vastag, bh = (y2 - y1) * 0.8 - vastag;
     const ar = allapot.alairasVonal.arany;
     let w = bw, h = w / ar; if (h > bh) { h = bh; w = h * ar; }
@@ -3134,7 +3134,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261127203737';
+const VALTOZAT = '20261128094443';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
