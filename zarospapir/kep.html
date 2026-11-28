@@ -67,7 +67,8 @@
       </ul>
     </div>
   </main>
-  <div class="kep-nezet" id="kep-nezet" hidden><img id="kep" alt="Zárós papír"></div>
+  <div class="kep-nezet" id="kep-nezet" hidden><img id="kep" alt="Zárós papír">
+    <p class="doboz" id="hiba" hidden style="margin:20px;font-size:21px;font-weight:700">⚠ A kép nem jelent meg. Lépj vissza az előző lapra: ott el tudod menteni a képet.</p></div>
 <script>
   // A zárós papír oldala hívja meg, amikor elkészült a kép: letöltjük, és a töltő után egyedül megmutatjuk.
   const indult = Date.now();
@@ -92,13 +93,25 @@
     if (kesz && p >= 100 && Date.now() - indult >= MIN_TOLTO && kepKesz) { clearInterval(idozito); kepKesz(); }
   }, 50);
   window.kepSzazalek = function (x) { if (!kesz) cel = Math.max(cel, Math.min(95, x)); };
+  const IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
   window.kepMutat = function (dataUrl, fajlNev) {
-    try {   // 1) letöltés az eszközre
-      const url = URL.createObjectURL(dataUrlBlob(dataUrl));
-      const a = document.createElement('a'); a.href = url; a.download = fajlNev || 'zaros_papir.png'; a.style.display = 'none';
-      document.body.appendChild(a); a.click(); a.remove();
-    } catch (e) {}
-    const kep = document.getElementById('kep'); kep.src = dataUrl;   // 2) a kép külön, a képernyőre igazítva
+    // a képet ebben a lapban alakítjuk fájllá (blob), így az iPhone Safari is biztosan meg tudja jeleníteni
+    let blobUrl = '';
+    try { blobUrl = URL.createObjectURL(dataUrlBlob(String(dataUrl))); } catch (e) { blobUrl = ''; }
+    if (blobUrl && !IOS) {   // 1) letöltés az eszközre (iPhone-on ez nem a Fotókba menne, ott hosszan nyomva mentik)
+      try {
+        const a = document.createElement('a'); a.href = blobUrl; a.download = fajlNev || 'zaros_papir.png'; a.style.display = 'none';
+        document.body.appendChild(a); a.click(); a.remove();
+      } catch (e) {}
+    }
+    const kep = document.getElementById('kep');   // 2) a kép külön, a képernyőre igazítva
+    let probalt = 0;
+    kep.onerror = () => {
+      probalt++;
+      if (probalt === 1) { kep.src = String(dataUrl); return; }   // tartalék: közvetlenül az adatból
+      document.getElementById('hiba').hidden = false; kep.hidden = true;
+    };
+    kep.src = blobUrl || String(dataUrl);
     if (fajlNev) document.title = fajlNev;
     kepKesz = () => {
       document.getElementById('tolto').hidden = true;

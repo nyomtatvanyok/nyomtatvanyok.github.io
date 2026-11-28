@@ -2033,7 +2033,8 @@ $('letoltes').addEventListener('click', async () => {
   await archivMentes();
   urlapUrites();
   // Rendes eset: a dolgozó már az új lapon van (letöltve + kép). Ide csak akkor kell a kész oldal, ha az új lap nem nyílt meg, vagy az archiválás nem sikerült.
-  if (lapOk && keszArchivOk) {
+  const iosE = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  if (lapOk && keszArchivOk && !iosE) {   // iPhone-on biztonsági tartalékként a régi lapon is ott marad a kép a mentéshez
     uzenet('✓ A zárás elkészült: a kép letöltődött, és új lapon megnyílt. Az űrlap kiürült, kezdheted a következő zárást.', true);
     window.scrollTo({ top: 0 });
   } else {
@@ -3134,7 +3135,7 @@ $('alairas-torol').addEventListener('click', () => kerdez(
 alairasMutat();
 
 /* ---------- új változat: azonnali frissítés (a GitHub Pages 10 percig is a régit adhatja a gyorsítótárból) ---------- */
-const VALTOZAT = '20261128094443';
+const VALTOZAT = '20261128094739';
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
