@@ -918,7 +918,7 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 </div>
 
 <div class="uj-valtozat" id="uj-valtozat" hidden role="status">
-  <span id="uj-valtozat-szoveg">Elkészült az oldal új változata. A beírt adataid megmaradnak.</span>
+  <span id="uj-valtozat-szoveg">Elkészült az oldal új változata. Ha most frissítesz, a beírt adatok törlődnek, ezért a zárás után frissíts.</span>
   <button type="button" id="uj-valtozat-gomb">Frissítés most</button>
 </div>
 
@@ -3197,11 +3197,11 @@ alairasMutat();
 const ONALLO = (() => { try { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } })();   // letöltött alkalmazásként fut
 if (ONALLO) {
   $('uj-valtozat').classList.add('fent');
-  $('uj-valtozat-szoveg').textContent = 'Az alkalmazás frissült! A beírt adataid megmaradnak.';
+  $('uj-valtozat-szoveg').textContent = 'Az alkalmazás frissült! Frissítéskor a beírt adatok törlődnek, ezért a zárás után frissíts.';
   $('uj-valtozat-gomb').textContent = '🔄 Frissítés';
 }
-const VALTOZAT = '20261128101338';
-function frissulJelol() { try { sessionStorage.setItem('zarospapir:frissul', '1'); } catch (e) {} }   // a saját frissítés után megmaradnak a beírt adatok
+const VALTOZAT = '20261128101507';
+function vanBeirtAdat() { return Object.values(allapot.ertek || {}).some(v => String(v || '').trim()) || (allapot.kiadas || []).length > 0 || !!allapot.alairas; }
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
   return ['sugo-ablak', 'cimlet-ablak', 'alairas-ablak', 'atkerdes', 'belepo-ablak', 'kezelo-ablak', 'kesz-oldal', 'bolt-ablak', 'keplet-ablak'].some(id => $(id) && !$(id).hidden);
@@ -3216,11 +3216,11 @@ async function valtozatEllenoriz(elso) {
     if (!m || m[1] === VALTOZAT) return;
     ujValtozat = m[1];
     const gepel = (document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) || !!utolsoMezo;
-    if (elso || (!ONALLO && !nyitottAblak() && !gepel)) { frissulJelol(); location.replace(ujCim(ujValtozat)); }
+    if (elso || (!ONALLO && !nyitottAblak() && !gepel && !vanBeirtAdat())) location.replace(ujCim(ujValtozat));   // kitöltés közben sosem frissül magától
     else $('uj-valtozat').hidden = false;   // az alkalmazásban csak szólunk (fent), a frissítés gombra frissül
   } catch (e) { /* offline: marad a mostani */ }
 }
-$('uj-valtozat-gomb').addEventListener('click', () => { frissulJelol(); location.replace(ujCim(ujValtozat || Date.now())); });
+$('uj-valtozat-gomb').addEventListener('click', () => location.replace(ujCim(ujValtozat || Date.now())));
 valtozatEllenoriz(true);
 setInterval(() => valtozatEllenoriz(false), 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) valtozatEllenoriz(false); });
@@ -3303,12 +3303,8 @@ datumFrissit();
 kiadasRajz();
 
 const utolso = olvas('zaras:utolsoBolt');
-// A félbehagyott kitöltés csak az oldal saját frissítésekor (új változat) marad meg.
-// Ha a dolgozó újra megnyitja vagy újratölti a linket, az eszköz elfelejti a be nem küldött adatokat, tiszta lappal indul.
+// Minden megnyitáskor és újratöltéskor (frissítéskor is) tiszta lappal indul: az eszköz elfelejti a be nem küldött adatokat.
 (function () {
-  let megtart = false;
-  try { megtart = sessionStorage.getItem('zarospapir:frissul') === '1'; sessionStorage.removeItem('zarospapir:frissul'); } catch (e) {}
-  if (megtart) return;
   try { Object.keys(localStorage).filter(k => /^zaras(-teszt)?:/.test(k) && k !== 'zaras:utolsoBolt').forEach(k => localStorage.removeItem(k)); } catch (e) {}
 })();
 boltBeallit(KESZ.has(utolso) ? utolso : [...KESZ][0]);
