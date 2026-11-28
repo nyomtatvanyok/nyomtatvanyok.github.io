@@ -484,26 +484,38 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 .alairas-vaszon .x { position: absolute; left: 3%; bottom: 23%; font-size: 22px; color: var(--masodlagos); pointer-events: none; }
 .alairas-kartya .parban button { flex: 1 1 150px; }
 
-.uj-valtozat { position: fixed; left: 0; right: 0; bottom: 0; z-index: 95; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: center;
-  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-  background: var(--barna); color: var(--feher); font-size: 19px; font-weight: 700; box-shadow: 0 -6px 20px rgba(74,40,16,.25); }
-.uj-valtozat button { background: var(--feher); color: var(--barna); border: 0; border-radius: 12px; min-height: 52px; padding: 8px 20px; font-size: 19px; font-weight: 700; }
+.uj-valtozat { position: fixed; left: 50%; transform: translateX(-50%); top: calc(10px + env(safe-area-inset-top, 0px)); z-index: 95;
+  width: min(460px, calc(100% - 24px)); display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 14px;
+  background: var(--feher); color: var(--kakao); border: 2px solid var(--morzsa); border-radius: 16px; box-shadow: 0 12px 32px rgba(74,40,16,.22); }
+.uj-valtozat .uv-ikon { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--krem); color: var(--barna); display: grid; place-items: center; }
+.uj-valtozat .uv-ikon svg { width: 22px; height: 22px; }
+.uj-valtozat .uv-szoveg { flex: 1; min-width: 0; font-size: 16px; line-height: 1.25; }
+.uj-valtozat .uv-szoveg b { display: block; font-size: 17px; color: var(--barna); }
+.uj-valtozat button { flex: none; background: var(--barna); color: var(--feher); border: 0; border-radius: 999px; min-height: 44px; padding: 6px 18px; font: 700 17px var(--szoveg); cursor: pointer; }
+.uj-valtozat button:hover { background: var(--gomb-hover); }
 /* --- saját számbillentyűzet (telefonon a rendszer-billentyűzet helyett) --- */
 .billentyuzet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 92; background: var(--krem); border-top: 3px solid var(--barna);
   box-shadow: 0 -10px 30px rgba(74,40,16,.22); padding: 8px max(8px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
   user-select: none; -webkit-user-select: none; touch-action: manipulation; }
 .billentyuzet-fej { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 2px 4px 8px; min-height: 30px; }
 .billentyuzet-cim { font-size: 15px; font-weight: 700; color: var(--kakao); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.billentyuzet-racs { display: grid; grid-template-columns: repeat(3, 1fr) 1.15fr; gap: 7px; max-width: 520px; margin: 0 auto; }
+.billentyuzet-racs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; max-width: 520px; margin: 0 auto; }
 .billentyuzet button { min-height: 52px; border-radius: 12px; border: 2px solid var(--morzsa); background: var(--feher); color: var(--kakao);
   font: 800 26px/1 var(--cim); box-shadow: 0 2px 0 var(--morzsa); padding: 0; display: grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .billentyuzet button.lenyomva { transform: translateY(2px); box-shadow: none; background: var(--liszt); }
 .billentyuzet button.fn { font: 700 16px/1.15 var(--szoveg); color: var(--barna); background: var(--liszt); }
 .billentyuzet button.fn svg { width: 26px; height: 26px; }
+.billentyuzet button.nyil, .billentyuzet button.kov-gomb { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.billentyuzet button.nyil svg, .billentyuzet button.kov-gomb svg { width: 22px; height: 22px; flex: none; }
+.billentyuzet button.kov-gomb { grid-column: span 2; background: var(--barna); border-color: var(--barna); color: var(--feher); box-shadow: 0 2px 0 var(--gomb-hover); font: 700 19px var(--szoveg); }
+.billentyuzet button.kov-gomb.lenyomva { background: var(--gomb-hover); }
+.billentyuzet button.kicsi-szam { font-size: 21px; }
+.billentyuzet-rejt { width: 42px; height: 34px; border-radius: 10px !important; border: 2px solid var(--morzsa) !important; background: var(--feher) !important; color: var(--barna) !important; min-height: 0 !important; box-shadow: none !important; }
+.billentyuzet-rejt svg { width: 24px; height: 24px; }
 .billentyuzet button.kesz-gomb { background: var(--barna); border-color: var(--barna); color: var(--feher); box-shadow: 0 2px 0 var(--gomb-hover); font: 800 18px/1 var(--cim); }
 .billentyuzet button:disabled { opacity: .35; }
 .billentyuzet-kicsi { min-height: 30px !important; padding: 0 12px !important; font: 700 15px var(--szoveg) !important; border-radius: 9px !important; box-shadow: none !important; }
-.uj-valtozat.fent { top: 0; bottom: auto; padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: 10px; box-shadow: 0 6px 20px rgba(74,40,16,.25); }
+.uj-valtozat.fent { top: calc(10px + env(safe-area-inset-top, 0px)); bottom: auto; }
 
 /* --- alkalmazás (PWA) letöltése: felugró ablak, ami összegyűrődik a bal alsó sarokba --- */
 .telepito { position: fixed; z-index: 50; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
@@ -933,21 +945,24 @@ input.cimletes { cursor: pointer; background: var(--feher); }
 </div>
 
 <div class="uj-valtozat" id="uj-valtozat" hidden role="status">
-  <span id="uj-valtozat-szoveg">Elkészült az oldal új változata. Ha most frissítesz, a beírt adatok törlődnek, ezért a zárás után frissíts.</span>
-  <button type="button" id="uj-valtozat-gomb">Frissítés most</button>
+  <span class="uv-ikon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4zM18 15l.9 2.1 2.1.9-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z" fill="currentColor"/></svg></span>
+  <span class="uv-szoveg" id="uj-valtozat-szoveg"><b>Új változat érhető el</b>Frissíts, amikor végeztél a zárással.</span>
+  <button type="button" id="uj-valtozat-gomb">Frissítés</button>
 </div>
 
 <div class="billentyuzet" id="billentyuzet" hidden aria-label="Számbillentyűzet">
-  <div class="billentyuzet-fej"><span class="billentyuzet-cim" id="billentyuzet-cim"></span><button type="button" class="billentyuzet-kicsi" data-b="kesz">Bezárás ✕</button></div>
+  <div class="billentyuzet-fej"><span class="billentyuzet-cim" id="billentyuzet-cim"></span>
+    <button type="button" class="billentyuzet-rejt" data-b="kesz" aria-label="Billentyűzet elrejtése" title="Elrejtés"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
   <div class="billentyuzet-racs">
     <button type="button" data-b="1">1</button><button type="button" data-b="2">2</button><button type="button" data-b="3">3</button>
     <button type="button" class="fn" data-b="torol" aria-label="Törlés"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h11v14H9l-6-7 6-7zM12 9l5 6M17 9l-5 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button type="button" data-b="4">4</button><button type="button" data-b="5">5</button><button type="button" data-b="6">6</button>
-    <button type="button" class="fn" data-b="elozo">▲<br>Előző</button>
+    <button type="button" class="kicsi-szam" data-b="000">000</button>
     <button type="button" data-b="7">7</button><button type="button" data-b="8">8</button><button type="button" data-b="9">9</button>
-    <button type="button" class="fn" data-b="kov">▼<br>Következő</button>
-    <button type="button" data-b="," id="billentyu-vesszo">,</button><button type="button" data-b="0">0</button><button type="button" data-b="000">000</button>
-    <button type="button" class="kesz-gomb" data-b="kesz">Kész ✓</button>
+    <button type="button" data-b="," id="billentyu-vesszo">,</button>
+    <button type="button" class="fn nyil" data-b="elozo" aria-label="Előző mező"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Előző</span></button>
+    <button type="button" data-b="0">0</button>
+    <button type="button" class="kov-gomb" data-b="kov" aria-label="Következő mező"><span>Következő</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 </div>
 <div class="telepito" id="telepito" hidden role="dialog" aria-labelledby="telepito-cim">
@@ -3233,10 +3248,9 @@ alairasMutat();
 const ONALLO = (() => { try { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } })();   // letöltött alkalmazásként fut
 if (ONALLO) {
   $('uj-valtozat').classList.add('fent');
-  $('uj-valtozat-szoveg').textContent = 'Az alkalmazás frissült! Frissítéskor a beírt adatok törlődnek, ezért a zárás után frissíts.';
-  $('uj-valtozat-gomb').textContent = '🔄 Frissítés';
+  $('uj-valtozat-szoveg').innerHTML = '<b>Frissült az alkalmazás</b>Frissíts, amikor végeztél a zárással.';
 }
-const VALTOZAT = '20261128103555';
+const VALTOZAT = '20261128104144';
 function vanBeirtAdat() { return Object.values(allapot.ertek || {}).some(v => String(v || '').trim()) || (allapot.kiadas || []).length > 0 || !!allapot.alairas; }
 function ujCim(v) { const u = new URL(location.href); u.searchParams.set('v', v); return u.toString(); }
 function nyitottAblak() {
@@ -3256,7 +3270,12 @@ async function valtozatEllenoriz(elso) {
     else $('uj-valtozat').hidden = false;   // az alkalmazásban csak szólunk (fent), a frissítés gombra frissül
   } catch (e) { /* offline: marad a mostani */ }
 }
-$('uj-valtozat-gomb').addEventListener('click', () => location.replace(ujCim(ujValtozat || Date.now())));
+$('uj-valtozat-gomb').addEventListener('click', () => {
+  const tovabb = () => location.replace(ujCim(ujValtozat || Date.now()));
+  if (!vanBeirtAdat()) return tovabb();
+  kerdez('Biztosan frissítesz most?', 'Ami történik:', 'A beírt adatok törlődnek',
+    ['Ha most frissítesz, mindent elölről kell kezdened.', 'Javasoljuk: előbb fejezd be és töltsd le a zárást, utána frissíts.'], 'Igen, frissítek', tovabb);
+});
 valtozatEllenoriz(true);
 setInterval(() => valtozatEllenoriz(false), 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) valtozatEllenoriz(false); });
